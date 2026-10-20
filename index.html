@@ -386,6 +386,33 @@ function LoginScreen({ onLogin, loading }) {
   );
 }
 
+// ── Alerta global de contas vencidas ──
+function VencidosAlert() {
+  const sdc = React.useMemo(() => {
+    try { const r = localStorage.getItem("sdc_summary"); return r ? JSON.parse(r) : null; } catch(e) { return null; }
+  }, []);
+  if(!sdc || !sdc.vencidas || sdc.vencidas < 1) return null;
+  return React.createElement("div", {
+    onClick: () => { window.location.href = "sdc.html"; },
+    style:{
+      margin:"0 24px 12px", padding:"10px 16px",
+      background:"#E24B4A18", border:"1px solid #E24B4A55",
+      borderLeft:"4px solid #E24B4A", borderRadius:10,
+      cursor:"pointer", display:"flex", alignItems:"center", gap:10
+    }
+  },
+    React.createElement("span", { style:{ fontSize:18 } }, "⚠️"),
+    React.createElement("div", null,
+      React.createElement("div", { style:{ fontSize:12, fontWeight:700, color:"#E24B4A", fontFamily:"Rajdhani,sans-serif", letterSpacing:1 } },
+        sdc.vencidas + " conta" + (sdc.vencidas > 1 ? "s" : "") + " vencida" + (sdc.vencidas > 1 ? "s" : "") + " no SDC"
+      ),
+      React.createElement("div", { style:{ fontSize:11, color:"var(--txt3)", marginTop:1 } },
+        "Toque para abrir o SDC e regularizar →"
+      )
+    )
+  );
+}
+
 // ── Painel de Vida (mini-resumos dos apps) ──
 function LifePanel({ user }) {
   const email = user?.email || "anon";
@@ -393,17 +420,26 @@ function LifePanel({ user }) {
   // Lê dados dos apps via localStorage
   const sdcData = React.useMemo(() => {
     try {
-      const saldo = localStorage.getItem("sdc_saldo_" + email);
-      const metas = localStorage.getItem("sdc_metas_" + email);
-      const gastoHoje = localStorage.getItem("sdc_gasto_hoje_" + email);
-      return { saldo, metas, gastoHoje };
-    } catch(e) { return {}; }
-  }, [email]);
+      const raw = localStorage.getItem("sdc_summary");
+      return raw ? JSON.parse(raw) : null;
+    } catch(e) { return null; }
+  }, []);
 
   const forjData = React.useMemo(() => {
     try {
       const raw = localStorage.getItem("forj_summary");
       return raw ? JSON.parse(raw) : null;
+    } catch(e) { return null; }
+  }, []);
+
+  // Missão prioritária da Forjadora
+  const activeMission = React.useMemo(() => {
+    try {
+      const raw = localStorage.getItem("sheyla_forjadora_v3");
+      if (!raw) return null;
+      const app = JSON.parse(raw);
+      const missions = app.missions || [];
+      return missions.find(m => m.active && !m.done && m.priority) || missions.find(m => m.active && !m.done) || null;
     } catch(e) { return null; }
   }, []);
 
@@ -418,9 +454,19 @@ function LifePanel({ user }) {
 
   const ce = (tag, props, ...children) => React.createElement(tag, props, ...children);
 
+  // Helper: "sincronizado há X"
+  const timeAgo = (ts) => {
+    if(!ts) return null;
+    const diff = Math.floor((Date.now() - ts) / 1000);
+    if(diff < 60) return "agora mesmo";
+    if(diff < 3600) return `${Math.floor(diff/60)} min atrás`;
+    if(diff < 86400) return `${Math.floor(diff/3600)}h atrás`;
+    return `${Math.floor(diff/86400)}d atrás`;
+  };
+
   // Forjadora element pills
-  function ElemPills({ d }) {
-    return ce("div", { style:{ display:"flex", gap:5, flexWrap:"wrap", margin:"8px 0 4px" } },
+  const ElemPills = ({ d }) =>
+    ce("div", { style:{ display:"flex", gap:5, flexWrap:"wrap", margin:"8px 0 4px" } },
       ["m","g","t","f"].map(k => {
         const val = d[k] ?? "—";
         const { label, color } = ELEM[k];
@@ -430,10 +476,9 @@ function LifePanel({ user }) {
         );
       })
     );
-  }
 
   // MBTI letter pills
-  function MbtiPills({ type }) {
+  const MbtiPills = ({ type }) => {
     if(!type || type.length !== 4) return null;
     return ce("div", { style:{ display:"flex", gap:4, alignItems:"center" } },
       type.split("").map((l,i) => {
@@ -441,7 +486,28 @@ function LifePanel({ user }) {
         return ce("span", { key:i, style:{ fontFamily:"Rajdhani,sans-serif", fontSize:12, fontWeight:700, letterSpacing:1, padding:"2px 7px", borderRadius:10, background:c+"22", border:"1px solid "+c+"55", color:c } }, l);
       })
     );
-  }
+  };
+
+  // Score "Pulse" composto: combina saúde da Forjadora + SDC
+  const pulseScore = React.useMemo(() => {
+    let score = 50; // base
+    if (forjData) {
+      // Burnout inverso: quanto maior BI, menor saúde. BI ~ 100 - média_elementos
+      const avg = ((forjData.m||0)+(forjData.g||0)+(forjData.t||0)+(forjData.f||0))/4;
+      score = avg * 0.6; // peso 60% da Forjadora
+    }
+    if (sdcData) {
+      // Sem contas vencidas = bônus
+      const semVencidas = !sdcData.vencidas || sdcData.vencidas === 0;
+      score += semVencidas ? 40 : Math.max(0, 40 - sdcData.vencidas * 8);
+    } else if (!forjData) return null;
+    return Math.round(Math.min(100, Math.max(0, score)));
+  }, [forjData, sdcData]);
+
+  const pulseColor = pulseScore === null ? "#6ea8fe"
+    : pulseScore >= 70 ? "#22c55e"
+    : pulseScore >= 40 ? "#EF9F27"
+    : "#E24B4A";
 
   return ce("div", { className:"life-panel" },
     // SDC Mini-card
@@ -454,10 +520,14 @@ function LifePanel({ user }) {
         ce("span", { style:{ fontSize:10, letterSpacing:2, color:"#1D9E75", fontWeight:700 } }, "SDC · FINANCEIRO"),
         ce("span", { style:{ fontSize:10, color:"var(--txt4)" } }, "↗")
       ),
-      sdcData.saldo
-        ? ce("div", { style:{ fontSize:20, fontWeight:700, color:"var(--txt)" } }, sdcData.saldo)
-        : ce("div", { style:{ fontSize:13, color:"var(--txt3)" } }, "Abra o SDC para ver seu saldo"),
-      sdcData.gastoHoje && ce("div", { style:{ fontSize:11, color:"var(--txt4)", marginTop:4 } }, "Gasto hoje: " + sdcData.gastoHoje)
+      sdcData
+        ? ce(React.Fragment, null,
+            ce("div", { style:{ fontSize:20, fontWeight:700, color:"var(--txt)", marginBottom:2 } }, sdcData.saldo),
+            ce("div", { style:{ fontSize:11, color:"var(--txt3)" } }, "livre: " + sdcData.saldoLivre),
+            sdcData.vencidas > 0 && ce("div", { style:{ fontSize:11, color:"#E24B4A", marginTop:4 } }, "⚠ " + sdcData.vencidas + " conta(s) vencida(s)"),
+            timeAgo(sdcData.updatedAt) && ce("div", { style:{ fontSize:9, color:"var(--txt4)", marginTop:6, letterSpacing:.5 } }, "sincronizado " + timeAgo(sdcData.updatedAt))
+          )
+        : ce("div", { style:{ fontSize:13, color:"var(--txt3)" } }, "Abra o SDC para ver seu saldo")
     ),
 
     // Forjadora Mini-card
@@ -472,18 +542,72 @@ function LifePanel({ user }) {
       ),
       forjData
         ? ce(React.Fragment, null,
-            // Elementos
             ce(ElemPills, { d: forjData }),
-            // MBTI + missões na mesma linha
             ce("div", { style:{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:6 } },
               ce(MbtiPills, { type: forjData.mbtiType }),
               forjData.missionsOpen > 0 && ce("span", { style:{ fontSize:10, color:"#EF9F27", fontFamily:"Rajdhani,sans-serif", fontWeight:600, letterSpacing:.5 } },
                 "⚡ " + forjData.missionsOpen + " missões abertas"
               )
             ),
-            forjData.streak > 0 && ce("div", { style:{ fontSize:10, color:"#EF9F27", marginTop:5, opacity:.8 } }, "🔥 " + forjData.streak + " dias em sequência")
+            forjData.streak > 0 && ce("div", { style:{ fontSize:10, color:"#EF9F27", marginTop:5, opacity:.8 } }, "🔥 " + forjData.streak + " dias em sequência"),
+            timeAgo(forjData.updatedAt) && ce("div", { style:{ fontSize:9, color:"var(--txt4)", marginTop:6, letterSpacing:.5 } }, "sincronizado " + timeAgo(forjData.updatedAt))
           )
         : ce("div", { style:{ fontSize:13, color:"var(--txt3)" } }, "Abra a Forjadora para ver seu progresso")
+    ),
+
+    // Missão ativa da Forjadora
+    activeMission && ce("div", {
+      className:"life-card",
+      onClick:()=>{ window.location.href="forjadora.html"; },
+      style:{ borderLeft:"3px solid #a855f7", gridColumn:"1 / -1" }
+    },
+      ce("div", { style:{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 } },
+        ce("span", { style:{ fontSize:10, letterSpacing:2, color:"#a855f7", fontWeight:700 } }, "MISSÃO EM ANDAMENTO"),
+        ce("span", { style:{
+          fontSize:10, background:"#a855f722", color:"#a855f7",
+          border:"1px solid #a855f744", borderRadius:20, padding:"2px 8px", fontWeight:600
+        }}, "⚡ Ativa")
+      ),
+      ce("div", { style:{ fontSize:14, fontWeight:700, color:"var(--txt)", marginBottom:4 } }, activeMission.title),
+      activeMission.desc && ce("div", { style:{ fontSize:11, color:"var(--txt3)", lineHeight:1.5, marginBottom:6 } }, activeMission.desc.slice(0,90) + (activeMission.desc.length > 90 ? "…" : "")),
+      ce("div", { style:{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" } },
+        activeMission.prog != null && ce("div", { style:{ flex:1, minWidth:80 } },
+          ce("div", { style:{ height:4, background:"var(--border)", borderRadius:4, overflow:"hidden" } },
+            ce("div", { style:{ height:"100%", width: (activeMission.prog||0)+"%", background:"#a855f7", borderRadius:4, transition:"width .3s" } })
+          )
+        ),
+        ce("span", { style:{ fontSize:10, color:"var(--txt4)" } }, (activeMission.prog||0) + "% completo"),
+        activeMission.elem && ce("span", { style:{
+          fontSize:10, padding:"2px 8px", borderRadius:12,
+          background: ({m:"#22c55e",g:"#38bdf8",t:"#a855f7",f:"#f97316"}[activeMission.elem]||"#6ea8fe")+"22",
+          color: ({m:"#22c55e",g:"#38bdf8",t:"#a855f7",f:"#f97316"}[activeMission.elem]||"#6ea8fe"),
+          fontWeight:600
+        }}, ({m:"Madeira",g:"Gelo",t:"Trovão",f:"Fogo"}[activeMission.elem] || activeMission.elem)),
+        ce("span", { style:{ marginLeft:"auto", fontSize:10, color:"#a855f7", fontWeight:600 } }, "Abrir Forjadora →")
+      )
+    ),
+
+    // Score Pulse composto
+    pulseScore !== null && ce("div", {
+      className:"life-card",
+      style:{ borderLeft:"3px solid "+pulseColor, gridColumn:"1 / -1", cursor:"default" }
+    },
+      ce("div", { style:{ display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" } },
+        ce("div", { style:{ textAlign:"center", minWidth:56 } },
+          ce("div", { style:{ fontSize:28, fontWeight:700, color:pulseColor, lineHeight:1, fontFamily:"Rajdhani,sans-serif" } }, pulseScore),
+          ce("div", { style:{ fontSize:9, letterSpacing:1.5, color:pulseColor, opacity:.7, fontWeight:700 } }, "PULSE")
+        ),
+        ce("div", { style:{ flex:1 } },
+          ce("div", { style:{ height:8, background:"var(--border)", borderRadius:8, overflow:"hidden", marginBottom:6 } },
+            ce("div", { style:{ height:"100%", width:pulseScore+"%", background:`linear-gradient(90deg,${pulseColor}99,${pulseColor})`, borderRadius:8, transition:"width .6s ease" } })
+          ),
+          ce("div", { style:{ fontSize:11, color:"var(--txt3)" } },
+            pulseScore >= 70 ? "✦ Tudo em ordem — continue assim"
+            : pulseScore >= 40 ? "⚡ Atenção em alguns pontos"
+            : "⚠ Priorize recuperação e finanças"
+          )
+        )
+      )
     )
   );
 }
@@ -491,38 +615,75 @@ function LifePanel({ user }) {
 // ── Feed de atividade recente ──
 function ActivityFeed({ user }) {
   const email = user?.email || "anon";
-  const activities = React.useMemo(() => {
+  const ce = (tag, props, ...children) => React.createElement(tag, props, ...children);
+
+  const events = React.useMemo(() => {
     const list = [];
+
+    // Acessos aos apps
     APPS.filter(a => a.url).forEach(app => {
       try {
         const info = JSON.parse(localStorage.getItem(`sys_access_${app.id}_${email}`) || "null");
-        if (info?.last) list.push({ app, info });
+        if (info?.last) list.push({ ts: new Date(info.last).getTime(), color: app.cor, icon:"🔗", label:`Acessou ${app.nome}`, detail: info.count+"x acessado", type:"access" });
       } catch(e) {}
     });
-    list.sort((a,b) => new Date(b.info.last) - new Date(a.info.last));
-    return list;
+
+    // Missões concluídas recentes da Forjadora (últimas 3)
+    try {
+      const raw = localStorage.getItem("sheyla_forjadora_v3");
+      if (raw) {
+        const app = JSON.parse(raw);
+        const done = (app.missions || []).filter(m => m.done && m.doneAt).sort((a,b)=> b.doneAt - a.doneAt).slice(0,3);
+        done.forEach(m => {
+          list.push({ ts: m.doneAt, color:"#a855f7", icon:"✦", label:`Missão concluída: ${m.title}`, detail: m.xp ? "+"+m.xp+" XP" : "", type:"mission" });
+        });
+        // Check-in recente
+        const checkins = (app.checkinLog || []).slice(-3);
+        checkins.forEach(c => {
+          if (!c.ts) return;
+          list.push({ ts: c.ts, color:"#EF9F27", icon:"📍", label:`Check-in: "${(c.resp||c.q||"").slice(0,40)}"`, detail:"Forjadora", type:"checkin" });
+        });
+      }
+    } catch(e) {}
+
+    // Contas vencidas do SDC
+    try {
+      const sdc = JSON.parse(localStorage.getItem("sdc_v3") || "null");
+      if (sdc) {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const venc = (sdc.transacoes || []).filter(t => !t.pago && t.tipo === "saida" && t.vencimento && new Date(t.vencimento) < today);
+        if (venc.length > 0) {
+          list.push({ ts: Date.now() - 60000, color:"#E24B4A", icon:"⚠", label:`${venc.length} conta(s) vencida(s) no SDC`, detail:"Pendente", type:"alert" });
+        }
+        // Último fechamento
+        const fech = (sdc.fechamentos || []).slice(-1)[0];
+        if (fech?.data) list.push({ ts: new Date(fech.data+"T00:00").getTime(), color:"#1D9E75", icon:"✔", label:`Fechamento ${fech.data}`, detail: fech.saldo != null ? "saldo: "+fech.saldo : "", type:"fechamento" });
+      }
+    } catch(e) {}
+
+    list.sort((a,b) => b.ts - a.ts);
+    return list.slice(0, 8);
   }, [email]);
 
-  // Último login no SYS
-  const lastSysLogin = React.useMemo(() => {
-    try { return localStorage.getItem("sys_last_login"); } catch(e) { return null; }
-  }, []);
+  const lastSysLogin = React.useMemo(() => { try { return localStorage.getItem("sys_last_login"); } catch(e) { return null; } }, []);
 
-  if (!activities.length && !lastSysLogin) return null;
+  if (!events.length && !lastSysLogin) return null;
 
-  return React.createElement("div", { className:"activity-section" },
-    React.createElement("div", { style:{ fontSize:10, letterSpacing:2, color:"var(--txt4)", fontWeight:700, marginBottom:10 } }, "ATIVIDADE RECENTE"),
-    lastSysLogin && React.createElement("div", { className:"activity-row" },
-      React.createElement("div", { className:"activity-dot", style:{ background:"#6ea8fe" } }),
-      React.createElement("span", null, "Bem-vindo de volta — último acesso: "),
-      React.createElement("span", { style:{ color:"var(--txt2)", marginLeft:4 } }, fmtTime(lastSysLogin))
+  return ce("div", { className:"activity-section" },
+    ce("div", { style:{ fontSize:10, letterSpacing:2, color:"var(--txt4)", fontWeight:700, marginBottom:10 } }, "ATIVIDADE RECENTE"),
+    lastSysLogin && ce("div", { className:"activity-row" },
+      ce("div", { className:"activity-dot", style:{ background:"#6ea8fe" } }),
+      ce("span", null, "Último acesso ao Hub: "),
+      ce("span", { style:{ color:"var(--txt2)", marginLeft:4 } }, fmtTime(lastSysLogin))
     ),
-    ...activities.map(({ app, info }) =>
-      React.createElement("div", { key:app.id, className:"activity-row" },
-        React.createElement("div", { className:"activity-dot", style:{ background: app.cor } }),
-        React.createElement("span", null, app.nome + " — "),
-        React.createElement("span", { style:{ color:"var(--txt2)" } }, fmtTime(info.last)),
-        React.createElement("span", { style:{ marginLeft:"auto", color:"var(--txt4)" } }, info.count + "x")
+    ...events.map((ev, i) =>
+      ce("div", { key:i, className:"activity-row" },
+        ce("div", { className:"activity-dot", style:{ background: ev.color } }),
+        ce("span", { style:{ fontSize:11, lineHeight:1.4 } },
+          ce("span", { style:{ marginRight:4 } }, ev.icon),
+          ev.label
+        ),
+        ev.detail && ce("span", { style:{ marginLeft:"auto", fontSize:10, color:"var(--txt4)", whiteSpace:"nowrap" } }, ev.detail)
       )
     )
   );
@@ -618,6 +779,37 @@ function AppCard({ app, user, onOpen }) {
         className:"shortcut-chip",
         onClick:(e) => { e.stopPropagation(); handleOpen(e, a); }
       }, a))
+    ),
+
+    // Quick Actions contextuais por app
+    isLive && (app.id === "sdc" || app.id === "forjadora") && React.createElement("div", {
+      style:{ display:"flex", gap:6, flexWrap:"wrap", marginTop:10 },
+      onClick: e => e.stopPropagation()
+    },
+      app.id === "sdc" && React.createElement(React.Fragment, null,
+        React.createElement("a", {
+          href: "sdc.html?section=provisao",
+          style:{ fontSize:11, padding:"5px 12px", borderRadius:20, background:"#1D9E7522", color:"#1D9E75", border:"1px solid #1D9E7544", fontWeight:600, textDecoration:"none", cursor:"pointer" },
+          onClick: e => { e.stopPropagation(); const now = new Date().toISOString(); try { const k=`sys_access_sdc_${user?.email||"anon"}`; const i=JSON.parse(localStorage.getItem(k)||"{}"); localStorage.setItem(k,JSON.stringify({...i,last:now,count:(i.count||0)+1})); } catch(ex){} }
+        }, "⚡ Provisionar"),
+        React.createElement("a", {
+          href: "sdc.html?section=dashboard",
+          style:{ fontSize:11, padding:"5px 12px", borderRadius:20, background:"#1D9E7511", color:"#1D9E7599", border:"1px solid #1D9E7533", fontWeight:600, textDecoration:"none", cursor:"pointer" },
+          onClick: e => e.stopPropagation()
+        }, "📊 Dashboard")
+      ),
+      app.id === "forjadora" && React.createElement(React.Fragment, null,
+        React.createElement("a", {
+          href: "forjadora.html?section=missoes",
+          style:{ fontSize:11, padding:"5px 12px", borderRadius:20, background:"#EF9F2722", color:"#EF9F27", border:"1px solid #EF9F2744", fontWeight:600, textDecoration:"none", cursor:"pointer" },
+          onClick: e => { e.stopPropagation(); const now = new Date().toISOString(); try { const k=`sys_access_forjadora_${user?.email||"anon"}`; const i=JSON.parse(localStorage.getItem(k)||"{}"); localStorage.setItem(k,JSON.stringify({...i,last:now,count:(i.count||0)+1})); } catch(ex){} }
+        }, "⚡ Missões"),
+        React.createElement("a", {
+          href: "forjadora.html?section=checkin",
+          style:{ fontSize:11, padding:"5px 12px", borderRadius:20, background:"#EF9F2711", color:"#EF9F2799", border:"1px solid #EF9F2733", fontWeight:600, textDecoration:"none", cursor:"pointer" },
+          onClick: e => e.stopPropagation()
+        }, "📍 Check-in")
+      )
     ),
 
     // Rodapé
@@ -881,6 +1073,9 @@ function Hub({ user, onLogout }) {
           "Escolha um app. Sua sessão é compartilhada — sem novo login."
         )
       ),
+
+      // Alerta global de contas vencidas (SDC)
+      React.createElement(VencidosAlert, null),
 
       // Painel de vida
       React.createElement(LifePanel, { user }),
