@@ -3216,27 +3216,77 @@ function getMissionOfDay() {
   const weakK  = Object.keys(vals).reduce((a, b) => vals[a] <= vals[b] ? a : b);
   const weakName = ELEM_NAME[weakK];
 
-  // Mission templates per element
+  // MBTI family and class for template selection
+  const mbtiProf = APP.mbtiType ? getMbtiProfile(APP.mbtiType) : null;
+  const isAnalytical = APP.mbtiType && ['INTJ','INTP','ISTJ','ISTP','ENTJ','ENTP','ESTJ','ESTP'].includes(APP.mbtiType);
+  const isIntuitive  = APP.mbtiType && ['INFJ','INFP','ENFJ','ENFP','INTJ','INTP','ENTJ','ENTP'].includes(APP.mbtiType);
+  const isIntrovert  = APP.mbtiType && APP.mbtiType[0]==='I';
+  const clsNow = APP.cls || 'MAGO';
+  const strk = APP.streak || 0;
+
+  // Mission templates per element — 9-10 per element, aware of MBTI/class/streak
   const templates = {
     m: [
-      { title: 'Entregar algo concreto hoje — mesmo que pequeno',    type:'EXECUÇÃO', diff:'FACIL',   dur:30 },
-      { title: 'Completar uma tarefa adiada há mais de 3 dias',      type:'EXECUÇÃO', diff:'MEDIO',   dur:60 },
-      { title: 'Finalizar e documentar um projeto em andamento',     type:'EXECUÇÃO', diff:'DIFICIL', dur:120 },
+      { title: 'Entregar algo concreto hoje — mesmo que pequeno',              type:'EXECUÇÃO', diff:'FACIL',   dur:30  },
+      { title: 'Completar uma tarefa adiada há mais de 3 dias',               type:'EXECUÇÃO', diff:'MEDIO',   dur:60  },
+      { title: 'Finalizar e documentar um projeto em andamento',              type:'EXECUÇÃO', diff:'DIFICIL', dur:120 },
+      { title: 'Quebrar o maior projeto em partes e começar a primeira',      type:'PLANEJAR', diff:'MEDIO',   dur:45  },
+      { title: 'Fazer uma entrega visível para alguém hoje',                  type:'EXECUÇÃO', diff:'MEDIO',   dur:60  },
+      { title: isAnalytical ? 'Criar um checklist de entrega e executar 80% hoje'
+                            : 'Começar e terminar uma tarefa sem pausas',      type:'EXECUÇÃO', diff:'MEDIO',   dur:45  },
+      { title: strk >= 7  ? 'Usar o streak para avançar na tarefa mais pesada do backlog'
+                          : 'Escolher 1 tarefa difícil e fazê-la primeiro',   type:'EXECUÇÃO', diff:'DIFICIL', dur:90  },
+      { title: isIntuitive ? 'Transformar uma ideia abstrata em entrega concreta'
+                           : 'Revisar backlog e fechar 3 itens pequenos',     type:'EXECUÇÃO', diff:'FACIL',   dur:40  },
+      { title: clsNow==='GUARDIÃO' ? 'Proteger o sistema: resolver 1 dívida técnica real'
+               : clsNow==='LÍDER'  ? 'Delegar com clareza e revisar o resultado'
+                                   : 'Entrega incremental: um passo real hoje', type:'EXECUÇÃO', diff:'MEDIO', dur:50  },
+      { title: 'Definir "feito" para hoje e honrar esse critério',            type:'PLANEJAR', diff:'FACIL',   dur:20  },
     ],
     g: [
-      { title: 'Dormir e acordar no mesmo horário que ontem',        type:'DESCANSO', diff:'FACIL',   dur:480 },
-      { title: 'Sessão de recuperação ativa — sem telas por 30min',  type:'DESCANSO', diff:'FACIL',   dur:30  },
-      { title: 'Planejar e respeitar 3 pausas intencionais hoje',    type:'DESCANSO', diff:'MEDIO',   dur:20  },
+      { title: 'Dormir e acordar no mesmo horário que ontem',                 type:'DESCANSO', diff:'FACIL',   dur:480 },
+      { title: 'Sessão de recuperação ativa — sem telas por 30min',          type:'DESCANSO', diff:'FACIL',   dur:30  },
+      { title: 'Planejar e respeitar 3 pausas intencionais hoje',             type:'DESCANSO', diff:'MEDIO',   dur:20  },
+      { title: 'Revisão semanal: o que funcionou e o que drenou energia?',   type:'REVISÃO',  diff:'MEDIO',   dur:30  },
+      { title: isIntrovert ? 'Tarde solo sem agenda: recarga profunda'
+                           : 'Definir 1 dia da semana sem compromissos sociais pesados', type:'DESCANSO', diff:'MEDIO', dur:60 },
+      { title: 'Eliminar uma fonte de ruído mental recorrente hoje',         type:'PLANEJAR', diff:'DIFICIL', dur:45  },
+      { title: strk >= 14 ? 'Check-in de sustentabilidade: o streak está custando caro?'
+                          : 'Criar ritual de fim de expediente — desconexão intencional', type:'DESCANSO', diff:'FACIL', dur:20 },
+      { title: 'Caminhar 20 min sem fone — mente em modo difuso',            type:'TREINO',   diff:'FACIL',   dur:20  },
+      { title: 'Organizar o ambiente físico de trabalho',                    type:'EXECUÇÃO', diff:'FACIL',   dur:30  },
+      { title: 'Planejar amanhã com antecedência — tirar o planejamento do dia seguinte', type:'PLANEJAR', diff:'FACIL', dur:15 },
     ],
     t: [
-      { title: 'Estudar um conceito novo no seu domínio ativo',      type:'ESTUDO',   diff:'MEDIO',   dur:45  },
-      { title: 'Ler e resumir um artigo técnico relevante',          type:'ESTUDO',   diff:'FACIL',   dur:30  },
-      { title: 'Deep dive: 2h contínuas de estudo sem interrupções', type:'ESTUDO',   diff:'DIFICIL', dur:120 },
+      { title: 'Estudar um conceito novo no seu domínio ativo',              type:'ESTUDO',   diff:'MEDIO',   dur:45  },
+      { title: 'Ler e resumir um artigo técnico relevante',                  type:'ESTUDO',   diff:'FACIL',   dur:30  },
+      { title: 'Deep dive: 2h contínuas de estudo sem interrupções',         type:'ESTUDO',   diff:'DIFICIL', dur:120 },
+      { title: isAnalytical ? 'Mapear lacunas de conhecimento e priorizar uma'
+                            : 'Explorar um tópico relacionado ao seu trabalho atual', type:'ESTUDO', diff:'MEDIO', dur:40 },
+      { title: 'Ensinar ou explicar algo que aprendeu recentemente',        type:'SOCIAL',   diff:'MEDIO',   dur:30  },
+      { title: 'Resolver um problema técnico real que estava evitando',     type:'EXECUÇÃO', diff:'DIFICIL', dur:90  },
+      { title: strk >= 21 ? 'Revisão de segunda ordem: o que mudou no que você sabe?'
+                          : 'Flashcard ou revisão espaçada de 20 min',       type:'REVISÃO',  diff:'FACIL',   dur:20  },
+      { title: isIntuitive ? 'Conectar dois conceitos aparentemente não relacionados'
+                           : 'Praticar uma habilidade técnica por 30 min',   type:'ESTUDO',   diff:'MEDIO',   dur:30  },
+      { title: 'Documentar um aprendizado da semana em formato compartilhável', type:'REVISÃO', diff:'MEDIO', dur:35 },
+      { title: 'Fazer uma pergunta difícil e rastrear a resposta até a fonte', type:'ESTUDO', diff:'DIFICIL',  dur:60  },
     ],
     f: [
-      { title: 'Assumir um desafio que te tire da zona de conforto', type:'EXECUÇÃO', diff:'DIFICIL', dur:60  },
-      { title: 'Propor ou liderar algo em uma reunião hoje',         type:'EXECUÇÃO', diff:'MEDIO',   dur:30  },
-      { title: 'Completar algo que estava evitando por medo',        type:'EXECUÇÃO', diff:'DIFICIL', dur:90  },
+      { title: 'Assumir um desafio que te tire da zona de conforto',        type:'EXECUÇÃO', diff:'DIFICIL', dur:60  },
+      { title: 'Propor ou liderar algo em uma reunião hoje',                type:'LIDERAR',  diff:'MEDIO',   dur:30  },
+      { title: 'Completar algo que estava evitando por medo',               type:'EXECUÇÃO', diff:'DIFICIL', dur:90  },
+      { title: isIntrovert ? 'Dar feedback direto para alguém — escrito ou ao vivo'
+                           : 'Puxar uma conversa estratégica que está parada', type:'SOCIAL', diff:'MEDIO',   dur:30  },
+      { title: 'Iniciar um projeto novo — primeiro passo real, não planejamento', type:'EXECUÇÃO', diff:'MEDIO', dur:45 },
+      { title: clsNow==='MAGO'    ? 'Criar algo original e mostrar para alguém'
+               : clsNow==='LÍDER' ? 'Motivar alguém da equipe hoje com ação concreta'
+                                  : 'Fazer uma proposta sem esperar permissão', type:'LIDERAR', diff:'DIFICIL', dur:60 },
+      { title: strk >= 7  ? 'Usar o momentum do streak para agir em algo de alto impacto'
+                          : 'Uma ação de baixo custo, alto sinal: enviar aquele e-mail difícil', type:'EXECUÇÃO', diff:'MEDIO', dur:20 },
+      { title: 'Dizer sim para algo que normalmente você evitaria',         type:'SOCIAL',   diff:'MEDIO',   dur:60  },
+      { title: 'Criar ou gravar algo que represente seu ponto de vista',    type:'EXECUÇÃO', diff:'MEDIO',   dur:45  },
+      { title: 'Liderar pelo exemplo: demonstrar o padrão que você quer ver', type:'LIDERAR', diff:'MEDIO',  dur:30  },
     ],
   };
 
@@ -3910,10 +3960,15 @@ function mbtiQuizNext() {
     const jp = scores.jp.J >= scores.jp.P ? 'J' : 'P';
     APP.mbtiType = ie+ns+tf+jp;
     APP.mbtiSource = 'quiz';
+    saveState();
     // Pré-selecionar na HUD
     mbtiSelect('ie', ie); mbtiSelect('ns', ns); mbtiSelect('tf', tf); mbtiSelect('jp', jp);
-    // Salvar e ir pro diagnóstico de elementos
-    setTimeout(() => showDiag(), 300);
+    // Se veio do home, volta pro home. Se veio do onboarding, segue pro diagnóstico de elementos
+    if(APP._mbtiFromHome){
+      setTimeout(() => { goScreen('s-home'); updateAppUI(); }, 300);
+    } else {
+      setTimeout(() => showDiag(), 300);
+    }
   }
 }
 
@@ -4915,6 +4970,100 @@ Inclua ao final da resposta quando relevante:
 2 a 4 atividades. Nomes concretos e praticos, nunca genericos.
 RESPONDA EM PORTUGUES. Tom adaptado ao modo emocional correto. Maximo 3 paragrafos + atividades.`;
 }
+/* ─── MOTOR SHEYLA OFFLINE ──────────────────────────
+   Responde contextualmente sem precisar de API.
+   Usado como fallback quando a API falha.
+──────────────────────────────────────────────────── */
+function sheylaOfflineResponse(msg) {
+  const m = msg.toLowerCase();
+  const v = {m:Math.round(APP.m||0),g:Math.round(APP.g||0),t:Math.round(APP.t||0),f:Math.round(APP.f||0)};
+  const bi = Math.round(calcBurnout(APP.m,APP.g,APP.t,APP.f));
+  const eq = Math.round(calcEquilibrio(APP.m,APP.g,APP.t,APP.f));
+  const weakK = ['m','g','t','f'].reduce((a,b)=>v[a]<=v[b]?a:b);
+  const strongK = ['m','g','t','f'].reduce((a,b)=>v[a]>=v[b]?a:b);
+  const NM = {m:'Madeira',g:'Gelo',t:'Trovão',f:'Fogo'};
+  const C  = {m:'#22c55e',g:'#38bdf8',t:'#a855f7',f:'#f97316'};
+  const cls = APP.cls || 'MAGO';
+  const name = APP.name || 'Forjador';
+  const mbti = APP.mbtiType || null;
+  const streak = APP.streak || 0;
+  const energy = APP.todayEnergy || 3;
+
+  // Helper: chip de elemento
+  function ec(k) { return `<span style="color:${C[k]};font-weight:700">${NM[k]} (${v[k]})</span>`; }
+
+  // ─── PADRÕES DE RESPOSTA ───────────────────────
+
+  // Burnout / estou cansado
+  if (/burnout|cansad|exausto|sobrecarreg|BI/.test(m)) {
+    if (bi > 65) return `O Burnout Index está em <span style="color:var(--f);font-weight:700">${bi}</span> — zona de risco real. ${NM['g']} (${v.g}) é o gargalo neste momento.\n\nA regra é simples: nenhum progresso em outros elementos compensa a ausência de recuperação. Uma sessão intensa de Treino hoje vai elevar o BI ainda mais.\n\n**O que funciona agora:** descanso com intenção — sono no horário fixo, 15 min sem tela antes de dormir, e reduzir ao mínimo as decisões de baixo impacto. Isso é o plano estratégico correto para hoje.\n\n[ATIVIDADES]\n{"titulo":"Recuperação ativa — BI ${bi}","atividades":[{"nome":"Descanso sem tela — 20 min","duracao":"20 min","ganho_principal":"GELO","ganho_estimado":"+8.0","xp_estimado":60,"nivel":"Iniciante"},{"nome":"Sono no horário fixo","duracao":"8h","ganho_principal":"GELO","ganho_estimado":"+12.0","xp_estimado":80,"nivel":"Iniciante"},{"nome":"Meditação guiada 10 min","duracao":"10 min","ganho_principal":"GELO","ganho_estimado":"+5.0","xp_estimado":40,"nivel":"Iniciante"}]}\n[/ATIVIDADES]`;
+    return `Burnout Index em <span style="color:var(--gold);font-weight:700">${bi}</span> — ainda gerenciável, mas ${NM['g']} (${v.g}) merece atenção. Sinais de sobrecarga aparecem antes do colapso.\n\n**Regra do ${cls}:** quando o Gelo cai abaixo de 40, toda entrada de energia extra vira desgaste. Planejar uma sessão de recuperação hoje vale mais do que completar 3 missões de execução.\n\nQuer que eu sugira atividades de recuperação para hoje?`;
+  }
+
+  // Status dos elementos
+  if (/elemento|status|como estou|meu perfil|resumo|situação/.test(m)) {
+    const low = v[weakK] < 30 ? `⚠ ${ec(weakK)} em zona crítica — precisa de atenção imediata.` : `Elemento mais baixo: ${ec(weakK)}.`;
+    return `**${cls} ${name} — estado atual:**\n\n${Object.entries(v).map(([k,val])=>`${NM[k]}: <span style="color:${C[k]};font-weight:700">${val}</span>`).join(' · ')}\n\nEquilíbrio: <span style="color:var(--gold);font-weight:700">${eq}</span> · BI: <span style="color:${bi>55?'var(--f)':'var(--m)'};font-weight:700">${bi}</span>\n\n${low}\n\nElemento forte: ${ec(strongK)} — base sólida para avançar.${mbti ? `\n\nPerfil MBTI: <span style="font-weight:700">${mbti}</span> — use isso a seu favor.` : ''}`;
+  }
+
+  // Como aumentar elemento específico
+  if (/aumentar|crescer|melhorar|fortalecer/.test(m)) {
+    const targets = {
+      madeira: { k:'m', desc:'cresce com execução direta e entrega concreta.', ativs:[{nome:'Completar 1 tarefa adiada',dur:'30 min',ganho:'+6.0',xp:60},{nome:'Entrega real de projeto',dur:'90 min',ganho:'+14.0',xp:140},{nome:'Lista de prioridades + 2 concluídas',dur:'45 min',ganho:'+9.0',xp:80}] },
+      gelo:    { k:'g', desc:'cresce com frequência e qualidade de descanso, não com intensidade.', ativs:[{nome:'Descanso sem tela 20 min',dur:'20 min',ganho:'+8.0',xp:60},{nome:'Sono no horário fixo',dur:'8h',ganho:'+12.0',xp:80},{nome:'Revisão semanal do sistema',dur:'30 min',ganho:'+7.0',xp:70}] },
+      trovão:  { k:'t', desc:'cresce com estudo focado e aprendizado deliberado.', ativs:[{nome:'Estudo focado — conceito novo',dur:'45 min',ganho:'+10.0',xp:90},{nome:'Leitura técnica + resumo',dur:'30 min',ganho:'+6.0',xp:55},{nome:'Deep work 2h sem interrupção',dur:'120 min',ganho:'+18.0',xp:160}] },
+      fogo:    { k:'f', desc:'cresce com ação que gera impacto e presença social.', ativs:[{nome:'Liderar ou propor algo em reunião',dur:'30 min',ganho:'+10.0',xp:90},{nome:'Iniciar algo que estava evitando',dur:'60 min',ganho:'+12.0',xp:110},{nome:'Feedback direto para alguém',dur:'15 min',ganho:'+7.0',xp:65}] },
+    };
+    const found = Object.entries(targets).find(([k])=>m.includes(k));
+    if (found) {
+      const [,tgt] = found;
+      return `**${NM[tgt.k]} (${v[tgt.k]}) — como crescer:**\n\n${NM[tgt.k]} ${tgt.desc}\n\n${tgt.k==='g'?'**Erro comum:** tentar construir Gelo com mais esforço. Não funciona. Frequência diária supera intensidade esporádica.\n\n':''}\n[ATIVIDADES]\n{"titulo":"Fortalecer ${NM[tgt.k]}","atividades":${JSON.stringify(tgt.ativs.map(a=>({nome:a.nome,duracao:a.dur,ganho_principal:NM[tgt.k].toUpperCase(),ganho_estimado:a.ganho,xp_estimado:a.xp,nivel:'Médio'})))}}\n[/ATIVIDADES]`;
+    }
+    // genérico
+    return `Para fortalecer ${ec(weakK)}, o caminho mais direto agora:\n\n${weakK==='g'?'Frequência diária supera qualquer sessão longa. Comece com 15 min por dia.':weakK==='m'?'Execute algo concreto hoje — mesmo que pequeno. A Madeira cresce com entrega, não com planejamento.':weakK==='t'?'45 min de estudo focado com um conceito novo vale mais que 3h de revisão passiva.':'Assuma algo que te coloca em exposição produtiva. Fogo cresce com presença e impacto.'}\n\nQuer que eu monte um plano de recuperação para ${NM[weakK]}?`;
+  }
+
+  // Sugestão de atividade
+  if (/suger|atividade|o que fazer|o que devo|o que posso|plano|missão/.test(m)) {
+    const isLowEnergy = energy <= 2;
+    if (isLowEnergy || bi > 60) {
+      return `Com energia em ${energy}/5 hoje, o foco certo é recuperação estratégica — não avanço. Forçar produção nesse estado gera mais desgaste do que ganho.\n\n**Plano para hoje:**\n\n[ATIVIDADES]\n{"titulo":"Dia de recuperação estratégica","atividades":[{"nome":"Descanso ativo — sem tela 20 min","duracao":"20 min","ganho_principal":"GELO","ganho_estimado":"+8.0","xp_estimado":60,"nivel":"Iniciante"},{"nome":"Uma tarefa pequena e concluída","duracao":"30 min","ganho_principal":"MADEIRA","ganho_estimado":"+4.0","xp_estimado":40,"nivel":"Iniciante"},{"nome":"Sono no horário certo","duracao":"8h","ganho_principal":"GELO","ganho_estimado":"+12.0","xp_estimado":80,"nivel":"Iniciante"}]}\n[/ATIVIDADES]`;
+    }
+    const sugs = {
+      m: [{nome:'Completar 1 tarefa adiada',dur:'30 min',ganho:'MADEIRA',est:'+6.0',xp:60},{nome:'Entregar projeto em andamento',dur:'90 min',ganho:'MADEIRA',est:'+14.0',xp:140}],
+      g: [{nome:'Revisão semanal do sistema',dur:'30 min',ganho:'GELO',est:'+7.0',xp:70},{nome:'Caminhada sem fone 30 min',dur:'30 min',ganho:'GELO',est:'+5.0',xp:50}],
+      t: [{nome:'Estudo focado — 1 conceito novo',dur:'45 min',ganho:'TROVÃO',est:'+10.0',xp:90},{nome:'Deep work 2h sem interrupção',dur:'120 min',ganho:'TROVÃO',est:'+18.0',xp:160}],
+      f: [{nome:'Propor algo em uma reunião',dur:'30 min',ganho:'FOGO',est:'+10.0',xp:90},{nome:'Iniciar o que estava evitando',dur:'60 min',ganho:'FOGO',est:'+12.0',xp:110}],
+    };
+    const pool = sugs[weakK];
+    return `Baseado no seu perfil agora — ${ec(weakK)} é o ponto de menor resistência para evolução.\n\nStreak de ${streak} dias te dá +${Math.min(streak,30)}% de multiplicador. Vale usar isso hoje.\n\n[ATIVIDADES]\n{"titulo":"Sugestão de hoje — fortalecer ${NM[weakK]}","atividades":${JSON.stringify(pool.map(a=>({nome:a.nome,duracao:a.dur,ganho_principal:a.ganho,ganho_estimado:a.est,xp_estimado:a.xp,nivel:'Médio'})))}}\n[/ATIVIDADES]`;
+  }
+
+  // Foco / prioridade
+  if (/foco|prioridade|mais importante|o que primeiro|devo focar/.test(m)) {
+    const blocos = [
+      v.m < 30 ? `🌿 **Madeira (${v.m}) crítica** — nada adianta pensar se nada está sendo entregue.` : null,
+      v.g < 30 ? `❄️ **Gelo (${v.g}) crítico** — sem recuperação, qualquer avanço vai colapsar.` : null,
+      bi > 65  ? `🔥 **BI em ${bi}** — recuperação antes de qualquer outro objetivo.` : null,
+    ].filter(Boolean);
+    if (blocos.length) return `**Prioridade agora — ${cls}:**\n\n${blocos.join('\n\n')}\n\nFoque nisso antes de qualquer missão de expansão.`;
+    return `**${cls} ${name} — o que focar:**\n\nElemento mais fraco: ${ec(weakK)} — aqui está o maior retorno agora.\n\n${streak >= 7 ? `🔥 Streak de ${streak} dias — não deixe quebrar. Uma ação por dia basta.` : `Streak em ${streak} dias — consistência diária é o multiplicador mais poderoso do sistema.`}\n\n${mbti ? `Seu MBTI ${mbti} sugere que você performa melhor com ${['INTJ','INTP','INFJ','INFP','ISTJ','ISTP','ISFJ','ISFP'].includes(mbti)?'trabalho solo e profundo':'colaboração e troca externa'}. Use isso.` : ''}\n\nQuer um plano concreto para ${NM[weakK]} hoje?`;
+  }
+
+  // Streak / consistência
+  if (/streak|sequência|consistência|dias consecutivos|hábito/.test(m)) {
+    return `Streak atual: <span style="color:var(--gold);font-weight:700">${streak} dias</span>.\n\n${streak >= 30 ? `Isso é excepcional. Você está no 1% superior de consistência. O multiplicador máximo (+30%) está ativo.` : streak >= 14 ? `Duas semanas consecutivas. O multiplicador de consistência está em +${streak}% — cada ação rende mais.` : streak >= 7 ? `Uma semana. A maioria desiste antes disso. O sistema está funcionando.` : `Os primeiros dias são os mais importantes — o padrão neurológico se forma nos 21 primeiros dias. Você está no começo da fase mais decisiva.`}\n\n**Regra do streak:** uma ação por dia — mesmo que mínima — vale mais do que 5 ações num dia e 3 dias sem nada. O multiplicador é por consistência, não por volume.`;
+  }
+
+  // Resposta genérica contextual
+  const prefixos = [
+    `Com base no seu perfil atual — ${ec(weakK)} é onde está o gap — `,
+    `${cls} com ${streak} dias de streak. `,
+    `Equilíbrio em ${eq}, BI em ${bi}. `,
+  ];
+  return `${prefixos[Math.floor(Math.random()*prefixos.length)]}o que você quer trabalhar especificamente?\n\nPosso ajudar com: **elementos** (analisar, sugerir atividades), **missões** (planejar o dia), **burnout** (detectar, recuperar) ou **foco** (definir prioridade).\n\nSó falar o que precisa.`;
+}
+
 async function callSheylaAPI(userMessage) {
   APP.chatHistory.push({role:'user', content: userMessage});
   if(APP.chatHistory.length>20) APP.chatHistory=APP.chatHistory.slice(-20);
@@ -4929,13 +5078,18 @@ async function callSheylaAPI(userMessage) {
         messages: APP.chatHistory.slice(-10),
       })
     });
+    if (!response.ok) throw new Error('status ' + response.status);
     const data = await response.json();
     const fullText = data.content?.map(b=>b.type==='text'?b.text:'').join('') || '';
     APP.chatHistory.push({role:'assistant', content: fullText});
     if(APP.chatHistory.length>20) APP.chatHistory=APP.chatHistory.slice(-20);
     return fullText;
   } catch(e) {
-    return 'O sistema encontrou uma interferencia. Tente novamente.';
+    // Fallback: motor offline contextual
+    const offline = sheylaOfflineResponse(userMessage);
+    APP.chatHistory.push({role:'assistant', content: offline});
+    if(APP.chatHistory.length>20) APP.chatHistory=APP.chatHistory.slice(-20);
+    return offline;
   }
 }
 
@@ -5034,14 +5188,72 @@ document.getElementById('chat-inp').addEventListener('keydown',e=>{if(e.key==='E
 function initChat() {
   const box = document.getElementById('chat-msgs');
   if (!box) return;
-  // Update contextual hint based on weakest element
-  const _critHint = document.getElementById('hint-critical');
-  if (_critHint) {
-    const _wv={m:APP.m||0,g:APP.g||0,t:APP.t||0,f:APP.f||0};
-    const _wk=Object.entries(_wv).reduce((a,b)=>a[1]<=b[1]?a:b);
-    _critHint.textContent=_wv[_wk[0]]<40
-      ?'Missao de resgate: '+ELEM_NAME[_wk[0]]
-      :'Como aumentar meu '+ELEM_NAME[_wk[0]]+'?';
+
+  // ─── HINTS CONTEXTUAIS ROTATIVOS ──────────────────────────────────────────
+  // Pool de 20+ hints — seleciona 5 contextualmente baseado no estado atual
+  const _hv = {m:APP.m||0,g:APP.g||0,t:APP.t||0,f:APP.f||0};
+  const _hwk = Object.keys(_hv).reduce((a,b)=>_hv[a]<=_hv[b]?a:b);
+  const _hbi = Math.round(calcBurnout(APP.m,APP.g,APP.t,APP.f));
+  const _heq = Math.round(calcEquilibrio(APP.m,APP.g,APP.t,APP.f));
+  const _hstr= APP.streak||0;
+  const _hegy= APP.todayEnergy||3;
+  const _hmbti= APP.mbtiType||null;
+  const _HNMS = {m:'Madeira',g:'Gelo',t:'Trovão',f:'Fogo'};
+
+  const _hintPool = [
+    // Estado dos elementos — sempre relevante
+    { text: 'Como estão meus elementos?',           priority: 10 },
+    { text: `Como aumentar meu ${_HNMS[_hwk]}?`,   priority: _hv[_hwk] < 40 ? 15 : 8 },
+    { text: 'Sugira uma atividade para hoje',       priority: 9 },
+    // Burnout
+    { text: 'Estou em burnout?',                   priority: _hbi > 55 ? 15 : 5 },
+    { text: `BI está em ${_hbi} — o que isso significa?`, priority: _hbi > 45 ? 12 : 3 },
+    { text: 'Como recuperar Gelo rapidamente?',    priority: _hv.g < 35 ? 14 : 4 },
+    // Foco
+    { text: 'O que devo focar agora?',             priority: 8 },
+    { text: 'Qual é a prioridade certa para hoje?',priority: 7 },
+    { text: `Tenho ${_hstr} dias de streak — como manter?`, priority: _hstr > 5 ? 10 : 4 },
+    // Energia do dia
+    { text: _hegy <= 2
+        ? 'Energia baixa hoje — o que ainda vale fazer?'
+        : _hegy >= 4
+          ? 'Energia alta hoje — como aproveitá-la melhor?'
+          : 'Energia normal — onde concentrar o esforço?', priority: 11 },
+    // Missões e atividades
+    { text: 'Missão de resgate para ' + _HNMS[_hwk],  priority: _hv[_hwk] < 30 ? 16 : 5 },
+    { text: 'Quero uma missão difícil para hoje',      priority: _hegy >= 4 ? 8 : 3 },
+    { text: 'Que atividade rápida posso fazer agora?', priority: _hegy <= 2 ? 9 : 6 },
+    // MBTI
+    { text: _hmbti
+        ? `Meu ${_hmbti} influencia qual elemento mais?`
+        : 'Ainda não fiz o diagnóstico MBTI — por onde começar?',
+      priority: _hmbti ? 6 : 8 },
+    { text: _hmbti
+        ? `Como o perfil ${_hmbti} se aplica à minha jornada?`
+        : 'O que o MBTI muda no meu desenvolvimento?',
+      priority: _hmbti ? 5 : 7 },
+    // Equilíbrio
+    { text: `Equilíbrio em ${_heq} — é bom ou ruim?`,   priority: 7 },
+    { text: 'Qual elemento está desequilibrando o sistema?', priority: 6 },
+    // Estratégia
+    { text: 'Qual é o plano ideal para esta semana?',   priority: 6 },
+    { text: 'Como montar um dia de alta performance?',  priority: 5 },
+    { text: 'Estou evoluindo no ritmo certo?',          priority: 7 },
+    { text: 'Análise completa do meu perfil atual',     priority: 6 },
+  ];
+
+  // Sort by priority (desc), pick top 5, then shuffle them for freshness
+  const _sorted = [..._hintPool].sort((a,b)=>b.priority-a.priority).slice(0,9);
+  // Rotate daily so they don't feel static
+  const _dayOff = Math.floor(Date.now()/86400000) % _sorted.length;
+  const _rotated = [..._sorted.slice(_dayOff), ..._sorted.slice(0,_dayOff)];
+  const _selected5 = _rotated.slice(0,5);
+
+  const _hintContainer = document.getElementById('chat-hints');
+  if (_hintContainer) {
+    _hintContainer.innerHTML = _selected5.map(h =>
+      `<span class="hint-chip" onclick="useHint(this)">${h.text}</span>`
+    ).join('');
   }
   box.innerHTML = '';
   const {m, g, t, f, name, cls, clsIcon, bi, eq} = APP;
@@ -6456,10 +6668,32 @@ Responda APENAS com JSON válido, sem texto extra, sem markdown, sem explicaçõ
 O JSON deve ter exatamente esta estrutura:
 {"title":"...","type":"ESTUDO|EXECUÇÃO|TREINO|DESCANSO|REVISÃO|LIDERAR","elem":"m|g|t|f","diff":"FACIL|MEDIO|DIFICIL","durationMin":30,"xp":80,"desc":"...","tarefas":[{"id":"t1","text":"...","done":false},{"id":"t2","text":"...","done":false},{"id":"t3","text":"...","done":false}]}`;
 
+  const mbtiProf = APP.mbtiType ? getMbtiProfile(APP.mbtiType) : null;
+  const mbtiLine = mbtiProf
+    ? `\nPersonalidade MBTI: ${APP.mbtiType} | Elementos a cultivar: ${mbtiProf.cultivar.map(k=>ELEM_NM[k]).join(', ')} | Perfil: ${mbtiProf.perfil}`
+    : '';
+
   const userPrompt = `Perfil: ${APP.cls||'Mago'} | Madeira:${vals.m} Gelo:${vals.g} Trovão:${vals.t} Fogo:${vals.f} | BI:${bi} | Streak:${APP.streak||0}d
-Elemento mais fraco: ${ELEM_NM[weakest[0]]} (${weakest[1]}).
+Elemento mais fraco: ${ELEM_NM[weakest[0]]} (${weakest[1]}).${mbtiLine}
 Crie UMA missão prática e específica para fortalecer o elemento mais fraco.
-A missão deve ser realizável em 1 dia, com 3 tarefas concretas.`;
+A missão deve ser realizável em 1 dia, com 3 tarefas concretas.${mbtiProf ? '\nAdapte a linguagem e o tipo de tarefa ao perfil MBTI: use o estilo de pensamento e motivação do tipo para tornar a missão mais natural e engajante.' : ''}`;
+
+  // Helper: add mission object to APP
+  function _commitMission(mission) {
+    mission.id = 'sh_' + Date.now();
+    mission.done = false;
+    mission.prog = 0;
+    mission.active = true;
+    mission.priority = true;
+    mission.xp = mission.xp || 80;
+    if (!mission.tarefas) mission.tarefas = [];
+    APP.missions = APP.missions || [];
+    APP.missions.unshift(mission);
+    _autosave();
+    scheduleRender();
+    showToast('✦ Missão da Sheyla criada: ' + mission.title, 'ok');
+    if (btn) { btn.textContent = '✦ Pedir missão à Sheyla'; btn.disabled = false; }
+  }
 
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -6472,30 +6706,105 @@ A missão deve ser realizável em 1 dia, com 3 tarefas concretas.`;
         messages: [{ role: 'user', content: userPrompt }]
       })
     });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
     const text = (data.content||[]).map(c=>c.text||'').join('').trim();
     const clean = text.replace(/```json|```/g,'').trim();
-    const mission = JSON.parse(clean);
-
-    // Validate and add mission
-    mission.id = 'sh_' + Date.now();
-    mission.done = false;
-    mission.prog = 0;
-    mission.active = true;
-    mission.priority = true; // mark as Sheyla mission
-    mission.xp = mission.xp || 80;
-    if (!mission.tarefas) mission.tarefas = [];
-
-    APP.missions = APP.missions || [];
-    APP.missions.unshift(mission);
-    _autosave();
-    scheduleRender();
-    showToast('✦ Missão da Sheyla criada: ' + mission.title, 'ok');
-    if (btn) { btn.textContent = '✦ Pedir missão à Sheyla'; btn.disabled = false; }
+    _commitMission(JSON.parse(clean));
   } catch(e) {
-    console.error('generateMission error', e);
-    showToast('Erro ao gerar missão. Tente novamente.', 'warn');
-    if (btn) { btn.textContent = '✦ Pedir missão à Sheyla'; btn.disabled = false; }
+    console.warn('generateMission API indisponível — usando gerador local', e);
+    // ── GERADOR LOCAL DE MISSÃO DA SHEYLA ──────────────────────────────────
+    // Cruza: elemento mais fraco + MBTI cultivar + classe + energia de hoje + streak
+    const _EN = {m:'Madeira',g:'Gelo',t:'Trovão',f:'Fogo'};
+    const _TYM = {m:'EXECUÇÃO',g:'DESCANSO',t:'ESTUDO',f:'LIDERAR'};
+    const _ELV = {m:'var(--m)',g:'var(--g)',t:'var(--t)',f:'var(--f)'};
+    const _mbP = APP.mbtiType ? getMbtiProfile(APP.mbtiType) : null;
+    const _cls = APP.cls || 'MAGO';
+    const _str = APP.streak || 0;
+    const _egy = APP.todayEnergy || 3;
+    const _bi  = Math.round(calcBurnout(APP.m,APP.g,APP.t,APP.f));
+
+    // If burnout is high, override to recovery mission regardless of weakest element
+    const _targetK = _bi > 65 ? 'g' : weakest[0];
+    const _isAnal  = APP.mbtiType && ['INTJ','INTP','ISTJ','ISTP','ENTJ','ENTP','ESTJ','ESTP'].includes(APP.mbtiType);
+    const _isIntro = APP.mbtiType && APP.mbtiType[0]==='I';
+
+    // Rich template pool per element — varies by MBTI, class, energy, streak
+    const _pool = {
+      m: [
+        { t:'Entrega focada: definir, executar e fechar uma tarefa até o fim do dia',
+          desc:`Escolha a tarefa mais concreta do seu backlog. Defina "feito" com critério claro. Execute sem mudanças de contexto até concluir.${_cls==='GUARDIÃO'?' O Guardião entrega com consistência — não com intensidade.':''} Madeira cresce com frequência de entrega, não com tamanho das tarefas.`,
+          tf:['Escolher 1 tarefa específica do backlog e escrever o critério de "feito"','Executar sem abrir outras abas ou apps — foco total até concluir','Registrar a entrega e celebrar: Madeira +6'] },
+        { t:'Missão de resgate: completar algo que está adiado há mais de 3 dias',
+          desc:`Tarefas adiadas drenam energia mesmo quando não estamos fazendo nada com elas. Hoje o objetivo é fechar o loop mais pesado.${_isAnal?' Identifique por que foi adiada — solucione o bloqueio primeiro.':''}`,
+          tf:['Listar as 3 tarefas mais adiadas e escolher a mais urgente','Quebrar em no máximo 3 micro-passos e começar o primeiro agora','Entregar até as 18h — sem reprogramar para amanhã'] },
+        { t:_egy <= 2 ? 'Entrega mínima viável: 1 coisa pequena, completa e real'
+                      : 'Executar o bloco de trabalho mais importante do dia primeiro',
+          desc:_egy <= 2 ? 'Energia baixa pede tarefas menores e concretas. Entrega mínima conta igual no sistema.' : `Blocos matinais de execução têm 40% mais retenção. Antes de abrir e-mail ou Slack — execute.`,
+          tf:['Identificar a 1 tarefa mais valiosa de hoje antes de abrir qualquer comunicação','Trabalhar nela por 45 min sem interrupção','Registrar e passar para a próxima'] },
+      ],
+      g: [
+        { t:`Protocolo de recuperação: ${_bi > 65 ? 'emergência de Gelo — BI crítico' : 'construir consistência de descanso'}`,
+          desc:`${_bi > 65 ? `BI em ${_bi} — nenhum avanço de Madeira ou Trovão compensa o colapso que vem sem recuperação. Hoje o único objetivo é Gelo.` : 'Gelo cresce com frequência, não com intensidade. Uma sessão de descanso intencional por dia supera uma longa sessão por semana.'}`,
+          tf:['Definir horário fixo de sono para hoje — e honrá-lo','20 min sem tela antes de dormir: sem celular, sem série','Registrar a sensação ao acordar amanhã para calibrar o protocolo'] },
+        { t:'Revisão e reset: o que está drenando energia sem retorno?',
+          desc:`${_isIntro ? 'Introvertidos perdem Gelo mais rápido em ambientes de alta estimulação social.' : 'Extrovertidos recuperam com conexões de qualidade, não com quantidade de interações.'} Identificar e eliminar 1 dreno hoje vale mais do que adicionar 3 atividades de recuperação.`,
+          tf:['Listar 3 coisas que consumiram energia esta semana sem retorno proporcional','Escolher 1 para eliminar ou reduzir — e tomar a ação hoje','Reservar 30 min de silêncio intencional: sem agenda, sem entregas'] },
+        { t:`Pausa estratégica: ${_str >= 14 ? 'o streak está sustentável?' : 'construir o hábito de descanso com intenção'}`,
+          desc:_str >= 14 ? `${_str} dias de streak — excelente consistência. Mas consistência sem recuperação se transforma em dívida de Gelo. Recuperação hoje mantém o streak amanhã.` : 'Descanso planejado não é fraqueza — é o que permite que o próximo esforço tenha qualidade.',
+          tf:[`Planejar 3 pausas intencionais de ${_egy <= 2 ? '15':'10'} min ao longo do dia`,'Caminhar 20 min ao ar livre — sem fone, mente em modo difuso','Fazer revisão de energia às 18h: o que funcionou no descanso de hoje?'] },
+      ],
+      t: [
+        { t:_isAnal ? 'Estudo estruturado: mapear lacuna, estudar com objetivo, testar'
+                    : 'Exploração profunda: 45 min em um conceito que te intriga',
+          desc:_isAnal ? 'Analíticos performam melhor com objetivo claro de aprendizado. Defina o que quer saber antes de abrir o material.' : 'Curiosidade genuína gera retenção 3x maior que estudo obrigado. Siga o que te interessa com profundidade.',
+          tf:['Definir 1 pergunta específica que quer responder ao final da sessão','Estudar por 45 min sem interrupção — sem notificações','Escrever 3 frases resumindo o que aprendeu e 1 dúvida que ficou'] },
+        { t:`Deep work de Trovão: ${APP.studyHours > 100 ? '2h de avanço em área de domínio' : '1h de estudo focado sem agenda paralela'}`,
+          desc:`Trovão cresce com profundidade, não com volume de horas superficiais. ${APP.studyHours > 100 ? '100+ horas acumuladas — você tem base para entrar em nível avançado.' : 'Primeiros 100h são os mais críticos para estabelecer o padrão neural.'}`,
+          tf:['Fechar todas as abas não relacionadas ao tema de estudo','Usar técnica Pomodoro: 25 min foco + 5 min pausa × 2-4 rodadas','Anotar conexões com o que já sabe — Trovão se fortalece com redes de conhecimento'] },
+        { t:'Ensinar para aprender: transformar conhecimento em explicação',
+          desc:'Explicar um conceito — mesmo que para si mesmo — é o teste mais eficiente de compreensão real. O que você não consegue explicar em termos simples, você não domina ainda.',
+          tf:['Escolher 1 conceito estudado recentemente','Escrever uma explicação como se fosse para alguém sem background técnico','Identificar os pontos onde a explicação ficou fraca — estudar especificamente esses'] },
+      ],
+      f: [
+        { t:_cls==='LÍDER' ? 'Missão de liderança: gerar impacto tangível em alguém hoje'
+           : _cls==='MAGO'  ? 'Criar e expor: algo original que represente seu ponto de vista'
+                            : 'Missão de Fogo: ação que te coloca em exposição produtiva',
+          desc:_cls==='LÍDER' ? 'Liderança é ação, não título. Hoje o objetivo é uma interação que eleve alguém da equipe.'
+               : _cls==='MAGO' ? 'Fogo cresce com criação que tem audiência. Fazer algo e guardar para si não conta.'
+                               : 'Fogo cresce quando você age além do que é seguro. Conforto sustentado vira estagnação.',
+          tf:_cls==='LÍDER'
+            ? ['Identificar 1 pessoa da equipe que pode se beneficiar de feedback ou apoio hoje','Dar o feedback — direto, específico, com intenção de elevar','Observar o impacto e registrar o aprendizado']
+            : ['Identificar 1 ação de alto Fogo que você vem adiando','Fazer o primeiro passo real agora — não amanhã, não depois da reunião','Registrar como se sentiu depois: Fogo cresce com evidência de coragem'] },
+        { t:`Exposição calculada: propor algo onde ${_isIntro ? 'você normalmente ficaria quieto' : 'você ainda não tem certeza do resultado'}`,
+          desc:_isIntro ? 'Introvertidos perdem Fogo mais rapidamente quando evitam exposição social estratégica. Uma ação intencional por semana é suficiente para manter o elemento saudável.' : 'Fogo sem incerteza não é Fogo — é execução de Madeira. A diferença está no risco calculado.',
+          tf:['Escolher 1 proposta, ideia ou opinião para compartilhar hoje','Expressá-la — por escrito, em uma reunião, ou diretamente para alguém relevante','Processar o resultado sem julgamento: cada ação de Fogo calibra a próxima'] },
+        { t:_str >= 7 ? 'Usar o momentum: agir no item de mais alto impacto e mais alto risco'
+                      : 'Missão de ignição: começar algo novo do zero hoje',
+          desc:_str >= 7 ? `${_str} dias de streak geram um multiplicador real. Use o estado de confiança gerado pela consistência para agir onde o retorno é maior.` : 'Fogo começa com iniciativa. Não com planejamento perfeito.',
+          tf:['Identificar a ação de Fogo com maior retorno potencial da semana','Agir nela hoje — mesmo que o plano não esteja 100% pronto','Documentar o que aprendeu: Fogo cresce com reflexão pós-ação'] },
+      ],
+    };
+
+    const _tplPool = _pool[_targetK] || _pool['t'];
+    const _tpl = _tplPool[Math.floor(Math.random() * _tplPool.length)];
+    const _mtype = _TYM[_targetK];
+    const _diff = _egy >= 4 ? 'DIFICIL' : _egy >= 3 ? 'MEDIO' : 'FACIL';
+    const _dur  = {FACIL:30, MEDIO:60, DIFICIL:90}[_diff];
+    const { xp: _xp } = calcMissionXP(_mtype, _diff, _dur, 0);
+
+    const _localMission = {
+      title: _tpl.t,
+      type:  _mtype,
+      elem:  _targetK,
+      diff:  _diff,
+      durationMin: _dur,
+      xp:    _xp,
+      desc:  _tpl.desc,
+      tarefas: _tpl.tf.map((tx, i) => ({ id:'t'+(i+1), text: tx, done: false })),
+      sheylaLocal: true,
+    };
+    _commitMission(_localMission);
   }
 }
 
@@ -6591,14 +6900,123 @@ function showDailyCheckin() {
     moodRow.appendChild(btn);
   });
 
+  // ─── PERGUNTA PRÁTICA ROTATIVA ──────────────────────────────────────────
+  // Pool de 20+ perguntas rotativas — contextual por elemento, classe, BI, streak
+  const _wv2 = {m:APP.m||0,g:APP.g||0,t:APP.t||0,f:APP.f||0};
+  const _wkQ = Object.keys(_wv2).reduce((a,b)=>_wv2[a]<=_wv2[b]?a:b);
+  const _biQ  = Math.round(calcBurnout(APP.m,APP.g,APP.t,APP.f));
+  const _strQ = APP.streak || 0;
+  const _clsQ = APP.cls || 'MAGO';
+  const _dayN = new Date().getDay(); // 0=dom…6=sab
+
+  const _questionPool = [
+    // Execução / Madeira
+    { q: 'Qual é a UMA coisa que, se você concluir hoje, vai tornar o dia um sucesso?',
+      elem: 'm', delta: {m:2} },
+    { q: 'Tem algo no backlog que está adiado há mais de 3 dias? O que está bloqueando?',
+      elem: 'm', delta: {m:3} },
+    { q: 'Que entrega pequena você pode completar antes das 10h?',
+      elem: 'm', delta: {m:2} },
+    // Recuperação / Gelo
+    { q: 'Em qual horário você vai se desconectar completamente hoje?',
+      elem: 'g', delta: {g:3} },
+    { q: 'O que mais drenou sua energia nos últimos 3 dias — e como você pode reduzir isso?',
+      elem: 'g', delta: {g:4} },
+    { q: 'Você dormiu bem o suficiente para o nível de demanda de hoje?',
+      elem: 'g', delta: {g:2} },
+    // Aprendizado / Trovão
+    { q: 'Qual é a pergunta técnica ou profissional mais importante que você quer responder esta semana?',
+      elem: 't', delta: {t:3} },
+    { q: 'O que você aprendeu ontem que ainda não processou direito?',
+      elem: 't', delta: {t:2} },
+    { q: 'Se você fosse ensinar algo que sabe hoje, qual seria o tema?',
+      elem: 't', delta: {t:3} },
+    // Energia / Fogo
+    { q: 'Tem algo que você quer propor ou iniciar mas ainda não fez? O que está esperando?',
+      elem: 'f', delta: {f:3} },
+    { q: 'Qual seria a ação mais ousada que você poderia tomar hoje — e que ainda faz sentido?',
+      elem: 'f', delta: {f:4} },
+    { q: 'Tem alguém para quem você poderia dar feedback valioso hoje?',
+      elem: 'f', delta: {f:2} },
+    // Burnout / Equilíbrio
+    { q: 'Você está carregando algo que não é responsabilidade sua? Como abrir mão disso hoje?',
+      elem: 'g', delta: {g:3, m:-1} },
+    { q: 'O que você faria diferente esta semana se soubesse que está no limite da sua capacidade?',
+      elem: 'g', delta: {g:2} },
+    // Streak / Consistência
+    { q: `${_strQ >= 7 ? `${_strQ} dias de streak — que padrão isso revela sobre você?`
+           : 'Qual é o menor passo que garante que você vai manter o streak hoje?'}`,
+      elem: 'm', delta: {m:2, g:1} },
+    // Semana / Contexto
+    { q: _dayN === 1 ? 'O que você quer ter concluído até sexta-feira desta semana?'
+       : _dayN === 5 ? 'O que você precisa encerrar hoje para começar o fim de semana sem pendências mentais?'
+                    : 'Em qual dos seus elementos você quer focar com mais intenção hoje?',
+      elem: _wkQ, delta: {[_wkQ]: 2} },
+    // Classe
+    { q: _clsQ==='MAGO'     ? 'Tem uma ideia ou solução criativa que você quer testar hoje?'
+       : _clsQ==='GUARDIÃO' ? 'O que você precisa proteger ou consolidar hoje — antes de qualquer expansão?'
+       : _clsQ==='LÍDER'    ? 'Como você pode elevar alguém da sua equipe com uma ação concreta hoje?'
+                            : 'O que define um dia realmente produtivo para você — hoje, com esse nível de energia?',
+      elem: _wkQ, delta: {[_wkQ]: 3} },
+    // MBTI
+    { q: APP.mbtiType && APP.mbtiType[0]==='I'
+        ? 'Qual é o bloco de trabalho mais importante que você pode proteger para ter tempo solo hoje?'
+        : 'Qual é a interação mais valiosa que você pode ter hoje — e com quem?',
+      elem: APP.mbtiType && APP.mbtiType[0]==='I' ? 't' : 'f',
+      delta: APP.mbtiType && APP.mbtiType[0]==='I' ? {t:2} : {f:2} },
+    { q: 'Se você pudesse escolher apenas 1 elemento para fortalecer hoje, qual seria — e por quê?',
+      elem: _wkQ, delta: {[_wkQ]: 4} },
+    { q: 'O que te distrai com mais frequência? Você pode eliminar ou reduzir isso hoje?',
+      elem: 'g', delta: {g:2, t:1} },
+  ];
+
+  // Select question: prioritize weak element, then random within pool
+  const _relevantQs = _questionPool.filter(q => q.elem === _wkQ || (_biQ > 55 && q.elem === 'g'));
+  const _qPool = _relevantQs.length >= 2 ? _relevantQs : _questionPool;
+  // Rotate based on day-of-year so it changes daily
+  const _dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0)) / 86400000);
+  const _selectedQ = _qPool[_dayOfYear % _qPool.length];
+
+  let _checkinAnswer = '';
+
+  const qSep = document.createElement('div');
+  qSep.style.cssText = 'height:1px;background:var(--b2);margin:4px 0 16px';
+
+  const qLbl = document.createElement('div');
+  qLbl.style.cssText = 'font-family:var(--font-display);font-size:10px;letter-spacing:1px;color:var(--txt3);margin-bottom:8px;text-align:center';
+  qLbl.textContent = 'PERGUNTA DO DIA';
+
+  const qText = document.createElement('div');
+  qText.style.cssText = 'font-size:13px;color:var(--txt2);line-height:1.5;margin-bottom:10px;text-align:center;font-style:italic';
+  qText.textContent = _selectedQ.q;
+
+  const qInput = document.createElement('textarea');
+  qInput.placeholder = 'Responda brevemente... (opcional)';
+  qInput.style.cssText = 'width:100%;box-sizing:border-box;background:var(--b1);border:1px solid var(--b2);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--txt);font-family:inherit;resize:none;min-height:56px;outline:none;transition:.15s';
+  qInput.oninput = function() { _checkinAnswer = this.value.trim(); };
+  qInput.onfocus = function() { this.style.borderColor='var(--t)'; };
+  qInput.onblur  = function() { this.style.borderColor='var(--b2)'; };
+
   const saveBtn = document.createElement('button');
   saveBtn.className = 'buc-btn';
+  saveBtn.style.marginTop = '12px';
   saveBtn.textContent = 'COMEÇAR O DIA';
   saveBtn.onclick = function(e) {
     e.stopPropagation(); e.preventDefault();
     APP.lastCheckin = today;
     APP.checkinLog = APP.checkinLog || [];
-    APP.checkinLog.push({ date: today, energy: selectedEnergy, mood: selectedMood });
+    const logEntry = { date: today, energy: selectedEnergy, mood: selectedMood };
+    // Save question answer if provided
+    if (_checkinAnswer) {
+      logEntry.question = _selectedQ.q;
+      logEntry.answer   = _checkinAnswer;
+      // Apply element delta from answering the question
+      const _d = _selectedQ.delta || {};
+      Object.entries(_d).forEach(([k, dv]) => {
+        if (['m','g','t','f'].includes(k)) APP[k] = Math.max(0, Math.min(100, (APP[k]||0) + dv));
+      });
+    }
+    APP.checkinLog.push(logEntry);
     if (APP.checkinLog.length > 90) APP.checkinLog = APP.checkinLog.slice(-90);
     APP.todayEnergy = selectedEnergy;
     APP.todayMood = selectedMood;
@@ -6609,7 +7027,7 @@ function showDailyCheckin() {
     showToast('Check-in registrado ✓', 'ok');
   };
 
-  [lbl, greeting, energyLbl, energyRow, moodLbl, moodRow, saveBtn].forEach(el => card.appendChild(el));
+  [lbl, greeting, energyLbl, energyRow, moodLbl, moodRow, qSep, qLbl, qText, qInput, saveBtn].forEach(el => card.appendChild(el));
   ov.addEventListener('click', function(e) { e.stopPropagation(); });
   card.onclick = function(e) { e.stopPropagation(); };
   ov.appendChild(card);
