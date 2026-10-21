@@ -3296,7 +3296,7 @@ function App() {
   })(),
 
   // ── Alerta de saldo livre baixo ──
-  (() => {
+  (() => { try {
     const _limKey = "sdc_limAlerta";
     const limiteAlerta = (() => { try { const v = parseFloat(localStorage.getItem(_limKey)); return isNaN(v) ? 2000 : v; } catch(e) { return 2000; } })();
     if (saldoLivre >= limiteAlerta) return null;
@@ -3322,10 +3322,10 @@ function App() {
         style:{ marginLeft:"auto", fontSize:11, padding:"5px 12px", borderRadius:20, background:`${c}22`, color:c, border:`1px solid ${c}44`, cursor:"pointer", fontWeight:600, whiteSpace:"nowrap" }
       }, "⚙ Limite")
     );
-  })(),
+  } catch(e) { console.error('[SDC] Alerta block:', e); return null; } })(),
 
   // ── Executive Health Block ──
-  (() => {
+  (() => { try {
     const recTot = tRecP + tRecPv, despTot = tDesP + tDesPv;
     const pctComp = recTot > 0 ? Math.round(despTot / recTot * 100) : 0;
     // Próxima conta a vencer
@@ -3365,7 +3365,7 @@ function App() {
         )
       )
     );
-  })(),
+  } catch(e) { console.error('[SDC] Health block:', e); return null; } })(),
 
   React.createElement(CaixinhasBlock, { caixinhas, setCaixinhas, cxOperar, saldoLivre, fmt, s }), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -3766,7 +3766,7 @@ function App() {
   }, t.data))))),
 
   // ── Evolução de Saldo — gráfico de linha (últimos 6 meses) ──
-  (() => {
+  (() => { try {
     const saldoData = fluxo.filter(f => f.passado || f.atual).map(f => ({
       label: f.label,
       saldo: f.saldoAc
@@ -3806,7 +3806,7 @@ function App() {
         ))
       )
     );
-  })(),
+  } catch(e) { console.error('[SDC] Chart block:', e); return null; } })(),
 
   tab === "transacoes" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
