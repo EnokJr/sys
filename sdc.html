@@ -2008,6 +2008,8 @@ function App() {
       nextId,
       fechados,
       saldoInicial,
+      caixinhas,
+      cxMovimentos,
       versao: "sdc_v3",
       exportadoEm: TODAY
     }, null, 2);
@@ -2037,13 +2039,19 @@ function App() {
         setCatsR(d.cats);
         setMetasR(d.metas || {});
         setNextIdR(d.nextId || 200);
+        setCaixinhasR(d.caixinhas || []);
+        setCxMovimentosR(d.cxMovimentos || []);
         setFechados(d.fechados || {});
         setSaldoInicial(d.saldoInicial || 0);
+        try { localStorage.setItem("sdc_fechados", JSON.stringify(d.fechados || {})); } catch(e) {}
+        try { localStorage.setItem("sdc_saldo_inicial", JSON.stringify(d.saldoInicial || 0)); } catch(e) {}
         save({
           txs: d.txs,
           cats: d.cats,
           nextId: d.nextId || 200,
-          metas: d.metas || {}
+          metas: d.metas || {},
+          caixinhas: d.caixinhas || [],
+          cxMovimentos: d.cxMovimentos || []
         });
         showToast("Restaurado! " + d.txs.length + " transações");
       } catch (err) {
@@ -3763,7 +3771,7 @@ function App() {
       fontSize: 11,
       color: "var(--txt2)"
     }
-  }, t.data))))),
+  }, t.data)))))),
 
   // ── Evolução de Saldo — gráfico de linha (últimos 6 meses) ──
   (() => { try {
@@ -6144,7 +6152,7 @@ function App() {
     style: {
       color: "var(--txt)"
     }
-  }, "\"Importar CSV\""), " no cabe\xE7alho."))))));
+  }, "\"Importar CSV\""), " no cabe\xE7alho.")))));
 }
 
 function mountApp() {
