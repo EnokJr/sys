@@ -3297,7 +3297,8 @@ function App() {
 
   // ── Alerta de saldo livre baixo ──
   (() => {
-    const limiteAlerta = (d.configSaldoLivreAlerta != null) ? d.configSaldoLivreAlerta : 2000;
+    const _limKey = "sdc_limAlerta";
+    const limiteAlerta = (() => { try { const v = parseFloat(localStorage.getItem(_limKey)); return isNaN(v) ? 2000 : v; } catch(e) { return 2000; } })();
     if (saldoLivre >= limiteAlerta) return null;
     const c = saldoLivre < 0 ? "#E24B4A" : "#EF9F27";
     return React.createElement("div", {
@@ -3316,7 +3317,7 @@ function App() {
       React.createElement("button", {
         onClick: () => {
           const novo = parseFloat(prompt("Novo limite de alerta (R$):", limiteAlerta));
-          if (!isNaN(novo) && novo >= 0) { setD(prev => { const nd = {...prev, configSaldoLivreAlerta: novo}; save(nd); return nd; }); }
+          if (!isNaN(novo) && novo >= 0) { try { localStorage.setItem(_limKey, novo); } catch(e) {} }
         },
         style:{ marginLeft:"auto", fontSize:11, padding:"5px 12px", borderRadius:20, background:`${c}22`, color:c, border:`1px solid ${c}44`, cursor:"pointer", fontWeight:600, whiteSpace:"nowrap" }
       }, "⚙ Limite")
