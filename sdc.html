@@ -22,50 +22,19 @@ body.light{background:#f5f6fa;color:#1a1f2e;--bg:#f5f6fa;--bg2:#ffffff;--bg3:#ee
 input,select,textarea{font-family:inherit;background:var(--inp-bg);border:1px solid var(--brd);color:var(--txt)}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--brd);border-radius:2px}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.min.js"></script>
+<script src="core/sheyla-core.js?v=3"></script>
 <script>
-// ── Firebase Config (compat) ──
-const firebaseConfig = {
-  apiKey: "AIzaSyAGzRK009HOKHrsIG5bSHDNYF7hUia6CX4",
-  authDomain: "sys-universosheylas.firebaseapp.com",
-  projectId: "sys-universosheylas",
-  storageBucket: "sys-universosheylas.firebasestorage.app",
-  messagingSenderId: "207009581720",
-  appId: "1:207009581720:web:d483f1ed883b1068f41eed"
-};
-try {
-  const _app = firebase.initializeApp(firebaseConfig);
-  const _auth = firebase.auth();
-  const _db = firebase.firestore();
-  const _provider = new firebase.auth.GoogleAuthProvider();
-  window._sdcFirebase = {
-    auth: _auth,
-    db: _db,
-    provider: _provider,
-    signInWithPopup: (auth, provider) => auth.signInWithPopup(provider),
-    signOut: (auth) => auth.signOut(),
-    onAuthStateChanged: (auth, cb) => auth.onAuthStateChanged(cb),
-    doc: (db, ...path) => db.collection(path[0]).doc(path[1]),
-    setDoc: (ref, data) => ref.set(data),
-    getDoc: async (ref) => { const snap = await ref.get(); return { exists: () => snap.exists, data: () => snap.data() }; }
-  };
-  // Processar resultado do redirect de login
-  _auth.getRedirectResult().then(result => {
-    if (result && result.user) {
-      console.log("[SDC] Login via redirect OK:", result.user.email);
-      window._sdcRedirectUser = result.user;
-    }
-  }).catch(e => console.warn("[SDC] getRedirectResult error:", e));
-
+// Sync e login vêm do núcleo da Primordial (sheyla-core.js); sessão compartilhada com o SYS.
+(function(){
+  var S = window.Sheyla || (window.parent !== window && window.parent.Sheyla) || null;
+  window._sheyla = S;
+  window._sdcFirebase = (S && location.protocol !== "file:") ? { core: true } : null;
   window._sdcFirebaseReady = true;
   document.dispatchEvent(new Event("sdcFirebaseReady"));
-  console.log("[SDC] Firebase compat inicializado");
-} catch(e) {
-  console.error("[SDC] Firebase init error:", e);
-  window._sdcFirebaseReady = true;
-  document.dispatchEvent(new Event("sdcFirebaseReady"));
+})();
+function backToSys() {
+  if (window.parent !== window && window.parent.__closeApp) window.parent.__closeApp();
+  else location.replace("index.html");
 }
 </script>
 </head>
@@ -78,20 +47,26 @@ try {
 // ══════════════════════════════════════════════════════
 const _fb = window._sdcFirebase || null;
 const SYS_UID_KEY = "sdc_sys_uid";
-const userDocRef = (uid) => _fb ? _fb.db.collection("users").doc(uid).collection("sdc").doc("data") : null;
+
+function _stripMeta(d) {
+  if (!d) return d;
+  const o = { ...d };
+  delete o._savedAt; delete o._serverAt;
+  return o;
+}
 
 async function saveToCloud(uid, data) {
   if (!_fb || !uid) return;
   try {
-    await userDocRef(uid).set({ ...data, _updatedAt: Date.now() }, { merge: true });
+    await window._sheyla.save({ ...data, _updatedAt: Date.now() });
   } catch(e) { console.warn("[SDC] Cloud save error:", e); }
 }
 
 async function loadFromCloud(uid) {
   if (!_fb || !uid) return null;
   try {
-    const snap = await userDocRef(uid).get();
-    if (snap.exists) return snap.data();
+    const d = await window._sheyla.load();
+    if (d) return _stripMeta(d);
   } catch(e) { console.warn("[SDC] Cloud load error:", e); }
   return null;
 }
@@ -179,34 +154,25 @@ function AuthWrapper({ children }) {
 
   React.useEffect(() => {
     if (!_fb) { setAuthReady(true); setSyncStatus("done"); return; }
-    const unsub = _fb.auth.onAuthStateChanged(async (u) => {
-      setUser(u);
+    const S = window._sheyla;
+    S.init("sdc", { requireLogin: false }).then(async () => {
+      const info = S.user();
+      if (!info) { backToSys(); return; }
+      setUser(info);
       setAuthReady(true);
-      window._sdcUser = u;
-      window._sdcSaveToCloud = u ? (data) => saveToCloud(u.uid, data) : null;
-      if (u) {
-        await doSync(u);
-      } else {
-        setSyncStatus("done");
-      }
+      window._sdcUser = info;
+      window._sdcSaveToCloud = (data) => saveToCloud(info.uid, data);
+      await doSync(info);
+    }).catch((e) => {
+      console.warn("[SDC] núcleo falhou:", e);
+      setAuthReady(true);
+      setSyncStatus("done");
     });
-    return unsub;
   }, []);
 
   const handleLogin = async () => {
-    if (!_fb) return;
-    setLoginLoading(true);
-    try {
-      try {
-        await _fb.auth.signInWithPopup(_fb.provider);
-      } catch(popupErr) {
-        console.warn("[SDC] Popup falhou, tentando redirect:", popupErr.code);
-        if (popupErr.code === "auth/popup-blocked" || popupErr.code === "auth/popup-closed-by-user") {
-          await _fb.auth.signInWithRedirect(_fb.provider);
-        } else { throw popupErr; }
-      }
-    }
-    catch(e) { console.warn("[SDC] Login error:", e.code, e.message); setLoginLoading(false); }
+    // O login agora é feito pela Primordial (SYS).
+    backToSys();
   };
 
   if (!authReady || syncStatus === "loading") {
@@ -2957,7 +2923,7 @@ function App() {
           {label:"♻️ Restaurar", action: () => restoreRef.current?.click(), color:"#EF9F27"},
           {label:"🚪 Sair da conta", action: () => {
             if (!confirm("Deseja sair da conta Google?\n\nSeus dados ficam salvos na nuvem.")) return;
-            if (_fb) _fb.auth.signOut().then(() => { window.location.reload(); });
+            if (_fb) window._sheyla.signOut().then(() => { backToSys(); });
           }, color:"#ef4444"},
         ].map(({label, action, color}) =>
           /*#__PURE__*/React.createElement("button", {
