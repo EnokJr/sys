@@ -1,0 +1,56 @@
+{
+  "v": 1,
+  "padrao": "laranja",
+  "categorias": [
+    {
+      "id": "gatos",
+      "nome": "Gatos"
+    },
+    {
+      "id": "cachorros",
+      "nome": "Cachorros"
+    },
+    {
+      "id": "outros",
+      "nome": "Outros"
+    }
+  ],
+  "skins": [
+    {
+      "id": "laranja",
+      "nome": "Gato laranja",
+      "categoria": "gatos",
+      "alt": "Sheyla Pet com um gato laranja no ombro",
+      "msg": "Pronto! A Sheyla está com o gato laranja 🧡"
+    },
+    {
+      "id": "cinza",
+      "nome": "Gato cinza",
+      "categoria": "gatos",
+      "alt": "Sheyla Pet com um gato cinza no ombro",
+      "msg": "Pronto! A Sheyla está com o gato cinza 🩶"
+    },
+    {
+      "id": "caramelo",
+      "nome": "Cachorro caramelo",
+      "categoria": "cachorros",
+      "alt": "Sheyla Pet com um filhote caramelo no ombro",
+      "msg": "Pronto! A Sheyla está com o cachorro caramelo 🐶"
+    },
+    {
+      "id": "akita",
+      "nome": "Akita",
+      "categoria": "cachorros",
+      "alt": "Sheyla Pet com um filhote de akita no ombro",
+      "msg": "Pronto! A Sheyla está com o akita 🐶"
+    },
+    {
+      "id": "sozinha",
+      "nome": "Sem bichinho",
+      "categoria": "especial",
+      "fixa": true,
+      "alt": "Sheyla Pet sozinha",
+      "msg": "Pronto! A Sheyla está sozinha, esperando o seu amiguinho ✨"
+    }
+  ]
+}
