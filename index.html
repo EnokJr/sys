@@ -112,6 +112,7 @@ body{background:var(--bg);color:var(--txt);min-height:100vh;transition:backgroun
   border-radius:14px;padding:14px 16px;cursor:pointer;transition:border-color .2s;
 }
 .life-card:hover{border-color:var(--border2)}
+.alert-wrap{max-width:960px;margin:0 auto;padding:12px 24px 0}
 
 /* ── Banner de data/contexto ── */
 .context-banner{
@@ -169,6 +170,7 @@ body{background:var(--bg);color:var(--txt);min-height:100vh;transition:backgroun
   .profile-drawer{width:100vw}
   .context-banner{padding:14px 16px 0}
   .life-panel,.activity-section{padding-left:16px;padding-right:16px}
+  .alert-wrap{padding-left:16px;padding-right:16px}
   .app-card{padding:22px 18px}
   .hub-grid-wrapper{padding:0 16px !important}
 }
@@ -199,6 +201,7 @@ const APPS = [
     tag: "live",
     tagLabel: "Ativo",
     url: "sdc.html",
+    painel: { rotulo: "FINANCEIRO", vazio: "Chame minha irmã, a Sheyla do Contábil, para ver seu saldo", resumoKey: "sdc_summary" },
     atalhos: ["Transações","Extrato","Caixinhas","Metas"],
     versao: "1.4.2",
     changelog: [
@@ -219,6 +222,7 @@ const APPS = [
     tag: "beta",
     tagLabel: "Beta",
     url: "forjadora.html",
+    painel: { rotulo: "PROGRESSO", vazio: "Chame minha irmã, a Sheyla Forjadora, para ver seu progresso", resumoKey: "forj_summary" },
     atalhos: ["Missões","Hábitos","Conquistas","Perfil"],
     versao: "0.9.1",
     changelog: [
@@ -375,22 +379,24 @@ function VencidosAlert() {
     try { const r = localStorage.getItem("sdc_summary"); return r ? JSON.parse(r) : null; } catch(e) { return null; }
   }, []);
   if(!sdc || !sdc.vencidas || sdc.vencidas < 1) return null;
-  return React.createElement("div", {
-    onClick: () => { window.location.href = "sdc.html"; },
-    style:{
-      margin:"0 24px 12px", padding:"10px 16px",
-      background:"#E24B4A18", border:"1px solid #E24B4A55",
-      borderLeft:"4px solid #E24B4A", borderRadius:10,
-      cursor:"pointer", display:"flex", alignItems:"center", gap:10
-    }
-  },
-    React.createElement("span", { style:{ fontSize:18 } }, "⚠️"),
-    React.createElement("div", null,
-      React.createElement("div", { style:{ fontSize:12, fontWeight:700, color:"#E24B4A", fontFamily:"Rajdhani,sans-serif", letterSpacing:1 } },
-        sdc.vencidas + " conta" + (sdc.vencidas > 1 ? "s" : "") + " vencida" + (sdc.vencidas > 1 ? "s" : "") + " no SDC"
-      ),
-      React.createElement("div", { style:{ fontSize:11, color:"var(--txt3)", marginTop:1 } },
-        "Toque para abrir o SDC e regularizar →"
+  return React.createElement("div", { className:"alert-wrap" },
+    React.createElement("div", {
+      onClick: () => { window.__openEmbedded ? window.__openEmbedded("sdc.html") : (window.location.href = "sdc.html"); },
+      style:{
+        padding:"12px 16px",
+        background:"#E24B4A18", border:"1px solid #E24B4A55",
+        borderLeft:"3px solid #E24B4A", borderRadius:14,
+        cursor:"pointer", display:"flex", alignItems:"center", gap:10
+      }
+    },
+      React.createElement("span", { style:{ fontSize:18 } }, "⚠️"),
+      React.createElement("div", null,
+        React.createElement("div", { style:{ fontSize:12, fontWeight:700, color:"#E24B4A", fontFamily:"Rajdhani,sans-serif", letterSpacing:1 } },
+          sdc.vencidas + " conta" + (sdc.vencidas > 1 ? "s" : "") + " vencida" + (sdc.vencidas > 1 ? "s" : "") + " no SDC"
+        ),
+        React.createElement("div", { style:{ fontSize:11, color:"var(--txt3)", marginTop:1 } },
+          "Toque para abrir o SDC e regularizar →"
+        )
       )
     )
   );
@@ -471,72 +477,62 @@ function LifePanel({ user }) {
     );
   };
 
-  // Score "Pulse" composto: combina saúde da Forjadora + SDC
-  const pulseScore = React.useMemo(() => {
-    let score = 50; // base
-    if (forjData) {
-      // Burnout inverso: quanto maior BI, menor saúde. BI ~ 100 - média_elementos
-      const avg = ((forjData.m||0)+(forjData.g||0)+(forjData.t||0)+(forjData.f||0))/4;
-      score = avg * 0.6; // peso 60% da Forjadora
-    }
-    if (sdcData) {
-      // Sem contas vencidas = bônus
-      const semVencidas = !sdcData.vencidas || sdcData.vencidas === 0;
-      score += semVencidas ? 40 : Math.max(0, 40 - sdcData.vencidas * 8);
-    } else if (!forjData) return null;
-    return Math.round(Math.min(100, Math.max(0, score)));
-  }, [forjData, sdcData]);
+  // ── Um painel para cada Sheyla ativa (live/beta com "painel" configurado em APPS) ──
+  const abrir = (url) => { if (window.__openEmbedded && window.__openEmbedded(url)) return; window.location.href = url; };
+  const ativos = APPS.filter(a => (a.tag === "live" || a.tag === "beta") && a.painel);
 
-  const pulseColor = pulseScore === null ? "#6ea8fe"
-    : pulseScore >= 70 ? "#22c55e"
-    : pulseScore >= 40 ? "#EF9F27"
-    : "#E24B4A";
+  const resumoGenerico = (d) => {
+    if (!d) return null;
+    return ce(React.Fragment, null,
+      d.headline && ce("div", { style:{ fontSize:20, fontWeight:700, color:"var(--txt)", marginBottom:2 } }, d.headline),
+      Array.isArray(d.lines) && d.lines.map((l, i) => ce("div", { key:i, style:{ fontSize:11, color:"var(--txt3)", marginTop: i ? 3 : 0 } }, l)),
+      timeAgo(d.updatedAt) && ce("div", { style:{ fontSize:9, color:"var(--txt4)", marginTop:6, letterSpacing:.5 } }, "sincronizado " + timeAgo(d.updatedAt))
+    );
+  };
 
-  return ce("div", { className:"life-panel" },
-    // SDC Mini-card
-    ce("div", {
+  const resumoSdc = () => ce(React.Fragment, null,
+    ce("div", { style:{ fontSize:20, fontWeight:700, color:"var(--txt)", marginBottom:2 } }, sdcData.saldo),
+    ce("div", { style:{ fontSize:11, color:"var(--txt3)" } }, "livre: " + sdcData.saldoLivre),
+    sdcData.vencidas > 0 && ce("div", { style:{ fontSize:11, color:"#E24B4A", marginTop:4 } }, "⚠ " + sdcData.vencidas + " conta(s) vencida(s)"),
+    timeAgo(sdcData.updatedAt) && ce("div", { style:{ fontSize:9, color:"var(--txt4)", marginTop:6, letterSpacing:.5 } }, "sincronizado " + timeAgo(sdcData.updatedAt))
+  );
+
+  const resumoForj = () => ce(React.Fragment, null,
+    ce(ElemPills, { d: forjData }),
+    ce("div", { style:{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:6 } },
+      ce(MbtiPills, { type: forjData.mbtiType }),
+      forjData.missionsOpen > 0 && ce("span", { style:{ fontSize:10, color:"#EF9F27", fontFamily:"Rajdhani,sans-serif", fontWeight:600, letterSpacing:.5 } },
+        "⚡ " + forjData.missionsOpen + " missões abertas"
+      )
+    ),
+    forjData.streak > 0 && ce("div", { style:{ fontSize:10, color:"#EF9F27", marginTop:5, opacity:.8 } }, "🔥 " + forjData.streak + " dias em sequência"),
+    timeAgo(forjData.updatedAt) && ce("div", { style:{ fontSize:9, color:"var(--txt4)", marginTop:6, letterSpacing:.5 } }, "sincronizado " + timeAgo(forjData.updatedAt))
+  );
+
+  const painelDe = (a) => {
+    let dados = null;
+    try { dados = JSON.parse(localStorage.getItem(a.painel.resumoKey || (a.id + "_summary")) || "null"); } catch(e) {}
+    let corpo;
+    if (!dados) corpo = ce("div", { style:{ fontSize:13, color:"var(--txt3)" } }, a.painel.vazio || ("Chame minha irmã, a " + a.nome + ", para ver o resumo"));
+    else if (a.id === "sdc") corpo = resumoSdc();
+    else if (a.id === "forjadora") corpo = resumoForj();
+    else corpo = resumoGenerico(dados);
+    return ce("div", {
+      key: a.id,
       className:"life-card",
-      onClick:()=>{ window.location.href="sdc.html"; },
-      style:{ borderLeft:"3px solid #1D9E75" }
+      onClick:()=>abrir(a.url),
+      style:{ borderLeft:"3px solid " + a.cor }
     },
       ce("div", { style:{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 } },
-        ce("span", { style:{ fontSize:10, letterSpacing:2, color:"#1D9E75", fontWeight:700 } }, "SDC · FINANCEIRO"),
+        ce("span", { style:{ fontSize:10, letterSpacing:2, color:a.cor, fontWeight:700 } }, a.sigla + " · " + a.painel.rotulo),
         ce("span", { style:{ fontSize:10, color:"var(--txt4)" } }, "↗")
       ),
-      sdcData
-        ? ce(React.Fragment, null,
-            ce("div", { style:{ fontSize:20, fontWeight:700, color:"var(--txt)", marginBottom:2 } }, sdcData.saldo),
-            ce("div", { style:{ fontSize:11, color:"var(--txt3)" } }, "livre: " + sdcData.saldoLivre),
-            sdcData.vencidas > 0 && ce("div", { style:{ fontSize:11, color:"#E24B4A", marginTop:4 } }, "⚠ " + sdcData.vencidas + " conta(s) vencida(s)"),
-            timeAgo(sdcData.updatedAt) && ce("div", { style:{ fontSize:9, color:"var(--txt4)", marginTop:6, letterSpacing:.5 } }, "sincronizado " + timeAgo(sdcData.updatedAt))
-          )
-        : ce("div", { style:{ fontSize:13, color:"var(--txt3)" } }, "Chame minha irmã, a Sheyla do Contábil, para ver seu saldo")
-    ),
+      corpo
+    );
+  };
 
-    // Forjadora Mini-card
-    ce("div", {
-      className:"life-card",
-      onClick:()=>{ window.location.href="forjadora.html"; },
-      style:{ borderLeft:"3px solid #EF9F27" }
-    },
-      ce("div", { style:{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 } },
-        ce("span", { style:{ fontSize:10, letterSpacing:2, color:"#EF9F27", fontWeight:700 } }, "FORJADORA · PROGRESSO"),
-        ce("span", { style:{ fontSize:10, color:"var(--txt4)" } }, "↗")
-      ),
-      forjData
-        ? ce(React.Fragment, null,
-            ce(ElemPills, { d: forjData }),
-            ce("div", { style:{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:6 } },
-              ce(MbtiPills, { type: forjData.mbtiType }),
-              forjData.missionsOpen > 0 && ce("span", { style:{ fontSize:10, color:"#EF9F27", fontFamily:"Rajdhani,sans-serif", fontWeight:600, letterSpacing:.5 } },
-                "⚡ " + forjData.missionsOpen + " missões abertas"
-              )
-            ),
-            forjData.streak > 0 && ce("div", { style:{ fontSize:10, color:"#EF9F27", marginTop:5, opacity:.8 } }, "🔥 " + forjData.streak + " dias em sequência"),
-            timeAgo(forjData.updatedAt) && ce("div", { style:{ fontSize:9, color:"var(--txt4)", marginTop:6, letterSpacing:.5 } }, "sincronizado " + timeAgo(forjData.updatedAt))
-          )
-        : ce("div", { style:{ fontSize:13, color:"var(--txt3)" } }, "Chame minha irmã, a Sheyla Forjadora, para ver seu progresso")
-    ),
+  return ce("div", { className:"life-panel" },
+    ...ativos.map(painelDe),
 
     // Missão ativa da Forjadora
     activeMission && ce("div", {
@@ -569,31 +565,9 @@ function LifePanel({ user }) {
         ce("span", { style:{ marginLeft:"auto", fontSize:10, color:"#a855f7", fontWeight:600 } }, "Chamar a Forjadora →")
       )
     ),
-
-    // Score Pulse composto
-    pulseScore !== null && ce("div", {
-      className:"life-card",
-      style:{ borderLeft:"3px solid "+pulseColor, gridColumn:"1 / -1", cursor:"default" }
-    },
-      ce("div", { style:{ display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" } },
-        ce("div", { style:{ textAlign:"center", minWidth:56 } },
-          ce("div", { style:{ fontSize:28, fontWeight:700, color:pulseColor, lineHeight:1, fontFamily:"Rajdhani,sans-serif" } }, pulseScore),
-          ce("div", { style:{ fontSize:9, letterSpacing:1.5, color:pulseColor, opacity:.7, fontWeight:700 } }, "PULSE")
-        ),
-        ce("div", { style:{ flex:1 } },
-          ce("div", { style:{ height:8, background:"var(--border)", borderRadius:8, overflow:"hidden", marginBottom:6 } },
-            ce("div", { style:{ height:"100%", width:pulseScore+"%", background:`linear-gradient(90deg,${pulseColor}99,${pulseColor})`, borderRadius:8, transition:"width .6s ease" } })
-          ),
-          ce("div", { style:{ fontSize:11, color:"var(--txt3)" } },
-            pulseScore >= 70 ? "✦ Tudo em ordem — continue assim"
-            : pulseScore >= 40 ? "⚡ Atenção em alguns pontos"
-            : "⚠ Priorize recuperação e finanças"
-          )
-        )
-      )
-    )
   );
 }
+
 
 // ── Feed de atividade recente ──
 function ActivityFeed({ user }) {
@@ -1118,7 +1092,8 @@ function App() {
 
   useEffect(() => {
     if (_isFileProtocol || !window.Sheyla) { setLoading(false); return; }
-    const SUMMARY_LS = { sdc: "sdc_summary", forjadora: "forj_summary" };
+    const SUMMARY_LS = {};
+    APPS.forEach(a => { if (a.painel) SUMMARY_LS[a.id] = a.painel.resumoKey || (a.id + "_summary"); });
     Sheyla.init("sys")
       .then(async () => {
         // Hidrata os resumos da nuvem quando o navegador não tem ou está desatualizado
