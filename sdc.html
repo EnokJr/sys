@@ -22,7 +22,7 @@ body.light{background:#f5f6fa;color:#1a1f2e;--bg:#f5f6fa;--bg2:#ffffff;--bg3:#ee
 input,select,textarea{font-family:inherit;background:var(--inp-bg);border:1px solid var(--brd);color:var(--txt)}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--brd);border-radius:2px}
 </style>
-<script src="core/sheyla-core.js?v=3"></script>
+<script src="core/sheyla-core.js?v=4"></script>
 <script>
 // Sync e login vêm do núcleo da Primordial (sheyla-core.js); sessão compartilhada com o SYS.
 (function(){
@@ -352,12 +352,14 @@ function sdcWriteSummary(d, ts) {
     const saldoLivre = saldo - totalCx;
     const vencidas = txs.filter(t=>t.tipo==="despesa"&&!t.pago&&t.data<new Date().toISOString().slice(0,10)).length;
     const fmt = v => "R$ "+v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
-    localStorage.setItem("sdc_summary", JSON.stringify({
+    const resumo = {
       saldo: fmt(saldo),
       saldoLivre: fmt(saldoLivre),
       vencidas,
       updatedAt: ts || Date.now(),
-    }));
+    };
+    localStorage.setItem("sdc_summary", JSON.stringify(resumo));
+    if (window._sheyla && window._sdcUser) { try { window._sheyla.summary(resumo); } catch(e4) {} }
   } catch(e2) {}
 }
 const save = d => {
