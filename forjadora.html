@@ -404,7 +404,7 @@ button:active{transform:scale(.97)}
 .eb-val{font-family:var(--font-display);font-size:10px;color:var(--txt2);width:36px;text-align:right}
 
 /* ══════════════════════════════════════
-   ESTRELA PRIMORDIAL — ICONE SVG
+   ESTRELA REI — ICONE SVG
 ══════════════════════════════════════ */
 .ep-star-svg { display:block; overflow:visible; }
 .ep-star-outer {
@@ -1632,6 +1632,7 @@ select.medit-input option {
 #ob-back{margin-top:8px;display:none}
 .ob-footer{display:flex;flex-direction:column;align-items:stretch;gap:0}
 </style>
+<script src="core/sheyla-core.js?v=2"></script>
 </head>
 <body>
 <div class="app">
@@ -1719,7 +1720,7 @@ select.medit-input option {
 </div>
 
 <!-- ═══════ ONBOARDING ═══════ -->
-<!-- ═══════ INTRO — ESTRELA PRIMORDIAL ═══════ -->
+<!-- ═══════ INTRO — ESTRELA REI ═══════ -->
 <div class="screen active" id="s-intro">
   <canvas id="intro-canvas"></canvas>
 
@@ -1734,7 +1735,7 @@ select.medit-input option {
         <div class="intro-ring-1"></div>
         <div class="intro-ring-2"></div>
         <div class="intro-ring-3"></div>
-        <!-- 6-pointed star — Estrela Primordial -->
+        <!-- 6-pointed star — Estrela Rei -->
         <svg class="ep-star-svg intro-star-spin" width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="epGrad" x1="0" y1="0" x2="90" y2="90" gradientUnits="userSpaceOnUse">
@@ -1779,7 +1780,7 @@ select.medit-input option {
       <div class="intro-title">SHEYLA <em>FORJADORA</em></div>
       <div class="intro-divider"></div>
       <div class="intro-narrative">
-        Você foi escolhido pela <em>Estrela Primordial</em>.<br><br>
+        Você foi escolhido pela <em>Estrela Rei</em>.<br><br>
         Ela não escolhe por acaso.<br>
         Ela escolhe quem carrega <strong>desequilíbrio com potencial</strong>.<br><br>
         Aqui, você não será motivado.<br>
@@ -2158,7 +2159,7 @@ select.medit-input option {
     </div>
     <div class="chat-messages" id="chat-msgs"></div>
     <div class="chat-input-wrap">
-      <div       <div class="chat-input-hint" id="chat-hints">
+      <div class="chat-input-hint" id="chat-hints">
         <span class="hint-chip" onclick="useHint(this)">Como estão meus elementos?</span>
         <span class="hint-chip" id="hint-critical" onclick="useHint(this)">Como aumentar meu Gelo?</span>
         <span class="hint-chip" onclick="useHint(this)">Sugira uma atividade</span>
@@ -2179,7 +2180,8 @@ select.medit-input option {
     <div class="nv" id="nv-prof" onclick="goTab('tab-prof','nv-prof')"><div class="nv-ico"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="nv-bar"></div><span>PERFIL</span></div>
     <div class="nv" id="nv-codex" onclick="goTab('tab-codex','nv-codex')"><div class="nv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div><div class="nv-bar"></div><span>CODEX</span></div>
     <div class="nv" id="nv-sheyla" onclick="goTab('tab-sheyla','nv-sheyla')"><div class="nv-ico"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div class="nv-bar"></div><span>SHEYLA</span></div>
-  
+  </div>
+
 <!-- ═══ CONFIRM DIALOG ═══ -->
 <div class="confirm-overlay" id="confirm-ov">
   <div class="confirm-box">
@@ -2308,7 +2310,6 @@ select.medit-input option {
   </div>
 </div>
 </div>
-</div>
 
 <!-- MODAL REGISTRAR -->
 <div class="modal-overlay" id="modal-ov" onclick="closeModalOv(event)">
@@ -2328,33 +2329,39 @@ select.medit-input option {
       <button class="m-opt" onclick="selMOpt(this,'tp')">🔥 LIDERAR</button>
     </div>
     <div class="m-label">INTENSIDADE</div>
-    <div class="m-opts" id="m-int"><button class="m-opt" onclick="selMOpt(this,'in')">BAIXA</button><button class="m-opt sel" onclick="selMOpt(this,'in')">MÉDIA</button><button class="m-opt" onclick="selMOpt(this,'in')">ALTA</button><button class="m-opt" onclick="selMOpt(this,'in')">EXTREMA</button>
+    <div class="m-opts" id="m-int">
+      <button class="m-opt" onclick="selMOpt(this,'in')">BAIXA</button>
+      <button class="m-opt sel" onclick="selMOpt(this,'in')">MÉDIA</button>
+      <button class="m-opt" onclick="selMOpt(this,'in')">ALTA</button>
+      <button class="m-opt" onclick="selMOpt(this,'in')">EXTREMA</button>
+    </div>
+    <div class="m-label">QUALIDADE</div>
+    <div class="m-opts" id="m-qual">
+      <button class="m-opt" onclick="selMOpt(this,'q')">BAIXA</button>
+      <button class="m-opt sel" onclick="selMOpt(this,'q')">NORMAL</button>
+      <button class="m-opt" onclick="selMOpt(this,'q')">BOA</button>
+      <button class="m-opt" onclick="selMOpt(this,'q')">EXCELENTE</button>
     </div>
     <div class="m-label">DURAÇÃO (hh:mm)</div>
     <div class="time-input-wrap">
-      <input class="time-field" id="medit-hh" type="number" min="0" max="23" value="1" />
+      <input class="time-field" id="m-hh" type="number" min="0" max="23" value="1" oninput="calcXp()" />
       <span class="time-sep">:</span>
-      <input class="time-field" id="medit-mm" type="number" min="0" max="59" value="00" />
+      <input class="time-field" id="m-mm" type="number" min="0" max="59" value="00" oninput="calcXp()" />
       <span style="font-family:var(--font-display);font-size:10px;color:var(--txt3);margin-left:8px">formato 24h</span>
     </div>
-    <div class="m-label">VINCULAR AO DOMÍNIO</div>
-    <div style="background:var(--bg4);border:1px solid var(--b2);border-radius:var(--r3);padding:12px;margin-bottom:14px">
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <select class="medit-input" id="medit-dom-sel" style="margin-bottom:0;cursor:pointer;appearance:auto"><option value="">&#8212; Domínio &#8212;</option></select>
-        <select class="medit-input" id="medit-sa-sel" style="margin-bottom:0;cursor:pointer;appearance:auto"><option value="">&#8212; Sub-área &#8212;</option></select>
-        <select class="medit-input" id="medit-sk-sel" style="margin-bottom:0;cursor:pointer;appearance:auto"><option value="">&#8212; Skill (opcional) &#8212;</option></select>
-      </div>
-      <div style="margin-top:9px;font-size:10px;color:var(--txt3)">XP credit na skill ao concluir.</div>
+    <div class="elem-breakdown">
+      <div class="eb-title">GANHO POR ELEMENTO</div>
+      <div class="eb-row"><span class="eb-elem" style="color:var(--m)">MADEIRA</span><div class="eb-bar"><div class="eb-fill" id="eb-m" style="background:var(--m);width:0"></div></div><span class="eb-val" id="ebv-m">+0.0</span></div>
+      <div class="eb-row"><span class="eb-elem" style="color:var(--g)">GELO</span><div class="eb-bar"><div class="eb-fill" id="eb-g" style="background:var(--g);width:0"></div></div><span class="eb-val" id="ebv-g">+0.0</span></div>
+      <div class="eb-row"><span class="eb-elem" style="color:var(--t)">TROVÃO</span><div class="eb-bar"><div class="eb-fill" id="eb-t" style="background:var(--t);width:0"></div></div><span class="eb-val" id="ebv-t">+0.0</span></div>
+      <div class="eb-row"><span class="eb-elem" style="color:var(--f)">FOGO</span><div class="eb-bar"><div class="eb-fill" id="eb-f" style="background:var(--f);width:0"></div></div><span class="eb-val" id="ebv-f">+0.0</span></div>
     </div>
-    <div class="m-label">TAREFAS DA MISSÃO</div>
-    <div class="act-list" id="medit-act-list"></div>
-    <div class="act-add-row">
-      <input class="act-add-input" id="medit-act-input" placeholder="Descreva uma tarefa..." />
-      <button class="act-add-btn" onclick="addMeditActivity()">+</button>
-    </div>
-    <div class="m-label">XP DA MISSÃO</div>
-    <input class="medit-input" id="medit-xp" type="number" placeholder="120" min="10" max="1000" style="margin-bottom:18px"/>
-    <button class="medit-save" onclick="saveMission()">SALVAR MISSÃO</button>
+    <div class="xp-est" id="xp-est">⚡ +0 XP estimado</div>
+    <button class="medit-save" onclick="submitAction()">FORJAR AÇÃO</button>
+    <div style="height:20px"></div>
+  </div>
+</div>
+</div><!-- /app -->
 <script>/* ═══════════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════════ */
@@ -3570,7 +3577,7 @@ function calcXp() {
   const tpTxt = document.querySelector('#m-type .m-opt.sel')?.textContent.trim() || '📚 ESTUDO';
   const intTxt = document.querySelector('#m-int .m-opt.sel')?.textContent.trim() || 'MÉDIA';
   const qualTxt = document.querySelector('#m-qual .m-opt.sel')?.textContent.trim() || 'NORMAL';
-  const durMin = Math.min(parseDuration(), 180);
+  const durMin = Math.min(parseDuration('m-'), 180);
   const actionKey = getActionKey(tpTxt);
   const {gains, maxGain} = calcGains(actionKey, intTxt, qualTxt, durMin, APP.streak);
   const eq = calcEquilibrio(APP.m, APP.g, APP.t, APP.f);
@@ -3581,7 +3588,7 @@ function calcXp() {
   ['m','g','t','f'].forEach(k => {
     const g2 = gains[k];
     const pct = maxGain>0 ? Math.min(g2/maxGain*100,100) : 0;
-    document.getElementById('eb-'+k).style.width = Math.max(pct,0)+'%';
+    {const _b=document.getElementById('eb-'+k);if(_b)_b.style.width=Math.max(pct,0)+'%';}
     {const _e=document.getElementById('ebv-'+k);if(_e)_e.textContent=(g2>=0?'+':'')+g2.toFixed(1);}
   });
   {const _e=document.getElementById('xp-est');if(_e)_e.textContent=`⚡ +${xp} XP estimado`;}
@@ -6017,7 +6024,7 @@ function openPreavPrompt() {
 
 
 /* ═══════════════════════════════════════════════
-   ESTRELA PRIMORDIAL — INTRO ENGINE
+   ESTRELA REI — INTRO ENGINE
 ═══════════════════════════════════════════════ */
 (function initIntro() {
   const canvas = document.getElementById('intro-canvas');
@@ -8398,9 +8405,10 @@ let _editingId  = null;
 let _editDomKey = null;
 let _meditActs  = [];
 
-function parseDuration() {
-  const hh = parseInt(document.getElementById('medit-hh').value) || 0;
-  const mm = parseInt(document.getElementById('medit-mm').value) || 0;
+function parseDuration(pfx) {
+  pfx = pfx || 'medit-';
+  const hh = parseInt(document.getElementById(pfx+'hh')?.value) || 0;
+  const mm = parseInt(document.getElementById(pfx+'mm')?.value) || 0;
   return hh * 60 + mm;
 }
 function setDurationFields(mins) {
@@ -8675,11 +8683,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const mm = document.getElementById('medit-mm');
   if (hh) {
     hh.addEventListener('blur',  () => clampTimeField(hh, 23));
-    hh.addEventListener('input', () => { recalcMissionXP(); calcXp(); });
+    hh.addEventListener('input', () => { recalcMissionXP(); });
   }
   if (mm) {
     mm.addEventListener('blur',  () => clampTimeField(mm, 59));
-    mm.addEventListener('input', () => { recalcMissionXP(); calcXp(); });
+    mm.addEventListener('input', () => { recalcMissionXP(); });
   }
   const actInp = document.getElementById('medit-act-input');
   if (actInp) actInp.addEventListener('keydown', e => {
@@ -8729,6 +8737,84 @@ function eChip(k, v) {
 }
 
 
+</script>
+<script>
+/* ═══════════════════════════════════════════════
+   SYNC — via Núcleo da Primordial (sheyla-core.js)
+   users/{uid}/forjadora/data  { data:<json string>, savedAt:<ms> }
+   Login e sessão vêm do SYS; sem login → volta para a Primordial.
+═══════════════════════════════════════════════ */
+(function(){
+  const S = window.Sheyla || (window.parent !== window && window.parent.Sheyla) || null;
+  const ls = {
+    get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},
+    set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},
+    del:k=>{try{localStorage.removeItem(k)}catch(e){}}
+  };
+  let user=null, pushTimer=null;
+
+  function localSavedAt(){
+    try{ const r=ls.get(SAVE_KEY); return r ? (JSON.parse(r).savedAt||0) : 0; }catch(e){ return 0; }
+  }
+  function appRunning(){ const a=document.getElementById('s-app'); return !!(a && a.classList.contains('active')); }
+  function backToSys(){
+    if(window.parent!==window && window.parent.__closeApp) window.parent.__closeApp();
+    else location.replace('index.html');
+  }
+
+  async function push(){
+    if(!user) return;
+    const raw=ls.get(SAVE_KEY); if(!raw) return;
+    try{ await S.save({data:raw, savedAt:localSavedAt()}); }
+    catch(e){ console.warn('[Forjadora] push falhou',e); }
+  }
+  function schedulePush(){ if(!user) return; clearTimeout(pushTimer); pushTimer=setTimeout(push,1500); }
+
+  async function pull(){
+    try{
+      if(ls.get('forj_pending_reset')==='1'){
+        await S.save({data:'', savedAt:0});
+        ls.del('forj_pending_reset'); return false;
+      }
+      const d=await S.load();
+      const lsAt=localSavedAt();
+      const cAt=(d&&d.savedAt)||0;
+      if(d && d.data && (!lsAt || cAt>lsAt)){
+        ls.set(SAVE_KEY,d.data);
+        try{ const st=JSON.parse(d.data); const a=st.app||{};
+          ls.set('forj_summary',JSON.stringify({name:a.name,level:a.level,streak:a.streak,m:Math.round(a.m||0),g:Math.round(a.g||0),t:Math.round(a.t||0),f:Math.round(a.f||0),mbtiType:a.mbtiType||null,missionsOpen:(st.missions||[]).filter(x=>!x.done).length,updatedAt:Date.now()}));
+        }catch(e){}
+        return true;
+      }
+      if(lsAt>cAt) await push();
+    }catch(e){ console.warn('[Forjadora] pull falhou',e); }
+    return false;
+  }
+
+  // hook: todo saveState dispara push com atraso
+  const _save=window.saveState;
+  window.saveState=function(){ const r=_save.apply(this,arguments); schedulePush(); return r; };
+  // hook: reiniciar o app também zera a nuvem
+  const _clear=window.clearState;
+  window.clearState=function(){
+    ls.del('forj_summary');
+    if(user && S){ S.save({data:'', savedAt:0}).catch(()=>{}); }
+    else if(ls.get('forj_uid')){ ls.set('forj_pending_reset','1'); }
+    return _clear.apply(this,arguments);
+  };
+
+  if(!S || location.protocol==='file:'){ console.warn('[Forjadora] núcleo indisponível, modo offline'); return; }
+  S.init('forjadora',{requireLogin:false}).then(async function(u){
+    if(!u){ backToSys(); return; }
+    user=u;
+    const info=S.user();
+    const prev=ls.get('forj_uid');
+    if(prev && prev!==info.uid){ ls.del(SAVE_KEY); ls.del('forj_summary'); }
+    ls.set('forj_uid',info.uid);
+    const changed=await pull();
+    if(changed && appRunning()) location.reload();
+  }).catch(function(e){ console.warn('[Forjadora] núcleo falhou, modo offline',e); });
+})();
 </script>
 </body>
 </html>
