@@ -146,6 +146,7 @@ function AuthWrapper({ children }) {
       }
       localStorage.setItem(SYS_UID_KEY, u.uid);
       window._sdcSaveToCloud = (data) => saveToCloud(u.uid, data);
+      try { const _l = localStorage.getItem("sdc_v3"); if (_l) sdcWriteSummary(JSON.parse(_l), Date.now()); } catch(e3) {}
     } catch(e) {
       console.warn("[SDC] Sync error:", e);
     }
@@ -339,31 +340,33 @@ const load = () => {
   } catch (e) {}
   return null;
 };
+// Resumo público para o SYS Hub (também chamado ao abrir, depois do sync)
+function sdcWriteSummary(d, ts) {
+  try {
+    const txs = (d && d.txs) || [];
+    const tRecP = txs.filter(t=>t.tipo==="receita"&&t.pago).reduce((a,t)=>a+t.valor,0);
+    const tDesP = txs.filter(t=>t.tipo==="despesa"&&t.pago).reduce((a,t)=>a+t.valor,0);
+    const cxs = (d && d.caixinhas) || [];
+    const totalCx = cxs.reduce((a,c)=>a+(c.saldo||0),0);
+    const saldo = tRecP - tDesP;
+    const saldoLivre = saldo - totalCx;
+    const vencidas = txs.filter(t=>t.tipo==="despesa"&&!t.pago&&t.data<new Date().toISOString().slice(0,10)).length;
+    const fmt = v => "R$ "+v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+    localStorage.setItem("sdc_summary", JSON.stringify({
+      saldo: fmt(saldo),
+      saldoLivre: fmt(saldoLivre),
+      vencidas,
+      updatedAt: ts || Date.now(),
+    }));
+  } catch(e2) {}
+}
 const save = d => {
   const ts = Date.now();
   const dWithTs = { ...d, _updatedAt: ts };
   if (window._sdcSaveToCloud) { try { window._sdcSaveToCloud(dWithTs); } catch(e) {} }
   try {
     localStorage.setItem(SK, JSON.stringify(dWithTs));
-    // Resumo público para o SYS Hub
-    try {
-      const txs = d.txs || [];
-      const tRecP = txs.filter(t=>t.tipo==="receita"&&t.pago).reduce((a,t)=>a+t.valor,0);
-      const tDesP = txs.filter(t=>t.tipo==="despesa"&&t.pago).reduce((a,t)=>a+t.valor,0);
-      const tDesPv = txs.filter(t=>t.tipo==="despesa"&&!t.pago).reduce((a,t)=>a+t.valor,0);
-      const cxs = d.caixinhas || [];
-      const totalCx = cxs.reduce((a,c)=>a+(c.saldo||0),0);
-      const saldo = tRecP - tDesP;
-      const saldoLivre = saldo - totalCx;
-      const vencidas = txs.filter(t=>t.tipo==="despesa"&&!t.pago&&t.data<new Date().toISOString().slice(0,10)).length;
-      const fmt = v => "R$ "+v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
-      localStorage.setItem("sdc_summary", JSON.stringify({
-        saldo: fmt(saldo),
-        saldoLivre: fmt(saldoLivre),
-        vencidas,
-        updatedAt: ts,
-      }));
-    } catch(e2) {}
+    sdcWriteSummary(d, ts);
   } catch (e) {
     if (e.name === "QuotaExceededError" || e.code === 22) setTimeout(() => alert("Armazenamento local cheio! Exporte seus dados."), 100);
   }
