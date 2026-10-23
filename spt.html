@@ -110,6 +110,34 @@ input[aria-invalid=true]{border-color:var(--erro);background:#FFF1EF}
 .modal .box{background:var(--branco);border:3px solid var(--tinta);border-radius:24px;padding:20px;max-width:420px;width:100%;box-shadow:0 8px 0 var(--tinta)}
 .modal .box h2{margin-bottom:8px}
 .modal .box p{margin:0 0 16px;font-weight:700}
+.tabs{display:flex;gap:8px;margin:18px 0 4px}
+.tab{flex:1;min-height:54px;padding:6px 4px;border:3px solid var(--tinta);border-radius:16px;background:var(--branco);font-weight:800;font-size:.95rem;cursor:pointer}
+.tab[aria-selected=true]{background:var(--esm-700);color:#fff;box-shadow:0 4px 0 var(--tinta)}
+.pcard .body .linha{margin:0;text-align:center;font-family:"Baloo 2",sans-serif;font-weight:700;font-size:1.1rem}
+.painel{background:var(--branco);border:3px solid var(--tinta);border-radius:22px;box-shadow:0 5px 0 var(--tinta);padding:12px 12px 14px;margin-top:6px}
+.grafico svg{display:block;width:100%;height:auto}
+.grafico .eixo{stroke:#CBE3D8;stroke-width:1.5}
+.grafico .linha{fill:none;stroke:var(--esm-700);stroke-width:4;stroke-linejoin:round;stroke-linecap:round}
+.grafico .pt{fill:var(--lar-500);stroke:var(--tinta);stroke-width:3}
+.grafico text{font:700 13px Nunito,sans-serif;fill:var(--tinta2)}
+.grafico text.val{fill:var(--tinta);font-size:15px}
+.dados.tres{grid-template-columns:repeat(3,1fr);margin-top:8px}
+.dados.tres dd{font-size:1rem}
+.item{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:3px solid var(--tinta);border-radius:18px;background:var(--branco);margin-top:10px}
+.item .emj{font-size:1.7rem;line-height:1.2}
+.item .inf{flex:1;min-width:0}
+.item .nm{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:1.1rem;line-height:1.2;word-break:break-word}
+.item small{display:block;font-weight:700;color:var(--tinta2);font-size:.85rem}
+.item .acoes{display:flex;gap:8px;margin-top:8px}
+.mini{min-height:44px;padding:0 14px;border:3px solid var(--tinta);border-radius:14px;background:var(--branco);font-weight:800;cursor:pointer}
+.item>.mini{align-self:center}
+.tag{display:inline-flex;margin-top:6px;border:2px solid var(--tinta);border-radius:999px;padding:2px 10px;font-weight:800;font-size:.82rem;background:var(--creme)}
+.tag.ok{background:var(--esm-100)}.tag.logo{background:var(--creme2);border-color:var(--lar-700)}.tag.atraso{background:#FFE3DF;border-color:var(--erro);color:var(--erro)}
+.vazio{font-weight:700;color:var(--tinta2);margin:18px 2px}
+.box.rolavel{max-height:92vh;overflow-y:auto}
+.box .opts.big{gap:8px}.box .opts.big .opt{min-width:0;padding:6px 2px;font-size:.9rem}.box .opts.big .opt .em{font-size:1.9rem}
+.avisomodal{background:var(--creme2);border:3px solid var(--lar-700);border-radius:14px;padding:10px 14px;font-weight:700;margin:0 0 14px}
+
 .wrap.largo{max-width:820px}
 .intro{display:grid;gap:16px;margin-top:12px}
 @media (min-width:560px){.intro{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:stretch}.bigimg{height:100%;aspect-ratio:auto;min-height:340px;object-position:center top}.dialog{justify-content:flex-start}.dialog .chamada{margin-top:auto}}
@@ -183,7 +211,7 @@ var SVG_CAO = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" h
 var SVG_ALIEN = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#FFE7C2"/><path d="M38 30 Q34 16 28 13 M62 30 Q66 16 72 13" fill="none" stroke="#0F3B2E" stroke-width="3" stroke-linecap="round"/><circle cx="28" cy="12" r="5.5" fill="#F59A3B" stroke="#0F3B2E" stroke-width="3"/><circle cx="72" cy="12" r="5.5" fill="#F59A3B" stroke="#0F3B2E" stroke-width="3"/><ellipse cx="36" cy="92" rx="9" ry="4.5" fill="#12805C" stroke="#0F3B2E" stroke-width="3"/><ellipse cx="64" cy="92" rx="9" ry="4.5" fill="#12805C" stroke="#0F3B2E" stroke-width="3"/><path d="M50 26 C78 26 88 52 84 72 C81 87 66 90 50 90 C34 90 19 87 16 72 C12 52 22 26 50 26Z" fill="#6EE7B7" stroke="#0F3B2E" stroke-width="3"/><ellipse cx="37" cy="54" rx="8.5" ry="10.5" fill="#fff" stroke="#0F3B2E" stroke-width="2.5"/><ellipse cx="63" cy="54" rx="8.5" ry="10.5" fill="#fff" stroke="#0F3B2E" stroke-width="2.5"/><circle cx="39" cy="56" r="5.5" fill="#0F3B2E"/><circle cx="65" cy="56" r="5.5" fill="#0F3B2E"/><circle cx="41" cy="53.5" r="1.8" fill="#fff"/><circle cx="67" cy="53.5" r="1.8" fill="#fff"/><path d="M43 73 Q50 80 57 73" fill="none" stroke="#0F3B2E" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="68" r="4.5" fill="#F59A3B" opacity=".55"/><circle cx="76" cy="68" r="4.5" fill="#F59A3B" opacity=".55"/><circle cx="50" cy="38" r="2" fill="#12805C"/><circle cx="44" cy="42" r="1.5" fill="#12805C"/><circle cx="57" cy="41" r="1.5" fill="#12805C"/></svg>';
 
 /* ─── Estado ─── */
-var st = { skinCat: "todos", intro: false, skin: "laranja", screen: "splash", user: null, uid: "local", local: false, pets: [], at: 0, petId: null, draft: null, msg: null, confirmPeso: false };
+var st = { skinCat: "todos", intro: false, skin: "laranja", screen: "splash", user: null, uid: "local", local: false, pets: [], at: 0, petId: null, aba: "resumo", draft: null, msg: null, confirmPeso: false };
 
 /* ─── Helpers de DOM (sem innerHTML com dado do usuário) ─── */
 function add(el, c) {
@@ -274,9 +302,11 @@ function saveLocal() { try { localStorage.setItem(lsKey(), JSON.stringify({ pets
 function resumo() {
   var n = st.pets.length;
   if (!n) return { headline: "Nenhum amiguinho ainda", lines: ["Cadastre o primeiro 🐾"] };
+  var al = alertas();
+  var linhas = st.pets.slice(0, 3).map(function (p) { return (ESPECIES[p.especie] || ESPECIES.cachorro).emoji + " " + p.nome + " · " + idade(p.nasc); });
   return {
-    headline: n + (n > 1 ? " amiguinhos" : " amiguinho"),
-    lines: st.pets.slice(0, 3).map(function (p) { return (ESPECIES[p.especie] || ESPECIES.cachorro).emoji + " " + p.nome + " · " + idade(p.nasc); })
+    headline: n + (n > 1 ? " amiguinhos" : " amiguinho") + (al.length ? " · " + al.length + (al.length > 1 ? " avisos" : " aviso") : ""),
+    lines: al.slice(0, 2).map(function (x) { return x.txt; }).concat(linhas).slice(0, 3)
   };
 }
 function writeSummary() {
@@ -337,6 +367,7 @@ function toast(t) {
 /* ─── Navegação ─── */
 function go(screen, extra) {
   st.screen = screen; st.msg = null;
+  if (screen === "card" && extra && extra.petId) st.aba = "resumo";
   if (extra) Object.keys(extra).forEach(function (k) { st[k] = extra[k]; });
   render(); window.scrollTo(0, 0);
 }
@@ -411,6 +442,9 @@ function vCard() {
   var p = petAtual(); if (!p) { go("picker"); return h("div"); }
   var e = ESPECIES[p.especie] || ESPECIES.cachorro;
   var conv = p.convenio && (p.convenio.nome || p.convenio.numero) ? [p.convenio.nome, p.convenio.numero].filter(Boolean).join(" · ") : "Sem convênio";
+  var cu = cuidados(p), urgente = cu.some(function (c) { return c.n <= 7; });
+  var abas = [{ id: "resumo", t: "📋 Resumo" }, { id: "peso", t: "⚖️ Peso" }, { id: "saude", t: "💉 Saúde" + (urgente ? " ⚠️" : "") }];
+  var painel = st.aba === "peso" ? painelPeso(p) : st.aba === "saude" ? painelSaude(p) : painelResumo(p, cu);
   return h("div", null,
     topbar("Cartão do pet", btnVoltar(function () { go("picker"); }, "Voltar para a escolha do amiguinho")),
     h("main", { class: "wrap" },
@@ -422,19 +456,31 @@ function vCard() {
           h("div", { class: "esp" }, e.emoji + " " + rotuloEsp(p) + (p.raca && p.especie !== "outro" ? " · " + p.raca : ""))),
         h("div", { class: "photo" }, avatar(p)),
         h("div", { class: "body" },
-          h("dl", { class: "dados" },
-            dado("Idade", idade(p.nasc)),
-            dado("Peso", fmtPeso(p.peso)),
-            dado("Nascimento", fmtData(p.nasc) + (p.aprox ? " (aprox.)" : "")),
-            dado("Sexo", p.sexo === "f" ? "Fêmea" : p.sexo === "m" ? "Macho" : "Não informado"),
-            dado("Convênio", conv, true)))),
-      h("h2", { class: "sec-title" }, "Em breve por aqui"),
-      h("div", { class: "soon" },
-        soon("✅", "Tarefas do dia"), soon("💊", "Remédios e lembretes"), soon("🗂️", "Arquivo de fotos e exames")),
-      h("div", { class: "stack", style: "margin-top:24px" },
-        h("button", { class: "btn verde", type: "button", onclick: function () { abrirForm(p); } }, "✏️ Editar cadastro"),
-        h("button", { class: "btn sec", type: "button", onclick: function () { go("picker"); } }, "🐾 Trocar de amiguinho"),
-        h("button", { class: "btn perigo", type: "button", onclick: function () { modalRemover(p); } }, "Remover amiguinho"))));
+          st.aba === "resumo"
+            ? h("dl", { class: "dados" },
+                dado("Idade", idade(p.nasc)),
+                dado("Peso", fmtPeso(p.peso)),
+                dado("Nascimento", fmtData(p.nasc) + (p.aprox ? " (aprox.)" : "")),
+                dado("Sexo", p.sexo === "f" ? "Fêmea" : p.sexo === "m" ? "Macho" : "Não informado"),
+                dado("Convênio", conv, true))
+            : h("p", { class: "linha" }, idade(p.nasc) + " · " + fmtPeso(p.peso)))),
+      h("div", { class: "tabs", role: "tablist", "aria-label": "Seções do cartão" }, abas.map(function (a) {
+        return h("button", { class: "tab", type: "button", role: "tab", "aria-selected": st.aba === a.id ? "true" : "false", onclick: function () { st.aba = a.id; render(); } }, a.t);
+      })),
+      h("div", { role: "tabpanel" }, painel)));
+}
+function painelResumo(p, cu) {
+  return h("div", null,
+    cu.length ? h("div", null,
+      h("h2", { class: "sec-title" }, "Próximos cuidados"),
+      cu.slice(0, 3).map(function (c) { return itemSaude(p, c.r, true, true); }),
+      h("button", { class: "btn sec", type: "button", style: "margin-top:12px", onclick: function () { st.aba = "saude"; render(); } }, "Ver vacinas e vermífugos")) : null,
+    h("h2", { class: "sec-title" }, "Em breve por aqui"),
+    h("div", { class: "soon" }, soon("✅", "Tarefas do dia"), soon("💊", "Remédios e lembretes"), soon("🗂️", "Arquivo de fotos e exames")),
+    h("div", { class: "stack", style: "margin-top:24px" },
+      h("button", { class: "btn verde", type: "button", onclick: function () { abrirForm(p); } }, "✏️ Editar cadastro"),
+      h("button", { class: "btn sec", type: "button", onclick: function () { go("picker"); } }, "🐾 Trocar de amiguinho"),
+      h("button", { class: "btn perigo", type: "button", onclick: function () { modalRemover(p); } }, "Remover amiguinho")));
 }
 function dado(l, v, full) { return h("div", { class: full ? "full" : null }, h("dt", null, l), h("dd", null, v)); }
 function soon(i, t) { return h("div", null, h("span", { "aria-hidden": "true" }, i), t, h("small", null, "em breve")); }
@@ -451,6 +497,226 @@ function modalRemover(p) {
         h("button", { class: "btn sec", type: "button", onclick: function () { m.remove(); } }, "Não, voltar"))));
   document.body.appendChild(m);
   m.querySelector(".btn.sec").focus();
+}
+
+
+/* ─── Peso e saúde ─── */
+var TIPOS = {
+  vacina: { em: "💉", t: "Vacina", q: "Qual vacina?" },
+  vermifugo: { em: "💊", t: "Vermífugo", q: "Qual vermífugo?" },
+  antipulgas: { em: "🐜", t: "Antipulgas", q: "Qual produto?" }
+};
+var SUGESTOES = {
+  vacina: {
+    cachorro: ["V10 (polivalente)", "Antirrábica", "Gripe canina", "Giárdia", "Leishmaniose"],
+    gato: ["V4 ou V5 (polivalente)", "Antirrábica", "Leucemia felina (FeLV)"]
+  }
+};
+function diasAte(iso) { var d = parseISO(iso), t = parseISO(hojeISO()); return d ? Math.round((d - t) / 86400000) : null; }
+function fmtCurto(iso) { var d = parseISO(iso); return d ? d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" }) : ""; }
+function fmtNum(v, c) { return v.toFixed(c).replace(".", ","); }
+function chaveSaude(r) { return r.tipo + "|" + String(r.nome || "").trim().toLowerCase(); }
+function vigentes(p) {
+  var ult = {};
+  (p.saude || []).forEach(function (r) {
+    var k = chaveSaude(r), o = ult[k];
+    if (!o || r.d > o.d || (r.d === o.d && (r.criado || 0) > (o.criado || 0))) ult[k] = r;
+  });
+  return Object.keys(ult).map(function (k) { return ult[k]; });
+}
+function statusCuidado(r) {
+  var n = diasAte(r.prox);
+  if (n == null) return { cls: "", em: "📌", t: "sem próxima data" };
+  if (n < 0) return { cls: "atraso", em: "⚠️", t: "prazo vencido há " + (-n) + (n === -1 ? " dia" : " dias") };
+  if (n === 0) return { cls: "logo", em: "⏰", t: "é hoje" };
+  if (n <= 30) return { cls: "logo", em: "⏰", t: "vence em " + n + (n === 1 ? " dia" : " dias") };
+  return { cls: "ok", em: "✅", t: "em dia" };
+}
+function cuidados(p) {
+  return vigentes(p).filter(function (r) { return r.prox && diasAte(r.prox) != null; })
+    .map(function (r) { return { r: r, s: statusCuidado(r), n: diasAte(r.prox) }; })
+    .sort(function (a, b) { return a.n - b.n; });
+}
+function alertas() {
+  var out = [];
+  st.pets.forEach(function (p) {
+    cuidados(p).forEach(function (c) {
+      if (c.n > 7) return;
+      out.push({ n: c.n, txt: (c.n < 0 ? "⚠️ " : "⏰ ") + p.nome + " · " + c.r.nome + (c.n < 0 ? ": prazo vencido" : c.n === 0 ? ": é hoje" : " em " + c.n + (c.n === 1 ? " dia" : " dias")) });
+    });
+  });
+  return out.sort(function (a, b) { return a.n - b.n; });
+}
+function pesosOrd(p) {
+  return (p.pesos || []).filter(function (k) { return parseISO(k.d) && isFinite(k.kg); }).sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+}
+function sincPeso(p) { var o = pesosOrd(p); p.peso = o.length ? o[o.length - 1].kg : null; }
+function salvarPet(p, msg) { p.editado = Date.now(); persist(); if (msg) toast(msg); render(); }
+
+/* Gráfico de peso (SVG montado por código; nenhum dado do usuário vira HTML) */
+var NS = "http://www.w3.org/2000/svg";
+function sv(tag, attrs, texto) {
+  var el = document.createElementNS(NS, tag);
+  Object.keys(attrs || {}).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+  if (texto != null) el.textContent = texto;
+  return el;
+}
+function grafico(p, pts) {
+  var W = 320, H = 190, L = 50, R = 18, T = 26, B = 36;
+  var kgs = pts.map(function (k) { return k.kg; }), mn = Math.min.apply(null, kgs), mx = Math.max.apply(null, kgs);
+  if (mx - mn < 0.2) { mn -= 0.5; mx += 0.5; } else { var pad = (mx - mn) * 0.15; mn -= pad; mx += pad; }
+  if (mn < 0) mn = 0;
+  var t0 = parseISO(pts[0].d).getTime(), t1 = parseISO(pts[pts.length - 1].d).getTime();
+  function X(d) { return t1 === t0 ? L + (W - L - R) / 2 : L + (parseISO(d).getTime() - t0) / (t1 - t0) * (W - L - R); }
+  function Y(kg) { return T + (1 - (kg - mn) / (mx - mn)) * (H - T - B); }
+  var casas = (mx - mn) < 2 ? 2 : 1;
+  var svg = sv("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "Gráfico do peso de " + p.nome + ": de " + fmtPeso(pts[0].kg) + " em " + fmtData(pts[0].d) + " para " + fmtPeso(pts[pts.length - 1].kg) + " em " + fmtData(pts[pts.length - 1].d) });
+  [mn, (mn + mx) / 2, mx].forEach(function (v) {
+    svg.appendChild(sv("line", { class: "eixo", x1: L, x2: W - R, y1: Y(v), y2: Y(v) }));
+    svg.appendChild(sv("text", { x: L - 8, y: Y(v) + 4, "text-anchor": "end" }, fmtNum(v, casas)));
+  });
+  svg.appendChild(sv("text", { x: L, y: H - 10, "text-anchor": "start" }, fmtCurto(pts[0].d)));
+  if (pts.length > 1) svg.appendChild(sv("text", { x: W - R, y: H - 10, "text-anchor": "end" }, fmtCurto(pts[pts.length - 1].d)));
+  if (pts.length > 1) svg.appendChild(sv("polyline", { class: "linha", points: pts.map(function (k) { return X(k.d).toFixed(1) + "," + Y(k.kg).toFixed(1); }).join(" ") }));
+  pts.forEach(function (k, i) { svg.appendChild(sv("circle", { class: "pt", cx: X(k.d), cy: Y(k.kg), r: i === pts.length - 1 ? 7 : 5 })); });
+  var u = pts[pts.length - 1], ux = X(u.d);
+  svg.appendChild(sv("text", { class: "val", x: ux, y: Y(u.kg) - 13, "text-anchor": ux > W - 50 ? "end" : "middle" }, fmtNum(u.kg, casas) + " kg"));
+  return h("div", { class: "grafico" }, svg);
+}
+function painelPeso(p) {
+  var ord = pesosOrd(p), n = ord.length, ult = ord[n - 1], pri = ord[0], ant = ord[n - 2];
+  var texto = !n ? "Ainda não tenho nenhum peso anotado. Pesar de vez em quando ajuda a acompanhar o nosso amiguinho 💚"
+    : n === 1 ? "Já tenho um peso anotado. Com mais um registro eu desenho o caminho do " + p.nome + " 💚"
+    : "Aqui está a evolução do peso de " + p.nome + ". Anote sempre que pesar, combinado? 💚";
+  var tom = "";
+  if (n > 1 && ant && ant.kg > 0 && Math.abs(ult.kg - ant.kg) / ant.kg > 0.1) {
+    texto = "Reparei numa mudança de peso maior que 10% desde o registro anterior. Vale comentar isso com o seu veterinário 🩺"; tom = "oops";
+  }
+  var dif = n > 1 ? ult.kg - pri.kg : 0;
+  return h("div", null,
+    bubble(texto, tom),
+    n ? h("div", { class: "painel" },
+      grafico(p, ord),
+      n > 1 ? h("dl", { class: "dados tres" },
+        dado("Primeiro", fmtPeso(pri.kg)), dado("Atual", fmtPeso(ult.kg)),
+        dado("Variação", (dif > 0 ? "+" : "") + fmtNum(dif, 2).replace(/,?0+$/, "").replace(/,$/, "") + " kg")) : null) : null,
+    h("button", { class: "btn verde", type: "button", style: "margin-top:14px", onclick: function () { modalPeso(p); } }, "➕ Registrar peso"),
+    n ? h("h2", { class: "sec-title" }, "Registros") : null,
+    ord.slice().reverse().map(function (k) {
+      return h("div", { class: "item" }, h("span", { class: "emj", "aria-hidden": "true" }, "⚖️"),
+        h("div", { class: "inf" }, h("div", { class: "nm" }, fmtPeso(k.kg)), h("small", null, fmtData(k.d))),
+        h("button", { class: "mini", type: "button", "aria-label": "Apagar o registro de " + fmtPeso(k.kg) + " em " + fmtData(k.d), onclick: function () {
+          confirmar("Apagar este peso?", fmtPeso(k.kg) + " em " + fmtData(k.d) + " será removido do histórico de " + p.nome + ".", "Sim, apagar", function () {
+            p.pesos = (p.pesos || []).filter(function (x) { return x !== k; }); sincPeso(p); salvarPet(p, "Registro apagado.");
+          });
+        } }, "Apagar"));
+    }));
+}
+function itemSaude(p, r, vig, compacto) {
+  var t = TIPOS[r.tipo] || TIPOS.vacina, s = r.prox && vig ? statusCuidado(r) : null;
+  return h("div", { class: "item" }, h("span", { class: "emj", "aria-hidden": "true" }, t.em),
+    h("div", { class: "inf" },
+      h("div", { class: "nm" }, r.nome),
+      h("small", null, t.t + " · feito em " + fmtData(r.d)),
+      r.prox ? h("small", null, "Próxima: " + fmtData(r.prox)) : null,
+      r.obs ? h("small", null, r.obs) : null,
+      s ? h("span", { class: "tag " + s.cls }, s.em + " " + s.t) : (!vig ? h("span", { class: "tag" }, "🗂️ histórico") : null),
+      compacto ? null : h("div", { class: "acoes" },
+        h("button", { class: "mini", type: "button", "aria-label": "Editar " + r.nome, onclick: function () { modalSaude(p, r); } }, "Editar"),
+        h("button", { class: "mini", type: "button", "aria-label": "Apagar " + r.nome + " de " + fmtData(r.d), onclick: function () {
+          confirmar("Apagar este registro?", r.nome + " (" + fmtData(r.d) + ") será removido do cartão de " + p.nome + ".", "Sim, apagar", function () {
+            p.saude = (p.saude || []).filter(function (x) { return x.id !== r.id; }); salvarPet(p, "Registro apagado.");
+          });
+        } }, "Apagar"))));
+}
+function painelSaude(p) {
+  var lista = (p.saude || []).slice().sort(function (a, b) { return a.d < b.d ? 1 : a.d > b.d ? -1 : 0; });
+  var vig = {}; vigentes(p).forEach(function (r) { vig[r.id] = true; });
+  return h("div", null,
+    bubble("Anote aqui as vacinas, vermífugos e antipulgas. Quando a próxima data estiver chegando, eu aviso. Quem decide o quê e quando aplicar é o veterinário, combinado? 💚"),
+    h("button", { class: "btn verde", type: "button", onclick: function () { modalSaude(p, null); } }, "➕ Registrar vacina ou vermífugo"),
+    lista.length ? h("h2", { class: "sec-title" }, "Histórico de cuidados")
+      : h("p", { class: "vazio" }, "Nada anotado ainda. Se tiver a carteirinha de vacinação, é um bom começo 🐾"),
+    lista.map(function (r) { return itemSaude(p, r, !!vig[r.id], false); }));
+}
+
+/* ─── Janelas (modais) ─── */
+function abrirModal(titulo, build, foco) {
+  var m = h("div", { class: "modal", role: "dialog", "aria-modal": "true", "aria-label": titulo });
+  var box = h("div", { class: "box rolavel" }); m.appendChild(box);
+  function esc(e) { if (e.key === "Escape") close(); }
+  function close() { m.remove(); document.removeEventListener("keydown", esc); }
+  function draw(f) {
+    var kids = build(close, draw); box.replaceChildren();
+    kids.forEach(function (k) { add(box, k); });
+    var el = box.querySelector(f || foco || "input,button"); if (el) el.focus();
+  }
+  document.addEventListener("keydown", esc);
+  m.addEventListener("click", function (e) { if (e.target === m) close(); });
+  document.body.appendChild(m); draw();
+}
+function confirmar(titulo, texto, sim, fn) {
+  abrirModal(titulo, function (close) {
+    return [h("h2", null, titulo), h("p", null, texto),
+      h("div", { class: "stack" },
+        h("button", { class: "btn perigo", type: "button", onclick: function () { close(); fn(); } }, sim),
+        h("button", { class: "btn sec", type: "button", onclick: close }, "Não, voltar"))];
+  }, ".btn.sec");
+}
+function modalPeso(p) {
+  var v = { d: hojeISO(), kg: "" }, msg = "", conf = false, e = ESPECIES[p.especie] || ESPECIES.cachorro;
+  abrirModal("Registrar peso", function (close, draw) {
+    function ok() {
+      var kg = parseFloat(String(v.kg).replace(",", ".")), d = parseISO(v.d);
+      if (!d) { msg = "Ops, falta a data da pesagem 🐾"; return draw("#m-d"); }
+      if (d > parseISO(hojeISO())) { msg = "Ops, essa data ainda não chegou! Vamos conferir a data da pesagem?"; return draw("#m-d"); }
+      if (!isFinite(kg) || kg <= 0 || kg > e.hard) { msg = "Ops, esse peso não parece certo. Vamos conferir na balança, pelo nosso amiguinho?"; return draw("#m-kg"); }
+      if ((kg < e.min || kg > e.max) && !conf) { conf = true; msg = "Hmm, esse peso me parece fora do comum para " + (p.especie === "gato" ? "um gato" : "um cachorro") + ". Vamos conferir? Se estiver certo, é só salvar de novo."; return draw("#m-kg"); }
+      p.pesos = (p.pesos || []).concat([{ d: v.d, kg: kg }]); sincPeso(p); close();
+      salvarPet(p, "Peso de " + p.nome + " anotado! 💚");
+    }
+    return [h("h2", null, "Registrar peso de " + p.nome),
+      msg ? h("div", { class: "avisomodal", role: "alert" }, msg) : null,
+      h("div", { class: "stack" },
+        campo("m-d", "Data da pesagem", h("input", { id: "m-d", type: "date", max: hojeISO(), value: v.d, oninput: function (x) { v.d = x.target.value; } })),
+        campo("m-kg", "Peso em kg", h("input", { id: "m-kg", type: "number", inputmode: "decimal", step: "0.01", min: "0", value: v.kg, oninput: function (x) { v.kg = x.target.value; conf = false; } }), "Exemplo: 4,5"),
+        h("button", { class: "btn verde", type: "button", onclick: ok }, "💚 Salvar peso"),
+        h("button", { class: "btn sec", type: "button", onclick: close }, "Cancelar"))];
+  }, "#m-kg");
+}
+function modalSaude(p, r) {
+  var v = r ? { id: r.id, tipo: r.tipo, nome: r.nome, d: r.d, prox: r.prox || "", obs: r.obs || "" } : { id: null, tipo: "vacina", nome: "", d: hojeISO(), prox: "", obs: "" };
+  var msg = "";
+  abrirModal(r ? "Editar registro" : "Novo registro", function (close, draw) {
+    function ok() {
+      var nome = v.nome.trim(), d = parseISO(v.d), px = parseISO(v.prox), hoje = parseISO(hojeISO());
+      if (!nome) { msg = "Ops, qual é o nome? Pode copiar da carteirinha 🐾"; return draw("#m-nome"); }
+      if (!d) { msg = "Ops, falta a data em que foi feito. Se não lembrar, uma data aproximada ajuda."; return draw("#m-d"); }
+      if (d > hoje) { msg = "Ops, essa data ainda não chegou! Se for a próxima dose, coloque no campo de baixo."; return draw("#m-d"); }
+      if (v.prox && !px) { msg = "Ops, não entendi a data da próxima. Vamos conferir?"; return draw("#m-px"); }
+      if (px && px <= d) { msg = "Ops, a próxima data vem antes de quando foi feito. Vamos conferir?"; return draw("#m-px"); }
+      var novo = { id: v.id || uid(), tipo: v.tipo, nome: nome, d: v.d, prox: v.prox || "", obs: v.obs.trim(), criado: (r && r.criado) || Date.now() };
+      p.saude = (p.saude || []).filter(function (x) { return x.id !== novo.id; }).concat([novo]);
+      close(); salvarPet(p, "Anotado no cartão de " + p.nome + "! 💚");
+    }
+    var sug = (SUGESTOES[v.tipo] && SUGESTOES[v.tipo][p.especie]) || [];
+    return [h("h2", null, r ? "Editar registro" : "Novo registro"),
+      msg ? h("div", { class: "avisomodal", role: "alert" }, msg) : null,
+      h("div", { class: "stack" },
+        h("div", null, h("div", { class: "lbl" }, "O que foi?"),
+          h("div", { class: "opts big", role: "radiogroup", "aria-label": "Tipo de cuidado" }, Object.keys(TIPOS).map(function (k) {
+            return h("button", { class: "opt", type: "button", role: "radio", "aria-checked": v.tipo === k ? "true" : "false", onclick: function () { v.tipo = k; draw(); } },
+              h("span", { class: "em", "aria-hidden": "true" }, TIPOS[k].em), TIPOS[k].t);
+          }))),
+        campo("m-nome", TIPOS[v.tipo].q, h("input", { id: "m-nome", type: "text", maxlength: "60", autocomplete: "off", list: sug.length ? "m-sug" : null, value: v.nome, oninput: function (x) { v.nome = x.target.value; } }),
+          v.tipo === "vacina" ? "Pode escolher uma sugestão ou escrever o que está na carteirinha." : "Escreva o nome que está na embalagem."),
+        sug.length ? h("datalist", { id: "m-sug" }, sug.map(function (n) { return h("option", { value: n }); })) : null,
+        campo("m-d", "Data em que foi feito", h("input", { id: "m-d", type: "date", max: hojeISO(), value: v.d, oninput: function (x) { v.d = x.target.value; } })),
+        campo("m-px", "Próxima dose ou reforço (opcional)", h("input", { id: "m-px", type: "date", value: v.prox, oninput: function (x) { v.prox = x.target.value; } }), "Se você preencher, eu aviso quando estiver chegando."),
+        campo("m-obs", "Observação (opcional)", h("input", { id: "m-obs", type: "text", maxlength: "80", autocomplete: "off", value: v.obs, oninput: function (x) { v.obs = x.target.value; } }), "Por exemplo: clínica ou veterinário."),
+        h("button", { class: "btn verde", type: "button", onclick: ok }, "💚 Salvar"),
+        h("button", { class: "btn sec", type: "button", onclick: close }, "Cancelar"))];
+  }, "#m-nome");
 }
 
 /* ─── Formulário ─── */
@@ -555,7 +821,7 @@ function salvar() {
   if (peso != null && peso !== ant) pesos = pesos.concat([{ d: hojeISO(), kg: peso }]);
   var pet = {
     id: d.id || uid(), nome: nome, especie: d.especie, sexo: d.sexo || "", raca: (d.raca || "").trim(),
-    nasc: d.nasc, aprox: !!d.aprox, peso: peso, pesos: pesos, foto: d.foto || "",
+    nasc: d.nasc, aprox: !!d.aprox, peso: peso, pesos: pesos, saude: (existente && existente.saude) || [], foto: d.foto || "",
     convenio: { nome: (d.convenio.nome || "").trim(), numero: (d.convenio.numero || "").trim() },
     criado: (existente && existente.criado) || Date.now(), editado: Date.now()
   };
