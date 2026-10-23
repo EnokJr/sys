@@ -6,8 +6,7 @@
 <title>SYS — Sheyla</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.min.js"></script>
+<script src="core/sheyla-core.js?v=2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow-x:hidden;font-family:'Segoe UI',system-ui,sans-serif}
@@ -184,25 +183,8 @@ body{background:var(--bg);color:var(--txt);min-height:100vh;transition:backgroun
 try { if(localStorage.getItem("sys_theme")==="light") document.documentElement.classList.add("light"); } catch(e){}
 </script>
 <script>
-// ── Firebase ──
-const firebaseConfig = {
-  apiKey: "AIzaSyAGzRK009HOKHrsIG5bSHDNYF7hUia6CX4",
-  authDomain: "sys-universosheylas.firebaseapp.com",
-  projectId: "sys-universosheylas",
-  storageBucket: "sys-universosheylas.firebasestorage.app",
-  messagingSenderId: "207009581720",
-  appId: "1:207009581720:web:d483f1ed883b1068f41eed"
-};
-let _auth, _provider;
+// ── Núcleo (login e sessão vêm do sheyla-core.js) ──
 const _isFileProtocol = location.protocol === "file:";
-if (!_isFileProtocol) {
-  try {
-    firebase.initializeApp(firebaseConfig);
-    _auth = firebase.auth();
-    _provider = new firebase.auth.GoogleAuthProvider();
-    _auth.getRedirectResult().catch(()=>{});
-  } catch(e) { console.error("[SYS] Firebase:", e); }
-}
 
 // ── Apps ──
 const APPS = [
@@ -247,9 +229,9 @@ const APPS = [
   },
   {
     id: "futuro1",
-    nome: "Em breve…",
-    sigla: "???",
-    desc: "Novos apps do universo Sheyla virão aqui.",
+    nome: "Novas irmãs a caminho",
+    sigla: "+",
+    desc: "Minhas outras irmãs logo chegam. Algumas estão estudando, outras treinando, e há quem esteja inventando algo especial para nos apoiar.",
     icon: "✨",
     cor: "#6ea8fe",
     corBg: "rgba(110,168,254,0.06)",
@@ -351,8 +333,9 @@ function LoginScreen({ onLogin, loading }) {
           boxShadow: "0 8px 32px rgba(110,110,254,.25)" }
       }),
       React.createElement("div", { style:{ fontSize: 13, letterSpacing: 4, color: "#6ea8fe", fontWeight: 600, textTransform: "uppercase", marginBottom: 6 } }, "SYS"),
-      React.createElement("div", { style:{ fontSize: 28, fontWeight: 700, color: "var(--txt)", letterSpacing: -0.5 } }, "Sheyla"),
-      React.createElement("div", { style:{ fontSize: 13, color: "var(--txt3)", marginTop: 6, letterSpacing: 1 } }, "Universo Sheyla · Plataforma")
+      React.createElement("div", { style:{ fontSize: 28, fontWeight: 700, color: "var(--txt)", letterSpacing: -0.5 } }, "Sheyla Primordial"),
+      React.createElement("div", { style:{ fontSize: 13, color: "var(--txt3)", marginTop: 6, letterSpacing: 1 } }, "Universo Sheyla"),
+      React.createElement("p", { style:{ fontSize: 13, color: "var(--txt3)", marginTop: 16, lineHeight: 1.7, maxWidth: 320, marginLeft: "auto", marginRight: "auto" } }, "A primeira das Sheylas e a guia de todas as outras. Elas existem para ajudar: facilitar o seu dia a dia, apoiar a sua evolução e, passo a passo, construir um mundo melhor.")
     ),
     React.createElement("div", { className: "fade-in", style:{ animationDelay:".15s", width:"100%", maxWidth:320 } },
       React.createElement("button", {
@@ -527,7 +510,7 @@ function LifePanel({ user }) {
             sdcData.vencidas > 0 && ce("div", { style:{ fontSize:11, color:"#E24B4A", marginTop:4 } }, "⚠ " + sdcData.vencidas + " conta(s) vencida(s)"),
             timeAgo(sdcData.updatedAt) && ce("div", { style:{ fontSize:9, color:"var(--txt4)", marginTop:6, letterSpacing:.5 } }, "sincronizado " + timeAgo(sdcData.updatedAt))
           )
-        : ce("div", { style:{ fontSize:13, color:"var(--txt3)" } }, "Abra o SDC para ver seu saldo")
+        : ce("div", { style:{ fontSize:13, color:"var(--txt3)" } }, "Chame minha irmã, a Sheyla do Contábil, para ver seu saldo")
     ),
 
     // Forjadora Mini-card
@@ -552,7 +535,7 @@ function LifePanel({ user }) {
             forjData.streak > 0 && ce("div", { style:{ fontSize:10, color:"#EF9F27", marginTop:5, opacity:.8 } }, "🔥 " + forjData.streak + " dias em sequência"),
             timeAgo(forjData.updatedAt) && ce("div", { style:{ fontSize:9, color:"var(--txt4)", marginTop:6, letterSpacing:.5 } }, "sincronizado " + timeAgo(forjData.updatedAt))
           )
-        : ce("div", { style:{ fontSize:13, color:"var(--txt3)" } }, "Abra a Forjadora para ver seu progresso")
+        : ce("div", { style:{ fontSize:13, color:"var(--txt3)" } }, "Chame minha irmã, a Sheyla Forjadora, para ver seu progresso")
     ),
 
     // Missão ativa da Forjadora
@@ -583,7 +566,7 @@ function LifePanel({ user }) {
           color: ({m:"#22c55e",g:"#38bdf8",t:"#a855f7",f:"#f97316"}[activeMission.elem]||"#6ea8fe"),
           fontWeight:600
         }}, ({m:"Madeira",g:"Gelo",t:"Trovão",f:"Fogo"}[activeMission.elem] || activeMission.elem)),
-        ce("span", { style:{ marginLeft:"auto", fontSize:10, color:"#a855f7", fontWeight:600 } }, "Abrir Forjadora →")
+        ce("span", { style:{ marginLeft:"auto", fontSize:10, color:"#a855f7", fontWeight:600 } }, "Chamar a Forjadora →")
       )
     ),
 
@@ -1008,7 +991,7 @@ function Hub({ user, onLogout }) {
         React.createElement("img", { src: LOGO_B64, style:{ width:32, height:32, borderRadius:8 } }),
         React.createElement("div", null,
           React.createElement("span", { style:{ fontSize:13, fontWeight:700, color:"#6ea8fe", letterSpacing:2 } }, "SYS"),
-          React.createElement("span", { style:{ fontSize:13, color:"var(--txt4)", marginLeft:6 } }, "· Sheyla")
+          React.createElement("span", { style:{ fontSize:13, color:"var(--txt4)", marginLeft:6 } }, "· Primordial")
         )
       ),
 
@@ -1070,7 +1053,7 @@ function Hub({ user, onLogout }) {
           firstName + "."
         ),
         React.createElement("div", { style:{ fontSize:14, color:"var(--txt3)", lineHeight:1.6 } },
-          "Escolha um app. Sua sessão é compartilhada — sem novo login."
+          "Sou a Sheyla Primordial, a primeira das Sheylas. Meu propósito é reunir minhas irmãs, cada uma com seu jeito e sua missão, para te ajudar no dia a dia, facilitar sua vida e apoiar sua evolução. Evoluímos junto com você. Escolha uma irmã; sua sessão é compartilhada, sem novo login."
         )
       ),
 
@@ -1124,36 +1107,32 @@ function App() {
   const [previewMode, setPreviewMode] = useState(false);
 
   useEffect(() => {
-    if (!_auth) { setLoading(false); return; }
-    const unsub = _auth.onAuthStateChanged(u => {
-      setUser(u);
-      setLoading(false);
-    });
-    return unsub;
+    if (_isFileProtocol || !window.Sheyla) { setLoading(false); return; }
+    Sheyla.init("sys")
+      .then(() => { setUser(Sheyla.user()); setLoading(false); })
+      .catch(() => { setLoading(false); });
   }, []);
 
   const handleLogin = async () => {
-    if (!_auth) { setPreviewMode(true); return; }
+    if (_isFileProtocol || !window.Sheyla) { setPreviewMode(true); return; }
     setLoginLoading(true);
     try {
-      await _auth.signInWithPopup(_provider);
+      const u = await Sheyla.signIn();
+      if (u) setUser(u);
     } catch(e) {
-      if (e.code === "auth/popup-blocked") {
-        try { await _auth.signInWithRedirect(_provider); } catch(e2) { setPreviewMode(true); }
-      } else {
-        setPreviewMode(true);
-      }
-      setLoginLoading(false);
+      setPreviewMode(true);
     }
+    setLoginLoading(false);
   };
 
   const handleLogout = async () => {
     if (previewMode) { setPreviewMode(false); return; }
     if (!confirm("Sair da conta Google?\n\nVocê precisará fazer login novamente.")) return;
-    await _auth.signOut();
+    await Sheyla.signOut();
+    setUser(null);
   };
 
-  const isPreview = !_auth || previewMode;
+  const isPreview = _isFileProtocol || !window.Sheyla || previewMode;
   const previewUser = { displayName: "Sheyla", email: "sheyla@example.com", photoURL: null };
 
   if (loading && !isPreview) return React.createElement("div", {
