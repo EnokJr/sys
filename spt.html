@@ -194,9 +194,9 @@ input[type=time]{width:100%;min-height:54px;padding:10px 14px;background:var(--b
 .dias{display:flex;gap:6px;flex-wrap:wrap}
 .dias .mini{padding:0 10px;min-width:44px}
 .dias .mini[aria-pressed=true]{background:var(--esm-700);color:#fff}
-.ficha{white-space:pre-wrap;word-break:break-word;font:600 .92rem/1.45 Nunito,sans-serif;background:var(--creme);border:3px solid var(--tinta);border-radius:14px;padding:12px;margin:0;max-height:42vh;overflow:auto}
+.ficha{white-space:pre-wrap;word-break:break-word;font:500 .95rem/1.55 Nunito,sans-serif;background:var(--creme);border:3px solid var(--tinta);border-radius:14px;padding:12px;margin:0;max-height:56vh;overflow:auto}.ficha strong{font-weight:900}
 .folha{display:none}
-@media print{body.imprimindo>*:not(.folha){display:none!important}body.imprimindo .folha{display:block;padding:24px;background:#fff}.folha h1{margin-bottom:12px}.folha pre{white-space:pre-wrap;font:14px/1.5 Nunito,Arial,sans-serif}}
+@media print{body.imprimindo>*:not(.folha){display:none!important}body.imprimindo .folha{display:block;padding:24px;background:#fff}.folhatxt{white-space:pre-wrap;font:14px/1.6 Nunito,Arial,sans-serif}}
 
 .box .opts.big{gap:8px}.box .opts.big .opt{min-width:0;padding:6px 2px;font-size:.9rem}.box .opts.big .opt .em{font-size:1.9rem}
 .avisomodal{background:var(--creme2);border:3px solid var(--lar-700);border-radius:14px;padding:10px 14px;font-weight:700;margin:0 0 14px}
@@ -1155,34 +1155,90 @@ function checarAvisos() {
 setInterval(checarAvisos, 20000);
 
 /* ─── Ficha para o veterinário ─── */
+/* Ficha para o veterinário: texto no formato do WhatsApp (*negrito*, _itálico_), que também vira a prévia e a folha impressa */
+function limpo(t) { return String(t == null ? "" : t).replace(/[*_~`]/g, "").trim(); }
+function fmtH(horas) { return horas.join(" · "); }
 function textoFicha(p) {
-  var e = ESPECIES[p.especie] || ESPECIES.cachorro, ord = pesosOrd(p), L = [];
-  L.push("FICHA DE " + p.nome.toUpperCase() + " (anotada pelo tutor em " + fmtData(hojeISO()) + ")");
-  L.push("Espécie: " + (p.especie === "outro" ? (p.raca || "Outro") : e.m.toLowerCase()) + (p.raca && p.especie !== "outro" ? " · Raça: " + p.raca : ""));
-  L.push("Sexo: " + (p.sexo === "f" ? "fêmea" : p.sexo === "m" ? "macho" : "não informado"));
-  L.push("Nascimento: " + fmtData(p.nasc) + (p.aprox ? " (aproximado)" : "") + " · Idade: " + idade(p.nasc));
+  var e = ESPECIES[p.especie] || ESPECIES.cachorro, ord = pesosOrd(p), hoje = hojeISO(), L = [], SEP = "──────────────";
+  var esp = p.especie === "outro" ? (limpo(p.raca) || "Outro bichinho") : e.m;
+  var sexo = p.sexo === "f" ? "Fêmea" : p.sexo === "m" ? "Macho" : "";
+  var raca = p.especie !== "outro" && p.raca ? limpo(p.raca) : "";
+  L.push("🐾 *FICHA DO PET — " + limpo(p.nome).toUpperCase() + "*");
+  L.push(emojiPet(p) + " " + [esp, raca, sexo, idade(p.nasc)].filter(Boolean).join(" · "));
+  L.push("_Gerada em " + fmtData(hoje) + " pelo Sheyla Pet_");
+
+  var cu = cuidados(p), venc = cu.filter(function (c) { return c.n < 0; }), prox = cu.filter(function (c) { return c.n >= 0 && c.n <= 30; });
+  var rem = (p.rotina || []).filter(function (x) { return x.tipo === "remedio" && !x.pausado && itemAtivo(x, hoje); });
+  var ali = (p.rotina || []).filter(function (x) { return x.tipo === "refeicao" && !x.pausado && itemAtivo(x, hoje); });
+  if (venc.length || prox.length || rem.length) {
+    L.push("", SEP, "🔔 *DESTAQUES*");
+    venc.forEach(function (c) { L.push("🚨 *" + limpo(c.r.nome) + "* — prazo vencido há " + (-c.n) + (c.n === -1 ? " dia" : " dias") + " (era " + fmtData(c.r.prox) + ")"); });
+    prox.forEach(function (c) { L.push("⏰ *" + limpo(c.r.nome) + "* — " + fmtData(c.r.prox) + " (" + c.s.t + ")"); });
+    if (rem.length) L.push("💊 " + rem.length + (rem.length === 1 ? " remédio em uso" : " remédios em uso") + " (detalhes abaixo)");
+  }
+
+  L.push("", SEP, "🪪 *IDENTIFICAÇÃO*");
+  L.push("• Espécie: " + esp + (raca ? " · Raça: " + raca : ""));
+  L.push("• Sexo: " + (sexo || "não informado"));
+  L.push("• Nascimento: " + fmtData(p.nasc) + (p.aprox ? " (aproximado)" : ""));
+  L.push("• Idade: " + idade(p.nasc));
+  if (p.convenio && (p.convenio.nome || p.convenio.numero)) L.push("• Convênio: " + limpo([p.convenio.nome, p.convenio.numero].filter(Boolean).join(" · ")));
+
   if (ord.length) {
-    L.push("Peso atual: " + fmtPeso(ord[ord.length - 1].kg) + " (" + fmtData(ord[ord.length - 1].d) + ")");
-    if (ord.length > 1) L.push("Pesos anteriores: " + ord.slice(-6, -1).reverse().map(function (k) { return fmtPeso(k.kg) + " em " + fmtData(k.d); }).join("; "));
+    var u = ord[ord.length - 1], a2 = ord[ord.length - 2];
+    L.push("", SEP, "⚖️ *PESO*", "• Atual: *" + fmtPeso(u.kg) + "* (" + fmtData(u.d) + ")");
+    if (a2) { var df = u.kg - a2.kg; L.push("• Variação: " + (df > 0 ? "+" : "") + fmtNum(df, 2).replace(/,?0+$/, "").replace(/,$/, "") + " kg desde " + fmtData(a2.d)); }
+    if (ord.length > 2) L.push("• Anteriores: " + ord.slice(-6, -1).reverse().map(function (k) { return fmtPeso(k.kg) + " (" + fmtCurto(k.d) + ")"; }).join("; "));
   }
-  if (p.convenio && (p.convenio.nome || p.convenio.numero)) L.push("Convênio: " + [p.convenio.nome, p.convenio.numero].filter(Boolean).join(" · "));
-  var vs = (p.saude || []).slice().sort(function (a, b) { return a.d < b.d ? 1 : -1; });
-  if (vs.length) {
-    L.push(""); L.push("SAÚDE: VACINAS, VERMÍFUGOS, EXAMES E CONSULTAS");
-    vs.forEach(function (r) { L.push("- " + r.nome + " (" + (TIPOS[r.tipo] || TIPOS.vacina).t.toLowerCase() + "): feito em " + fmtData(r.d) + (r.prox ? "; próxima em " + fmtData(r.prox) : "") + (r.obs ? " — " + r.obs : "")); });
+
+  var vig = {}; vigentes(p).forEach(function (r) { vig[r.id] = true; });
+  function bloco(titulo, tipos) {
+    var rs = (p.saude || []).filter(function (r) { return tipos.indexOf(r.tipo) >= 0; });
+    if (!rs.length) return;
+    L.push("", SEP, titulo);
+    rs.filter(function (r) { return vig[r.id]; }).sort(function (a, b) { return a.tipo < b.tipo ? -1 : a.tipo > b.tipo ? 1 : a.nome < b.nome ? -1 : 1; }).forEach(function (r) {
+      var t = TIPOS[r.tipo] || TIPOS.vacina, s2 = r.prox ? statusCuidado(r) : null;
+      L.push("• " + t.em + " *" + limpo(r.nome) + "*");
+      L.push("   Feito: " + fmtData(r.d) + (r.prox ? " · Próxima: " + fmtData(r.prox) + " " + s2.em : ""));
+      if (r.obs) L.push("   _" + limpo(r.obs) + "_");
+    });
+    var ant = rs.filter(function (r) { return !vig[r.id]; }).sort(function (a, b) { return a.d < b.d ? 1 : -1; });
+    if (ant.length) L.push("_Anteriores:_ " + ant.slice(0, 6).map(function (r) { return limpo(r.nome) + " (" + fmtCurto(r.d) + ")"; }).join("; "));
   }
-  var ali = (p.rotina || []).filter(function (x) { return x.tipo === "refeicao" && !x.pausado && itemAtivo(x, hojeISO()); });
-  if (ali.length) {
-    L.push(""); L.push("ALIMENTAÇÃO (conforme anotado pelo tutor)");
-    ali.forEach(function (x) { L.push("- " + x.nome + (x.qtd ? " — " + fmtG(x.qtd) + " por refeição" : "") + (x.horas && x.horas.length ? " — " + x.horas.join(", ") : "")); });
-  }
-  var rem = (p.rotina || []).filter(function (x) { return x.tipo === "remedio" && !x.pausado && itemAtivo(x, hojeISO()); });
+  bloco("💉 *VACINAS, VERMÍFUGOS E ANTIPULGAS*", ["vacina", "vermifugo", "antipulgas"]);
+  bloco("🩻 *EXAMES E CONSULTAS*", ["exame", "consulta"]);
+
   if (rem.length) {
-    L.push(""); L.push("REMÉDIOS EM USO (conforme anotado pelo tutor)");
-    rem.forEach(function (x) { L.push("- " + x.nome + (x.dose ? " — " + x.dose : "") + (x.horas && x.horas.length ? " — " + x.horas.join(", ") : "") + (x.fim ? " — até " + fmtData(x.fim) : "")); });
+    L.push("", SEP, "💊 *REMÉDIOS EM USO*");
+    rem.forEach(function (x) {
+      L.push("• *" + limpo(x.nome) + "*" + (x.dose ? " — " + limpo(x.dose) : ""));
+      L.push("   Horários: " + (x.horas && x.horas.length ? fmtH(x.horas) : "sem horário fixo") + (x.dias && x.dias.length && x.dias.length < 7 ? " (" + resumoDias(x) + ")" : "") + (x.fim ? " · até " + fmtData(x.fim) : ""));
+    });
   }
-  L.push(""); L.push("Informações anotadas pelo tutor no Sheyla Pet. Não substituem a avaliação do veterinário.");
+  if (ali.length) {
+    L.push("", SEP, "🍽️ *ALIMENTAÇÃO*");
+    var total = 0;
+    ali.forEach(function (x) {
+      var n = (x.horas || []).length;
+      L.push("• *" + limpo(x.nome) + "*" + (x.qtd ? " — " + fmtG(x.qtd) + " por refeição" : ""));
+      L.push("   Horários: " + (n ? fmtH(x.horas) : "sem horário fixo"));
+      if (x.qtd && n) total += x.qtd * n;
+    });
+    if (total) L.push("• Total por dia: *" + fmtG(total) + "*");
+  }
+  L.push("", SEP, "_Informações anotadas pelo tutor no Sheyla Pet. Não substituem a avaliação do veterinário._");
   return L.join("\n");
+}
+/* Mostra *negrito* e _itálico_ do texto como formatação real (sem innerHTML) */
+function rich(t) {
+  var f = document.createDocumentFragment();
+  t.split(/(\*[^*\n]+\*|_[^_\n]+_)/).forEach(function (x) {
+    if (!x) return;
+    if (x.length > 2 && x[0] === "*" && x[x.length - 1] === "*") f.appendChild(h("strong", null, x.slice(1, -1)));
+    else if (x.length > 2 && x[0] === "_" && x[x.length - 1] === "_") f.appendChild(h("em", null, x.slice(1, -1)));
+    else f.appendChild(document.createTextNode(x));
+  });
+  return f;
 }
 function copiar(t) {
   if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t);
@@ -1192,7 +1248,7 @@ function copiar(t) {
   });
 }
 function imprimirFicha(p, t) {
-  var f = h("div", { class: "folha" }, h("h1", null, "Ficha de " + p.nome), h("pre", null, t));
+  var f = h("div", { class: "folha" }, h("div", { class: "folhatxt" }, rich(t)));
   document.body.appendChild(f); document.body.classList.add("imprimindo");
   function fim() { document.body.classList.remove("imprimindo"); f.remove(); window.removeEventListener("afterprint", fim); }
   window.addEventListener("afterprint", fim);
@@ -1203,7 +1259,7 @@ function modalFicha(p) {
   abrirModal("Ficha para o veterinário", function (close) {
     return [h("h2", null, "Ficha de " + p.nome),
       h("p", { class: "hint", style: "margin:0 0 10px" }, "Aqui está um resumo para levar à consulta. Nada sai da sua conta sem você enviar."),
-      h("pre", { class: "ficha" }, t),
+      h("div", { class: "ficha" }, rich(t)),
       h("div", { class: "stack", style: "margin-top:14px" },
         navigator.share ? h("button", { class: "btn verde", type: "button", onclick: function () { navigator.share({ title: "Ficha de " + p.nome, text: t }).catch(function () {}); } }, "📤 Enviar") : null,
         h("button", { class: navigator.share ? "btn sec" : "btn verde", type: "button", onclick: function () { copiar(t).then(function () { toast("Ficha copiada! 💚"); }, function () { toast("Não consegui copiar. Selecione o texto e copie."); }); } }, "📋 Copiar texto"),
