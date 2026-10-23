@@ -56,6 +56,7 @@ button,input,select{font:inherit;color:inherit}
 .av img,.av svg{width:100%;height:100%;display:block;object-fit:cover}
 /* Seleção de pets */
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:16px}
+@media (min-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
 .tile{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 8px 14px;background:var(--branco);border:3px solid var(--tinta);border-radius:24px;box-shadow:0 5px 0 var(--tinta);cursor:pointer;font-weight:800;min-height:190px;justify-content:flex-start;transition:transform .08s,box-shadow .08s}
 .tile:active{transform:translateY(4px);box-shadow:0 1px 0 var(--tinta)}
 .tile .av{width:112px;height:112px}
@@ -317,6 +318,8 @@ function vSplash() {
     h("div", { class: "dots", "aria-hidden": "true" }, h("i"), h("i"), h("i")));
 }
 
+function skinAtual() { return SKINS.filter(function (k) { return k.id === st.skin; })[0] || SKINS[0]; }
+
 function vPicker() {
   var hoje = new Date(), est = estacao(hoje);
   var primeiro = primeiroNome();
@@ -333,15 +336,18 @@ function vPicker() {
   }
   return h("div", null,
     topbar("Sheyla Pet", linkHub()),
-    h("main", { class: "wrap" },
+    h("main", { class: "wrap largo" },
       h("div", { class: "chips" },
         h("span", { class: "chip" }, "📅 " + dia),
         h("span", { class: "chip" }, est.emoji + " " + est.nome),
         st.local ? h("span", { class: "chip aviso" }, "modo local · sem login") : null),
-      bubble(vazio
-        ? "Oi" + (primeiro ? ", " + primeiro : "") + "! Eu sou a Sheyla Pet 🐾 Vamos cadastrar o seu primeiro amiguinho?"
-        : "Oi" + (primeiro ? ", " + primeiro : "") + "! Que bom te ver por aqui 🐾"),
-      h("h1", null, vazio ? "Quem vamos conhecer hoje?" : "Que amiguinho vamos cuidar hoje?"),
+      h("div", { class: "intro" },
+        h("img", { class: "bigimg", src: BIG[st.skin] || BIG.laranja, alt: skinAtual().alt }),
+        h("div", { class: "dialog" },
+          h("p", { class: "saud" }, "Oi", primeiro ? ", " : "", primeiro ? h("span", { class: "nome" }, primeiro) : null, "! Que bom te ver por aqui 🐾"),
+          h("p", null, vazio ? "Ainda não conheço nenhum amiguinho seu. Vamos cadastrar o primeiro?" : "Estou pronta para ajudar no cuidado de quem você mais ama."),
+          h("p", { class: "chamada" }, vazio ? "👇 Toque em Novo amiguinho para começarmos o cadastro." : "👇 Que amiguinho vamos cuidar hoje? Toque em um deles aqui embaixo."))),
+      vazio ? null : h("h2", { class: "sec-title" }, "Meus amiguinhos"),
       grid,
       h("h2", { class: "sec-title" }, "Quem está com a Sheyla?"),
       menuSkins(function (k) { setSkin(k.id); toast(k.msg); }),
