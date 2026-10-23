@@ -8762,6 +8762,14 @@ function eChip(k, v) {
     else location.replace('index.html');
   }
 
+  function writeSummary(){
+    try{
+      const raw=ls.get(SAVE_KEY); if(!raw) return;
+      const st=JSON.parse(raw); const a=st.app||{};
+      ls.set('forj_summary',JSON.stringify({name:a.name,level:a.level,streak:a.streak,m:Math.round(a.m||0),g:Math.round(a.g||0),t:Math.round(a.t||0),f:Math.round(a.f||0),mbtiType:a.mbtiType||null,missionsOpen:(st.missions||[]).filter(x=>!x.done).length,updatedAt:Date.now()}));
+    }catch(e){}
+  }
+
   async function push(){
     if(!user) return;
     const raw=ls.get(SAVE_KEY); if(!raw) return;
@@ -8812,6 +8820,7 @@ function eChip(k, v) {
     if(prev && prev!==info.uid){ ls.del(SAVE_KEY); ls.del('forj_summary'); }
     ls.set('forj_uid',info.uid);
     const changed=await pull();
+    writeSummary();
     if(changed && appRunning()) location.reload();
   }).catch(function(e){ console.warn('[Forjadora] núcleo falhou, modo offline',e); });
 })();
