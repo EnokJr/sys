@@ -135,6 +135,9 @@ input[aria-invalid=true]{border-color:var(--erro);background:#FFF1EF}
 .tag.ok{background:var(--esm-100)}.tag.logo{background:var(--creme2);border-color:var(--lar-700)}.tag.atraso{background:#FFE3DF;border-color:var(--erro);color:var(--erro)}
 .vazio{font-weight:700;color:var(--tinta2);margin:18px 2px}
 .box.rolavel{max-height:92vh;overflow-y:auto}
+.opts.cores{display:grid;grid-template-columns:repeat(3,1fr)}
+.opts.cores .opt{flex-direction:column;min-height:92px;gap:4px;padding:6px 2px;font-size:.88rem}
+.av.mini{display:block;width:52px;height:52px;border-width:3px}
 /* Cartão com personalidade */
 body[data-estacao=primavera]{--est-a:#12805C;--est-b:#35A77C}
 body[data-estacao=verao]{--est-a:#12805C;--est-b:#1FA08C}
@@ -265,8 +268,8 @@ var ESPECIES = {
   cachorro: { emoji: "🐶", m: "Cachorro", f: "Cachorra", min: 0.08, max: 80, hard: 150 },
   outro: { emoji: "👽", m: "Bichinho", f: "Bichinha", min: 0, max: 1e9, hard: 1000 }
 };
-var SVG_GATO = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#CFF5E4"/><path d="M22 44 L26 12 L46 30Z M78 44 L74 12 L54 30Z" fill="#F59A3B" stroke="#0F3B2E" stroke-width="3" stroke-linejoin="round"/><ellipse cx="50" cy="56" rx="32" ry="28" fill="#F59A3B" stroke="#0F3B2E" stroke-width="3"/><path d="M40 34 Q50 40 60 34" fill="none" stroke="#D9701F" stroke-width="3" stroke-linecap="round"/><circle cx="39" cy="54" r="4.5" fill="#0F3B2E"/><circle cx="61" cy="54" r="4.5" fill="#0F3B2E"/><circle cx="40.5" cy="52.5" r="1.5" fill="#fff"/><circle cx="62.5" cy="52.5" r="1.5" fill="#fff"/><path d="M46 63 L54 63 L50 68Z" fill="#E8587A" stroke="#0F3B2E" stroke-width="2" stroke-linejoin="round"/><path d="M50 68 Q45 74 40 70 M50 68 Q55 74 60 70" fill="none" stroke="#0F3B2E" stroke-width="2.5" stroke-linecap="round"/><path d="M14 58 L30 60 M14 68 L30 65 M86 58 L70 60 M86 68 L70 65" stroke="#0F3B2E" stroke-width="2" stroke-linecap="round"/></svg>';
-var SVG_CAO = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#FFE7C2"/><ellipse cx="22" cy="50" rx="12" ry="24" fill="#8A5A2B" stroke="#0F3B2E" stroke-width="3" transform="rotate(12 22 50)"/><ellipse cx="78" cy="50" rx="12" ry="24" fill="#8A5A2B" stroke="#0F3B2E" stroke-width="3" transform="rotate(-12 78 50)"/><ellipse cx="50" cy="54" rx="29" ry="28" fill="#F2C48D" stroke="#0F3B2E" stroke-width="3"/><ellipse cx="50" cy="66" rx="14" ry="10" fill="#FFF3E0" stroke="#0F3B2E" stroke-width="2.5"/><circle cx="39" cy="50" r="4.5" fill="#0F3B2E"/><circle cx="61" cy="50" r="4.5" fill="#0F3B2E"/><circle cx="40.5" cy="48.5" r="1.5" fill="#fff"/><circle cx="62.5" cy="48.5" r="1.5" fill="#fff"/><ellipse cx="50" cy="62" rx="5.5" ry="4" fill="#0F3B2E"/><path d="M50 66 L50 71 M50 71 Q45 76 41 72 M50 71 Q55 76 59 72" fill="none" stroke="#0F3B2E" stroke-width="2.5" stroke-linecap="round"/></svg>';
+var SVG_GATO = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#CFF5E4"/><path d="M22 44 L26 12 L46 30Z M78 44 L74 12 L54 30Z" fill="{M}" stroke="#0F3B2E" stroke-width="3" stroke-linejoin="round"/><ellipse cx="50" cy="56" rx="32" ry="28" fill="{M}" stroke="#0F3B2E" stroke-width="3"/><path d="M40 34 Q50 40 60 34" fill="none" stroke="{S}" stroke-width="3" stroke-linecap="round"/><circle cx="39" cy="54" r="4.5" fill="{E}"/><circle cx="61" cy="54" r="4.5" fill="{E}"/><circle cx="40.5" cy="52.5" r="1.5" fill="#fff"/><circle cx="62.5" cy="52.5" r="1.5" fill="#fff"/><path d="M46 63 L54 63 L50 68Z" fill="#E8587A" stroke="#0F3B2E" stroke-width="2" stroke-linejoin="round"/><path d="M50 68 Q45 74 40 70 M50 68 Q55 74 60 70" fill="none" stroke="#0F3B2E" stroke-width="2.5" stroke-linecap="round"/><path d="M14 58 L30 60 M14 68 L30 65 M86 58 L70 60 M86 68 L70 65" stroke="#0F3B2E" stroke-width="2" stroke-linecap="round"/></svg>';
+var SVG_CAO = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#FFE7C2"/><ellipse cx="22" cy="50" rx="12" ry="24" fill="{S}" stroke="#0F3B2E" stroke-width="3" transform="rotate(12 22 50)"/><ellipse cx="78" cy="50" rx="12" ry="24" fill="{S}" stroke="#0F3B2E" stroke-width="3" transform="rotate(-12 78 50)"/><ellipse cx="50" cy="54" rx="29" ry="28" fill="{M}" stroke="#0F3B2E" stroke-width="3"/><ellipse cx="50" cy="66" rx="14" ry="10" fill="#FFF3E0" stroke="#0F3B2E" stroke-width="2.5"/><circle cx="39" cy="50" r="4.5" fill="{E}"/><circle cx="61" cy="50" r="4.5" fill="{E}"/><circle cx="40.5" cy="48.5" r="1.5" fill="#fff"/><circle cx="62.5" cy="48.5" r="1.5" fill="#fff"/><ellipse cx="50" cy="62" rx="5.5" ry="4" fill="#0F3B2E"/><path d="M50 66 L50 71 M50 71 Q45 76 41 72 M50 71 Q55 76 59 72" fill="none" stroke="#0F3B2E" stroke-width="2.5" stroke-linecap="round"/></svg>';
 
 var SVG_ALIEN = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#FFE7C2"/><path d="M38 30 Q34 16 28 13 M62 30 Q66 16 72 13" fill="none" stroke="#0F3B2E" stroke-width="3" stroke-linecap="round"/><circle cx="28" cy="12" r="5.5" fill="#F59A3B" stroke="#0F3B2E" stroke-width="3"/><circle cx="72" cy="12" r="5.5" fill="#F59A3B" stroke="#0F3B2E" stroke-width="3"/><ellipse cx="36" cy="92" rx="9" ry="4.5" fill="#12805C" stroke="#0F3B2E" stroke-width="3"/><ellipse cx="64" cy="92" rx="9" ry="4.5" fill="#12805C" stroke="#0F3B2E" stroke-width="3"/><path d="M50 26 C78 26 88 52 84 72 C81 87 66 90 50 90 C34 90 19 87 16 72 C12 52 22 26 50 26Z" fill="#6EE7B7" stroke="#0F3B2E" stroke-width="3"/><ellipse cx="37" cy="54" rx="8.5" ry="10.5" fill="#fff" stroke="#0F3B2E" stroke-width="2.5"/><ellipse cx="63" cy="54" rx="8.5" ry="10.5" fill="#fff" stroke="#0F3B2E" stroke-width="2.5"/><circle cx="39" cy="56" r="5.5" fill="#0F3B2E"/><circle cx="65" cy="56" r="5.5" fill="#0F3B2E"/><circle cx="41" cy="53.5" r="1.8" fill="#fff"/><circle cx="67" cy="53.5" r="1.8" fill="#fff"/><path d="M43 73 Q50 80 57 73" fill="none" stroke="#0F3B2E" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="68" r="4.5" fill="#F59A3B" opacity=".55"/><circle cx="76" cy="68" r="4.5" fill="#F59A3B" opacity=".55"/><circle cx="50" cy="38" r="2" fill="#12805C"/><circle cx="44" cy="42" r="1.5" fill="#12805C"/><circle cx="57" cy="41" r="1.5" fill="#12805C"/></svg>';
 
@@ -323,6 +326,33 @@ var OUTROS = [
   { em: "🐠", nome: "Peixe" }, { em: "🦎", nome: "Réptil" }, { em: "🐭", nome: "Roedor" }, { em: "🦔", nome: "Ouriço" }, { em: "🐴", nome: "Cavalo" }
 ];
 function emojiPet(p) { return p && p.especie === "outro" && p.emoji ? p.emoji : (ESPECIES[p && p.especie] || ESPECIES.cachorro).emoji; }
+var PALETAS = {
+  gato: [
+    { id: "laranja", nome: "Laranja", m: "#F59A3B", s: "#D9701F", e: "#0F3B2E" },
+    { id: "cinza", nome: "Cinza", m: "#9AA5B1", s: "#6B7785", e: "#0F3B2E" },
+    { id: "preto", nome: "Preto", m: "#3A3F47", s: "#6B7280", e: "#FFD54F" },
+    { id: "branco", nome: "Branco", m: "#FFFFFF", s: "#C9D3DE", e: "#0F3B2E" },
+    { id: "creme", nome: "Creme", m: "#F3D9A4", s: "#D9B26B", e: "#0F3B2E" },
+    { id: "marrom", nome: "Marrom", m: "#8A5A2B", s: "#5E3A18", e: "#FFD54F" }
+  ],
+  cachorro: [
+    { id: "caramelo", nome: "Caramelo", m: "#F2C48D", s: "#8A5A2B", e: "#0F3B2E" },
+    { id: "preto", nome: "Preto", m: "#3A3F47", s: "#1F2329", e: "#FFD54F" },
+    { id: "branco", nome: "Branco", m: "#FFFFFF", s: "#D8D1C4", e: "#0F3B2E" },
+    { id: "marrom", nome: "Chocolate", m: "#7B4B2A", s: "#4E2E17", e: "#FFD54F" },
+    { id: "cinza", nome: "Cinza", m: "#9AA5B1", s: "#6B7785", e: "#0F3B2E" },
+    { id: "dourado", nome: "Dourado", m: "#E9B44C", s: "#C98A1E", e: "#0F3B2E" }
+  ]
+};
+function corDe(p) {
+  var l = PALETAS[p && p.especie]; if (!l) return null;
+  return l.filter(function (c) { return c.id === p.cor; })[0] || l[0];
+}
+function pintar(tpl, c) { return tpl.replace(/\{M\}/g, c.m).replace(/\{S\}/g, c.s).replace(/\{E\}/g, c.e); }
+function svgDe(especie, cor) {
+  var c = corDe({ especie: especie, cor: cor });
+  return especie === "gato" ? pintar(SVG_GATO, c) : especie === "cachorro" ? pintar(SVG_CAO, c) : SVG_ALIEN;
+}
 function rotuloEsp(p) { var e = ESPECIES[p.especie] || ESPECIES.cachorro; if (p.especie === "outro" && p.raca) return p.raca; return p.sexo === "f" ? e.f : e.m; }
 function fmtPeso(kg) { return kg ? String(kg).replace(".", ",") + " kg" : "—"; }
 
@@ -403,7 +433,7 @@ function avatar(p, size) {
   var box = h("div", { class: "av", style: size ? "width:" + size + "px;height:" + size + "px" : null });
   if (p && p.foto) box.appendChild(h("img", { src: p.foto, alt: "Foto de " + p.nome }));
   else if (p && p.especie === "outro" && p.emoji) { box.className += " emo"; box.appendChild(h("span", { "aria-hidden": "true" }, p.emoji)); }
-  else box.innerHTML = (p && p.especie === "gato") ? SVG_GATO : (p && p.especie === "outro") ? SVG_ALIEN : SVG_CAO;   // SVG estático, sem dado do usuário
+  else box.innerHTML = svgDe(p && p.especie ? p.especie : "cachorro", p && p.cor);   // SVG estático, sem dado do usuário
   return box;
 }
 function bubble(texto, tom) {
@@ -1266,6 +1296,7 @@ function abrirForm(p) {
   st.confirmPeso = false;
   st.draft = p ? JSON.parse(JSON.stringify(p)) : { id: null, nome: "", especie: "", sexo: "", raca: "", nasc: "", aprox: false, peso: "", pesos: [], foto: "", convenio: { nome: "", numero: "" } };
   if (!st.draft.convenio) st.draft.convenio = { nome: "", numero: "" };
+  if (st.draft.peso == null) st.draft.peso = "";
   go("form");
 }
 function setOpts(grupo, valores, atual, onSet, big, rotulo) {
@@ -1288,14 +1319,14 @@ function vForm() {
   var inConvN = h("input", { id: "f-cn", type: "text", maxlength: "40", autocomplete: "off", value: d.convenio.nome, oninput: function (e) { d.convenio.nome = e.target.value; } });
   var inConvC = h("input", { id: "f-cc", type: "text", maxlength: "40", autocomplete: "off", value: d.convenio.numero, oninput: function (e) { d.convenio.numero = e.target.value; } });
   var file = h("input", { type: "file", accept: "image/*", style: "display:none", id: "f-file", onchange: function (e) { lerFoto(e.target.files && e.target.files[0]); } });
-  var fotoBox = h("div", { class: "foto" }, avatar(d.foto ? d : { especie: d.especie }, 96),
+  var fotoBox = h("div", { class: "foto" }, avatar(d.foto ? d : { especie: d.especie, cor: d.cor, emoji: d.emoji }, 96),
     h("div", { class: "stack", style: "flex:1" },
       h("button", { class: "btn sec", type: "button", onclick: function () { file.click(); } }, "📷 " + (d.foto ? "Trocar foto" : "Adicionar foto")),
       d.foto ? h("button", { class: "btn sec", type: "button", onclick: function () { d.foto = ""; render(); } }, "Tirar foto") : null));
   var form = h("form", { class: "stack", novalidate: "novalidate", onsubmit: function (e) { e.preventDefault(); salvar(); } },
     msg ? bubble(msg.texto, msg.tom) : bubble(novo ? "Vamos fazer o cadastro? Só preciso do básico, o resto você completa quando quiser." : "Vamos atualizar os dados com carinho?"),
     h("div", null, h("div", { class: "lbl", id: "lb-esp" }, "Quem é o amiguinho?"),
-      setOpts("esp", [{ v: "cachorro", t: "Cachorro", em: "🐶" }, { v: "gato", t: "Gato", em: "🐱" }, { v: "outro", t: "Outro", em: "👽" }], d.especie, function (v) { d.especie = v; st.confirmPeso = false; }, true, "Espécie")),
+      setOpts("esp", [{ v: "cachorro", t: "Cachorro", em: "🐶" }, { v: "gato", t: "Gato", em: "🐱" }, { v: "outro", t: "Outro", em: "👽" }], d.especie, function (v) { if (d.especie !== v) d.cor = ""; d.especie = v; st.confirmPeso = false; }, true, "Espécie")),
     campo("f-nome", "Nome", inNome),
     h("div", null, h("div", { class: "lbl" }, "Sexo"),
       setOpts("sexo", [{ v: "m", t: "Macho" }, { v: "f", t: "Fêmea" }, { v: "", t: "Não sei" }], d.sexo, function (v) { d.sexo = v; }, false, "Sexo")),
@@ -1310,6 +1341,13 @@ function vForm() {
           })),
           campo("f-raca", "Nome do tipo (pode detalhar)", inRaca, "Por exemplo: coelho anão, calopsita, tartaruga-tigre-d'água."))
       : campo("f-raca", "Raça (opcional)", inRaca, "Sem raça definida? Pode escrever “SRD”."),
+    PALETAS[d.especie] ? h("div", null, h("div", { class: "lbl" }, "Cor do desenho"),
+      h("div", { class: "opts cores", role: "radiogroup", "aria-label": "Cor do desenho do bichinho" }, PALETAS[d.especie].map(function (c, i) {
+        var sel = d.cor ? d.cor === c.id : i === 0;
+        var ico = h("span", { class: "av mini", "aria-hidden": "true" }); ico.innerHTML = svgDe(d.especie, c.id);
+        return h("button", { class: "opt", type: "button", role: "radio", "aria-checked": sel ? "true" : "false", onclick: function () { d.cor = c.id; render(); } }, ico, c.nome);
+      })),
+      h("div", { class: "hint" }, "Escolha a cor que mais parece com o seu amiguinho. Se você colocar uma foto, ela aparece no lugar do desenho.")) : null,
     campo("f-nasc", "Data de nascimento", inNasc),
     h("label", { class: "check" }, h("input", { type: "checkbox", checked: d.aprox ? "checked" : null, onchange: function (e) { d.aprox = e.target.checked; } }), "Não tenho certeza, a data é aproximada"),
     campo("f-peso", "Peso em kg (opcional)", inPeso, d.especie === "outro" ? "Bichinhos pequenos: 0,25 equivale a 250 gramas." : "Exemplo: 4,5"),
@@ -1356,7 +1394,7 @@ function salvar() {
   if (nasc > new Date()) return erro("nasc", "Ops, essa data ainda não chegou! Vamos conferir o nascimento do nosso amiguinho?", "f-nasc");
   if (new Date().getFullYear() - nasc.getFullYear() > 40) return erro("nasc", "Ops, essa data está muito antiga. Vamos conferir o ano pelo nosso amiguinho?", "f-nasc");
   var peso = null;
-  if (String(d.peso).trim() !== "") {
+  if (d.peso != null && String(d.peso).trim() !== "") {
     peso = parseFloat(String(d.peso).replace(",", "."));
     var e = ESPECIES[d.especie];
     if (!isFinite(peso) || peso <= 0 || peso > e.hard) return erro("peso", "Ops, esse peso não parece certo. Vamos conferir na balança, pelo nosso amiguinho?", "f-peso");
@@ -1371,7 +1409,7 @@ function salvar() {
   if (peso != null && peso !== ant) pesos = pesos.concat([{ d: hojeISO(), kg: peso }]);
   var pet = {
     id: d.id || uid(), nome: nome, especie: d.especie, sexo: d.sexo || "", raca: (d.raca || "").trim(),
-    nasc: d.nasc, aprox: !!d.aprox, peso: peso, pesos: pesos, saude: (existente && existente.saude) || [], rotina: (existente && existente.rotina) || [], melhorSeq: (existente && existente.melhorSeq) || 0, emoji: d.especie === "outro" ? ((OUTROS.filter(function (o) { return o.em === d.emoji; })[0] || {}).em || "") : "", avulsos: (existente && existente.avulsos) || [], feitos: (existente && existente.feitos) || {}, foto: d.foto || "",
+    nasc: d.nasc, aprox: !!d.aprox, peso: peso, pesos: pesos, saude: (existente && existente.saude) || [], rotina: (existente && existente.rotina) || [], melhorSeq: (existente && existente.melhorSeq) || 0, cor: (PALETAS[d.especie] || []).some(function (c) { return c.id === d.cor; }) ? d.cor : "", emoji: d.especie === "outro" ? ((OUTROS.filter(function (o) { return o.em === d.emoji; })[0] || {}).em || "") : "", avulsos: (existente && existente.avulsos) || [], feitos: (existente && existente.feitos) || {}, foto: d.foto || "",
     convenio: { nome: (d.convenio.nome || "").trim(), numero: (d.convenio.numero || "").trim() },
     criado: (existente && existente.criado) || Date.now(), editado: Date.now()
   };
