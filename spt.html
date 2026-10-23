@@ -135,6 +135,36 @@ input[aria-invalid=true]{border-color:var(--erro);background:#FFF1EF}
 .tag.ok{background:var(--esm-100)}.tag.logo{background:var(--creme2);border-color:var(--lar-700)}.tag.atraso{background:#FFE3DF;border-color:var(--erro);color:var(--erro)}
 .vazio{font-weight:700;color:var(--tinta2);margin:18px 2px}
 .box.rolavel{max-height:92vh;overflow-y:auto}
+/* Cartão com personalidade */
+body[data-estacao=primavera]{--est-a:#12805C;--est-b:#35A77C}
+body[data-estacao=verao]{--est-a:#12805C;--est-b:#1FA08C}
+body[data-estacao=outono]{--est-a:#12805C;--est-b:#7B9A3B}
+body[data-estacao=inverno]{--est-a:#0F6A74;--est-b:#12805C}
+.pcard .head{background:linear-gradient(135deg,var(--est-a,#12805C),var(--est-b,#12805C))}
+.pcard.festa .head{background:linear-gradient(135deg,#D9701F,#F59A3B 55%,#12805C)}
+.pcard .head .paw{opacity:.28}
+.chips.cen{justify-content:center;margin:8px 0 0}
+.pcard .head .chip{background:rgba(255,253,248,.92);color:var(--tinta);border-color:var(--tinta)}
+.foto-wrap{position:relative;display:inline-block}
+.pcard .photo .av{width:148px;height:148px}
+.chapeu{position:absolute;top:-22px;right:-6px;font-size:2.2rem;transform:rotate(14deg)}
+.av.emo{container-type:size;display:flex;align-items:center;justify-content:center;background:var(--creme2)}
+.av.emo span{font-size:55cqw;line-height:1}
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px}
+.stat{background:var(--creme2);border:3px solid var(--tinta);border-radius:16px;padding:8px 6px;text-align:center}
+.stat .big{display:block;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:1.25rem;line-height:1.2}
+.stat small{display:block;font-weight:800;font-size:.72rem;color:var(--tinta2);line-height:1.15}
+.selos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+@media (min-width:480px){.selos{grid-template-columns:repeat(4,1fr)}}
+.selo{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;min-height:92px;border:3px solid var(--tinta2);border-radius:16px;background:var(--creme);cursor:pointer;opacity:.7}
+.selo .se{font-size:1.8rem;line-height:1.1;filter:grayscale(1)}
+.selo .st{font-weight:800;font-size:.74rem;line-height:1.15;text-align:center}
+.selo.ganho{border-color:var(--tinta);background:var(--branco);opacity:1;box-shadow:0 3px 0 var(--lar-500)}
+.selo.ganho .se{filter:none}
+.opts.outros{display:grid;grid-template-columns:repeat(3,1fr)}
+.opts.outros .opt{flex-direction:column;min-height:78px;gap:2px;font-size:.88rem;padding:6px 2px}
+.opts.outros .opt .em{font-size:1.7rem;line-height:1.1}
+
 .box .opts.big.cinco,.box .opts.big.quatro{display:grid}.box .opts.big.cinco{grid-template-columns:repeat(3,1fr)}.box .opts.big.quatro{grid-template-columns:repeat(2,1fr)}
 .dias .mini[aria-checked=true]{background:var(--esm-700);color:#fff}
 input[type=time]{width:100%;min-height:54px;padding:10px 14px;background:var(--branco);border:3px solid var(--tinta);border-radius:16px;font-weight:700}
@@ -288,6 +318,11 @@ function estacao(d) {
   if (v <= 922) return { id: "inverno", nome: "inverno", emoji: "❄️" };
   return { id: "primavera", nome: "primavera", emoji: "🌸" };
 }
+var OUTROS = [
+  { em: "🐰", nome: "Coelho" }, { em: "🐹", nome: "Hamster" }, { em: "🦜", nome: "Ave" }, { em: "🐢", nome: "Tartaruga" },
+  { em: "🐠", nome: "Peixe" }, { em: "🦎", nome: "Réptil" }, { em: "🐭", nome: "Roedor" }, { em: "🦔", nome: "Ouriço" }, { em: "🐴", nome: "Cavalo" }
+];
+function emojiPet(p) { return p && p.especie === "outro" && p.emoji ? p.emoji : (ESPECIES[p && p.especie] || ESPECIES.cachorro).emoji; }
 function rotuloEsp(p) { var e = ESPECIES[p.especie] || ESPECIES.cachorro; if (p.especie === "outro" && p.raca) return p.raca; return p.sexo === "f" ? e.f : e.m; }
 function fmtPeso(kg) { return kg ? String(kg).replace(".", ",") + " kg" : "—"; }
 
@@ -333,7 +368,7 @@ function resumo() {
   var n = st.pets.length;
   if (!n) return { headline: "Nenhum amiguinho ainda", lines: ["Cadastre o primeiro 🐾"] };
   var al = alertas();
-  var linhas = st.pets.slice(0, 3).map(function (p) { return (ESPECIES[p.especie] || ESPECIES.cachorro).emoji + " " + p.nome + " · " + idade(p.nasc); });
+  var linhas = st.pets.slice(0, 3).map(function (p) { return emojiPet(p) + " " + p.nome + " · " + idade(p.nasc); });
   return {
     headline: n + (n > 1 ? " amiguinhos" : " amiguinho") + (al.length ? " · " + al.length + (al.length > 1 ? " avisos" : " aviso") : ""),
     lines: al.slice(0, 2).map(function (x) { return x.txt; }).concat(linhas).slice(0, 3)
@@ -367,6 +402,7 @@ function pull() {
 function avatar(p, size) {
   var box = h("div", { class: "av", style: size ? "width:" + size + "px;height:" + size + "px" : null });
   if (p && p.foto) box.appendChild(h("img", { src: p.foto, alt: "Foto de " + p.nome }));
+  else if (p && p.especie === "outro" && p.emoji) { box.className += " emo"; box.appendChild(h("span", { "aria-hidden": "true" }, p.emoji)); }
   else box.innerHTML = (p && p.especie === "gato") ? SVG_GATO : (p && p.especie === "outro") ? SVG_ALIEN : SVG_CAO;   // SVG estático, sem dado do usuário
   return box;
 }
@@ -468,47 +504,141 @@ function vIntro() {
       h("div", { style: "margin-top:18px" }, h("button", { class: "btn verde", type: "button", onclick: concluirIntro }, "💚 Confirmar e começar o cadastro"))));
 }
 
+/* ─── Personalidade do cartão: signo, aniversário, curiosidades, sequência e selos ─── */
+var SIGNOS = [
+  [120, "Aquário", "♒", "Dizem que é independente e cheio de ideias diferentes."],
+  [219, "Peixes", "♓", "Dizem que é sonhador e adora um colinho."],
+  [321, "Áries", "♈", "Dizem que é cheio de energia e quer ser o primeiro a chegar na tigela."],
+  [420, "Touro", "♉", "Dizem que ama conforto, soneca e um bom petisco."],
+  [521, "Gêmeos", "♊", "Dizem que é curioso e troca de brincadeira a cada cinco minutos."],
+  [621, "Câncer", "♋", "Dizem que é muito carinhoso e apegado à família."],
+  [723, "Leão", "♌", "Dizem que se acha o rei da casa, e talvez seja mesmo."],
+  [823, "Virgem", "♍", "Dizem que gosta de tudo no lugar, inclusive a hora da comida."],
+  [923, "Libra", "♎", "Dizem que é simpático com todo mundo que passa."],
+  [1023, "Escorpião", "♏", "Dizem que é misterioso e observa tudo de longe."],
+  [1122, "Sagitário", "♐", "Dizem que adora aventura e passeio novo."],
+  [1222, "Capricórnio", "♑", "Dizem que é disciplinado e sabe a hora exata do jantar."]
+];
+function signoDe(iso) {
+  var d = parseISO(iso); if (!d) return null;
+  var v = (d.getMonth() + 1) * 100 + d.getDate(), r = SIGNOS[SIGNOS.length - 1];
+  SIGNOS.forEach(function (x) { if (v >= x[0]) r = x; });
+  if (v < 120) r = SIGNOS[SIGNOS.length - 1];
+  return { nome: r[1], em: r[2], frase: r[3] };
+}
+function proxAniversario(iso) {
+  var d = parseISO(iso), hoje = parseISO(hojeISO()); if (!d) return null;
+  function em(ano) { return new Date(ano, d.getMonth(), d.getDate()); }
+  var x = em(hoje.getFullYear()); if (x < hoje) x = em(hoje.getFullYear() + 1);
+  return { n: Math.round((x - hoje) / 86400000), anos: x.getFullYear() - d.getFullYear() };
+}
+function sequencia(p) {
+  var d = parseISO(hojeISO()), cont = 0;
+  for (var i = 0; i < 400; i++) {
+    var iso = isoDe(d), sl = slotsDoDia(p, iso);
+    if (sl.length) {
+      var ok = sl.every(function (x) { return feito(p, iso, x.key); });
+      if (ok) cont++; else if (i > 0) break;
+    }
+    d.setDate(d.getDate() - 1);
+  }
+  return cont;
+}
+function selos(p) {
+  var ord = pesosOrd(p), seq = Math.max(p.melhorSeq || 0, sequencia(p)), cu = cuidados(p), an = proxAniversario(p.nasc), sa = p.saude || [];
+  return [
+    { em: "🐾", t: "Primeiros passos", dica: "Cadastrar o amiguinho", ok: true },
+    { em: "📸", t: "Foto de perfil", dica: "Adicionar uma foto no cadastro", ok: !!p.foto },
+    { em: "⚖️", t: "Na balança", dica: "Registrar o primeiro peso", ok: ord.length >= 1 },
+    { em: "📈", t: "De olho no peso", dica: "Registrar 3 pesos", ok: ord.length >= 3 },
+    { em: "💉", t: "Carteirinha aberta", dica: "Registrar o primeiro cuidado de saúde", ok: sa.length >= 1 },
+    { em: "🛡️", t: "Tudo em dia", dica: "Ter cuidados com próxima data e nenhum vencido", ok: cu.length >= 1 && cu.every(function (c) { return c.n >= 0; }) },
+    { em: "🩻", t: "Exame registrado", dica: "Registrar um exame", ok: sa.some(function (r) { return r.tipo === "exame"; }) },
+    { em: "🍽️", t: "Rotina montada", dica: "Criar um item na rotina", ok: (p.rotina || []).length >= 1 },
+    { em: "🔥", t: "3 dias seguidos", dica: "Completar a rotina por 3 dias seguidos", ok: seq >= 3 },
+    { em: "🌟", t: "Semana perfeita", dica: "Completar a rotina por 7 dias seguidos", ok: seq >= 7 },
+    { em: "🏆", t: "Mês de ouro", dica: "Completar a rotina por 30 dias seguidos", ok: seq >= 30 },
+    { em: "🎂", t: "Aniversariante", dica: "Estar de aniversário hoje", ok: !!(an && an.n === 0) }
+  ];
+}
+function diasDesde(iso) { var d = parseISO(iso); return d ? Math.round((parseISO(hojeISO()) - d) / 86400000) : null; }
+function curiosidade(p) {
+  var an = proxAniversario(p.nasc), nome = p.nome;
+  if (an && an.n === 0) return { festa: true, texto: "Hoje é aniversário de " + nome + "! " + (p.aprox ? "Pelas minhas contas, são " : "São ") + an.anos + (an.anos === 1 ? " ano" : " anos") + " de carinho. Que dia lindo 🎂" };
+  if (an && an.n <= 7) return { festa: false, texto: "Faltam " + an.n + (an.n === 1 ? " dia" : " dias") + " para o aniversário de " + nome + ", que vai completar " + an.anos + (an.anos === 1 ? " ano" : " anos") + " 🎈" };
+  var L = [], nasc = parseISO(p.nasc), dv = diasDesde(p.nasc);
+  if (dv != null && dv > 0) L.push("Você sabia? " + nome + " já viveu " + dv.toLocaleString("pt-BR") + " dias. Cada um deles valeu a pena 💚");
+  if (nasc && !p.aprox) L.push("Você sabia? " + nome + " nasceu " + ["num domingo", "numa segunda-feira", "numa terça-feira", "numa quarta-feira", "numa quinta-feira", "numa sexta-feira", "num sábado"][nasc.getDay()] + ". Dá para fazer uma festinha no mesmo dia da semana 🐾");
+  if (an) L.push("Você sabia? Faltam " + an.n + " dias para o aniversário de " + nome + ".");
+  var sg = signoDe(p.nasc); if (sg) L.push("Você sabia? " + nome + " é de " + sg.nome + " " + sg.em + ". " + sg.frase + " É só brincadeira 🐾");
+  var ord = pesosOrd(p); if (ord.length) { var dp = diasDesde(ord[ord.length - 1].d); L.push("Você sabia? A última pesagem de " + nome + " foi " + (dp === 0 ? "hoje" : "há " + dp + (dp === 1 ? " dia" : " dias")) + (dp > 45 ? ". Que tal pesar de novo?" : ".")); }
+  var verm = (p.saude || []).filter(function (r) { return r.tipo === "vermifugo" || r.tipo === "vacina"; }).sort(function (a, b) { return a.d < b.d ? 1 : -1; })[0];
+  if (verm) { var dm = diasDesde(verm.d); L.push("Você sabia? " + (verm.tipo === "vacina" ? "A última vacina" : "O último vermífugo") + " anotada foi há " + dm + (dm === 1 ? " dia" : " dias") + " (" + verm.nome + ")."); }
+  var seq = sequencia(p); if (seq >= 2) L.push("Você sabia? Já são " + seq + " dias seguidos com a rotina de " + nome + " em dia 🔥");
+  comprasDe(p).forEach(function (c) { L.push("Você sabia? Faz " + diasDesde(c.it.ultimo) + " dias desde a última compra de " + c.it.nome.toLowerCase() + "."); });
+  var dia = Math.floor(parseISO(hojeISO()).getTime() / 86400000), h0 = 0; for (var i = 0; i < p.id.length; i++) h0 += p.id.charCodeAt(i);
+  return { festa: false, texto: L[(dia + h0) % L.length] || "Você sabia? Cuidar todo dia é o melhor jeito de dizer “eu te amo” para " + nome + " 💚" };
+}
+
 function vCard() {
   var p = petAtual(); if (!p) { go("picker"); return h("div"); }
-  var e = ESPECIES[p.especie] || ESPECIES.cachorro;
+  var e = ESPECIES[p.especie] || ESPECIES.cachorro, est = estacao(new Date());
   var conv = p.convenio && (p.convenio.nome || p.convenio.numero) ? [p.convenio.nome, p.convenio.numero].filter(Boolean).join(" · ") : "Sem convênio";
-  var cu = cuidados(p), urgente = cu.some(function (c) { return c.n <= 7; });
-  var pend = pendentesHoje(p);
+  var cu = cuidados(p), urgente = cu.some(function (c) { return c.n <= 7; }), pend = pendentesHoje(p);
+  var an = proxAniversario(p.nasc), sg = signoDe(p.nasc), seq = sequencia(p), sl = selos(p), ganhos = sl.filter(function (x) { return x.ok; }).length;
+  var ord = pesosOrd(p), tend = "";
+  if (ord.length > 1) { var df = ord[ord.length - 1].kg - ord[ord.length - 2].kg; if (Math.abs(df) >= 0.01) tend = df > 0 ? " ↑" : " ↓"; }
+  var festa = !!(an && an.n === 0);
   var abas = [{ id: "resumo", em: "📋", t: "Resumo" }, { id: "hoje", em: "✅", t: "Hoje" + (pend ? " (" + pend + ")" : "") }, { id: "peso", em: "⚖️", t: "Peso" }, { id: "saude", em: "💉", t: "Saúde" + (urgente ? " ⚠️" : "") }];
-  var painel = st.aba === "peso" ? painelPeso(p) : st.aba === "saude" ? painelSaude(p) : st.aba === "hoje" ? painelHoje(p) : painelResumo(p, cu);
+  var painel = st.aba === "peso" ? painelPeso(p) : st.aba === "saude" ? painelSaude(p) : st.aba === "hoje" ? painelHoje(p) : painelResumo(p, cu, sl, ganhos);
   return h("div", null,
     topbar("Cartão do pet", btnVoltar(function () { go("picker"); }, "Voltar para a escolha do amiguinho")),
     h("main", { class: "wrap" },
-      h("div", { class: "pcard" },
+      h("div", { class: "pcard" + (festa ? " festa" : "") },
         h("div", { class: "head" },
-          h("span", { class: "paw", style: "left:14px;top:10px", "aria-hidden": "true" }, "🐾"),
-          h("span", { class: "paw", style: "right:16px;top:30px;transform:rotate(14deg)", "aria-hidden": "true" }, "🐾"),
+          h("span", { class: "paw", style: "left:14px;top:10px", "aria-hidden": "true" }, festa ? "🎉" : est.emoji),
+          h("span", { class: "paw", style: "right:16px;top:30px;transform:rotate(14deg)", "aria-hidden": "true" }, festa ? "🎈" : "🐾"),
+          h("span", { class: "paw", style: "left:64%;top:8px;font-size:1.3rem", "aria-hidden": "true" }, festa ? "✨" : est.emoji),
           h("h1", null, p.nome),
-          h("div", { class: "esp" }, e.emoji + " " + rotuloEsp(p) + (p.raca && p.especie !== "outro" ? " · " + p.raca : ""))),
-        h("div", { class: "photo" }, avatar(p)),
+          h("div", { class: "esp" }, emojiPet(p) + " " + rotuloEsp(p) + (p.raca && p.especie !== "outro" ? " · " + p.raca : "")),
+          sg ? h("div", { class: "chips cen" }, h("span", { class: "chip" }, sg.em + " " + sg.nome)) : null),
+        h("div", { class: "photo" }, h("div", { class: "foto-wrap" }, avatar(p), festa ? h("span", { class: "chapeu", "aria-hidden": "true" }, "🎂") : null)),
         h("div", { class: "body" },
           st.aba === "resumo"
-            ? h("dl", { class: "dados" },
-                dado("Idade", idade(p.nasc)),
-                dado("Peso", fmtPeso(p.peso)),
-                dado("Nascimento", fmtData(p.nasc) + (p.aprox ? " (aprox.)" : "")),
-                dado("Sexo", p.sexo === "f" ? "Fêmea" : p.sexo === "m" ? "Macho" : "Não informado"),
-                dado("Convênio", conv, true))
+            ? h("div", null,
+                h("div", { class: "statrow" },
+                  h("div", { class: "stat" }, h("span", { class: "big" }, "🔥 " + seq), h("small", null, seq === 1 ? "dia seguido" : "dias seguidos")),
+                  h("div", { class: "stat" }, h("span", { class: "big" }, "🏅 " + ganhos + "/" + sl.length), h("small", null, "selos")),
+                  h("div", { class: "stat" }, h("span", { class: "big" }, "🎂 " + (an ? an.n : "—")), h("small", null, an ? (an.n === 0 ? "é hoje!" : an.n === 1 ? "dia para a festa" : "dias para a festa") : "aniversário"))),
+                h("dl", { class: "dados" },
+                  dado("Idade", idade(p.nasc), false, "🎈"),
+                  dado("Peso", fmtPeso(p.peso) + tend, false, "⚖️"),
+                  dado("Nascimento", fmtData(p.nasc) + (p.aprox ? " (aprox.)" : ""), false, "📅"),
+                  dado("Sexo", p.sexo === "f" ? "Fêmea" : p.sexo === "m" ? "Macho" : "Não informado", false, p.sexo === "f" ? "♀️" : p.sexo === "m" ? "♂️" : "❔"),
+                  dado("Convênio", conv, true, "🩺")))
             : h("p", { class: "linha" }, idade(p.nasc) + " · " + fmtPeso(p.peso)))),
       h("div", { class: "tabs", role: "tablist", "aria-label": "Seções do cartão" }, abas.map(function (a) {
         return h("button", { class: "tab", type: "button", role: "tab", "aria-selected": st.aba === a.id ? "true" : "false", onclick: function () { st.aba = a.id; render(); } }, h("span", { class: "te", "aria-hidden": "true" }, a.em), a.t);
       })),
       h("div", { role: "tabpanel" }, painel)));
 }
-function painelResumo(p, cu) {
-  var iso = hojeISO(), sl = slotsDoDia(p, iso), ok = sl.filter(function (x) { return feito(p, iso, x.key); }).length;
+function painelResumo(p, cu, sl, ganhos) {
+  var iso = hojeISO(), slots = slotsDoDia(p, iso), ok = slots.filter(function (x) { return feito(p, iso, x.key); }).length;
+  var cur = curiosidade(p);
   return h("div", null,
-    sl.length ? h("button", { class: "hojecard", type: "button", onclick: function () { st.aba = "hoje"; render(); } },
-      h("span", { class: "nm" }, "✅ Hoje: " + ok + " de " + sl.length + " feitos"), progresso(ok, sl.length)) : null,
+    slots.length ? h("button", { class: "hojecard", type: "button", onclick: function () { st.aba = "hoje"; render(); } },
+      h("span", { class: "nm" }, "✅ Hoje: " + ok + " de " + slots.length + " feitos"), progresso(ok, slots.length)) : null,
     cu.length ? h("div", null,
       h("h2", { class: "sec-title" }, "Próximos cuidados"),
       cu.slice(0, 3).map(function (c) { return itemSaude(p, c.r, true, true); }),
-      h("button", { class: "btn sec", type: "button", style: "margin-top:12px", onclick: function () { st.aba = "saude"; render(); } }, "Ver vacinas e vermífugos")) : null,
+      h("button", { class: "btn sec", type: "button", style: "margin-top:12px", onclick: function () { st.aba = "saude"; render(); } }, "Ver vacinas e exames")) : null,
+    bubble(cur.texto, cur.festa ? "ok" : ""),
+    h("h2", { class: "sec-title" }, "Conquistas (" + ganhos + " de " + sl.length + ")"),
+    h("div", { class: "selos" }, sl.map(function (x) {
+      return h("button", { class: "selo" + (x.ok ? " ganho" : ""), type: "button", "aria-label": x.t + (x.ok ? ", conquistado" : ", ainda não: " + x.dica),
+        onclick: function () { toast(x.ok ? "🏅 " + x.t + ": conquistado!" : "Para ganhar: " + x.dica.toLowerCase() + "."); } },
+        h("span", { class: "se", "aria-hidden": "true" }, x.ok ? x.em : "🔒"), h("span", { class: "st" }, x.t));
+    })),
     h("h2", { class: "sec-title" }, "Em breve por aqui"),
     h("div", { class: "soon" }, soon("🗂️", "Arquivo de fotos e exames")),
     h("div", { class: "stack", style: "margin-top:24px" },
@@ -517,7 +647,7 @@ function painelResumo(p, cu) {
       h("button", { class: "btn sec", type: "button", onclick: function () { go("picker"); } }, "🐾 Trocar de amiguinho"),
       h("button", { class: "btn perigo", type: "button", onclick: function () { modalRemover(p); } }, "Remover amiguinho")));
 }
-function dado(l, v, full) { return h("div", { class: full ? "full" : null }, h("dt", null, l), h("dd", null, v)); }
+function dado(l, v, full, ic) { return h("div", { class: full ? "full" : null }, h("dt", null, (ic ? ic + " " : "") + l), h("dd", null, v)); }
 function soon(i, t) { return h("div", null, h("span", { "aria-hidden": "true" }, i), t, h("small", null, "em breve")); }
 
 function modalRemover(p) {
@@ -593,6 +723,8 @@ function alertas() {
     });
   });
   st.pets.forEach(function (p) {
+    var an = proxAniversario(p.nasc);
+    if (an && an.n <= 3) out.push({ n: an.n - 1, txt: "🎂 " + p.nome + (an.n === 0 ? " faz " + an.anos + (an.anos === 1 ? " ano hoje!" : " anos hoje!") : " faz anos em " + an.n + (an.n === 1 ? " dia" : " dias")) });
     comprasDe(p).forEach(function (c) { if (c.n <= 3) out.push({ n: c.n, txt: "🛒 " + p.nome + " · " + c.it.nome + ": " + c.s.t }); });
   });
   return out.sort(function (a, b) { return a.n - b.n; });
@@ -715,9 +847,10 @@ function marcar(p, iso, key, val) {
   var l = (p.feitos[iso] || []).filter(function (k) { return k !== key; });
   if (val) l.push(key);
   if (l.length) p.feitos[iso] = l; else delete p.feitos[iso];
-  var corte = new Date(); corte.setDate(corte.getDate() - 45);
+  var corte = new Date(); corte.setDate(corte.getDate() - 120);
   var lim = corte.getFullYear() + "-" + String(corte.getMonth() + 1).padStart(2, "0") + "-" + String(corte.getDate()).padStart(2, "0");
   Object.keys(p.feitos).forEach(function (d) { if (d < lim) delete p.feitos[d]; });
+  p.melhorSeq = Math.max(p.melhorSeq || 0, sequencia(p));
 }
 function progresso(ok, n) {
   return h("div", { class: "prog", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(n), "aria-valuenow": String(ok), "aria-label": ok + " de " + n + " feitos" },
@@ -1167,11 +1300,19 @@ function vForm() {
     h("div", null, h("div", { class: "lbl" }, "Sexo"),
       setOpts("sexo", [{ v: "m", t: "Macho" }, { v: "f", t: "Fêmea" }, { v: "", t: "Não sei" }], d.sexo, function (v) { d.sexo = v; }, false, "Sexo")),
     d.especie === "outro"
-      ? campo("f-raca", "Que bichinho é?", inRaca, "Coelho, calopsita, tartaruga, hamster… pode escrever o que quiser.")
+      ? h("div", null, h("div", { class: "lbl" }, "Que bichinho é?"),
+          h("div", { class: "opts outros", role: "radiogroup", "aria-label": "Tipo de bichinho" }, OUTROS.map(function (o) {
+            return h("button", { class: "opt", type: "button", role: "radio", "aria-checked": d.emoji === o.em ? "true" : "false", onclick: function () {
+              var ant = OUTROS.filter(function (x) { return x.em === d.emoji; })[0];
+              if (!d.raca || (ant && d.raca === ant.nome)) d.raca = o.nome;
+              d.emoji = o.em; render();
+            } }, h("span", { class: "em", "aria-hidden": "true" }, o.em), o.nome);
+          })),
+          campo("f-raca", "Nome do tipo (pode detalhar)", inRaca, "Por exemplo: coelho anão, calopsita, tartaruga-tigre-d'água."))
       : campo("f-raca", "Raça (opcional)", inRaca, "Sem raça definida? Pode escrever “SRD”."),
     campo("f-nasc", "Data de nascimento", inNasc),
     h("label", { class: "check" }, h("input", { type: "checkbox", checked: d.aprox ? "checked" : null, onchange: function (e) { d.aprox = e.target.checked; } }), "Não tenho certeza, a data é aproximada"),
-    campo("f-peso", "Peso em kg (opcional)", inPeso, "Exemplo: 4,5"),
+    campo("f-peso", "Peso em kg (opcional)", inPeso, d.especie === "outro" ? "Bichinhos pequenos: 0,25 equivale a 250 gramas." : "Exemplo: 4,5"),
     h("h2", { class: "sec-title" }, "📷 Foto"), fotoBox, file,
     h("h2", { class: "sec-title" }, "🩺 Convênio (opcional)"),
     campo("f-cn", "Nome do convênio ou plano", inConvN),
@@ -1230,7 +1371,7 @@ function salvar() {
   if (peso != null && peso !== ant) pesos = pesos.concat([{ d: hojeISO(), kg: peso }]);
   var pet = {
     id: d.id || uid(), nome: nome, especie: d.especie, sexo: d.sexo || "", raca: (d.raca || "").trim(),
-    nasc: d.nasc, aprox: !!d.aprox, peso: peso, pesos: pesos, saude: (existente && existente.saude) || [], rotina: (existente && existente.rotina) || [], avulsos: (existente && existente.avulsos) || [], feitos: (existente && existente.feitos) || {}, foto: d.foto || "",
+    nasc: d.nasc, aprox: !!d.aprox, peso: peso, pesos: pesos, saude: (existente && existente.saude) || [], rotina: (existente && existente.rotina) || [], melhorSeq: (existente && existente.melhorSeq) || 0, emoji: d.especie === "outro" ? ((OUTROS.filter(function (o) { return o.em === d.emoji; })[0] || {}).em || "") : "", avulsos: (existente && existente.avulsos) || [], feitos: (existente && existente.feitos) || {}, foto: d.foto || "",
     convenio: { nome: (d.convenio.nome || "").trim(), numero: (d.convenio.numero || "").trim() },
     criado: (existente && existente.criado) || Date.now(), editado: Date.now()
   };
