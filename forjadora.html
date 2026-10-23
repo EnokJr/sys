@@ -1632,7 +1632,7 @@ select.medit-input option {
 #ob-back{margin-top:8px;display:none}
 .ob-footer{display:flex;flex-direction:column;align-items:stretch;gap:0}
 </style>
-<script src="core/sheyla-core.js?v=3"></script>
+<script src="core/sheyla-core.js?v=4"></script>
 </head>
 <body>
 <div class="app">
@@ -8767,13 +8767,14 @@ function eChip(k, v) {
       const raw=ls.get(SAVE_KEY); if(!raw) return;
       const st=JSON.parse(raw); const a=st.app||{};
       ls.set('forj_summary',JSON.stringify({name:a.name,level:a.level,streak:a.streak,m:Math.round(a.m||0),g:Math.round(a.g||0),t:Math.round(a.t||0),f:Math.round(a.f||0),mbtiType:a.mbtiType||null,missionsOpen:(st.missions||[]).filter(x=>!x.done).length,updatedAt:Date.now()}));
+      if(user && S){ try{ S.summary(JSON.parse(ls.get('forj_summary'))); }catch(e){} }
     }catch(e){}
   }
 
   async function push(){
     if(!user) return;
     const raw=ls.get(SAVE_KEY); if(!raw) return;
-    try{ await S.save({data:raw, savedAt:localSavedAt()}); }
+    try{ await S.save({data:raw, savedAt:localSavedAt()}); try{ S.summary(JSON.parse(ls.get('forj_summary'))); }catch(e2){} }
     catch(e){ console.warn('[Forjadora] push falhou',e); }
   }
   function schedulePush(){ if(!user) return; clearTimeout(pushTimer); pushTimer=setTimeout(push,1500); }
