@@ -1,12 +1,12 @@
 /* ═══════════════════════════════════════════════
-   SHEYLA CORE v2 — núcleo da Primordial
+   SHEYLA CORE v3 — núcleo da Primordial
    Login Google, isolamento por usuário, sync e resumos.
    Todo dado fica em users/{uid}/{appId}/data
 ═══════════════════════════════════════════════ */
 (function () {
   "use strict";
 
-  var VERSION = "2";
+  var VERSION = "3";
   var FB = "https://cdn.jsdelivr.net/npm/firebase@10.12.2/";
   var CFG = {
     apiKey: "AIzaSyAGzRK009HOKHrsIG5bSHDNYF7hUia6CX4",
@@ -111,7 +111,7 @@
       var patch = {};
       if (key && typeof key === "object") patch = key; else patch[key] = value;
       patch._savedAt = Date.now();
-      patch._updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+      patch._serverAt = firebase.firestore.FieldValue.serverTimestamp();
       await docRef().set(patch, { merge: true });
     },
 
