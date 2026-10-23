@@ -46,6 +46,7 @@ function backToSys() {
 // ── Firebase Auth + Sync ──
 // ══════════════════════════════════════════════════════
 const _fb = window._sdcFirebase || null;
+const SHEYLA_IMG = "data:image/jpeg;base64,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";
 const SYS_UID_KEY = "sdc_sys_uid";
 
 function _stripMeta(d) {
@@ -73,7 +74,7 @@ async function loadFromCloud(uid) {
 
 function LoginScreen({ onLogin, loading }) {
   return React.createElement("div", { style: { minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"#0f1117", color:"#e8eaf0", padding:"24px" } },
-    React.createElement("img", { src:"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCADIAMgDASIAAhEBAxEB/8QAGwAAAgMBAQEAAAAAAAAAAAAAAwQCBQYAAQf/xAA9EAACAgECBAMECAUDAwUAAAABAgADBAURITFBURITYQZSccEUIjJCYoGhsSMz0eHwFSSRQ1NyNGPC0vH/xAAZAQADAQEBAAAAAAAAAAAAAAACAwQBAAX/xAAuEQADAAICAQEECQUAAAAAAAAAAQIDERIhMUEiYYGxBBMyQlFxwfDxI1KRoeH/2gAMAwEAAhEDEQA/APlwkwJ4ohAJ4zZceAQqrOVYVVgNmoiFhVQwlde55RhKd4mr0GkAWuFWrfpGVpjNePv0iayhKRNafSFWg9o+uP6Qy4/pEVmDUleMf0kxj+ks1xvST+j7dIp5guJVfRvSROP6S6+h2/RPpfkP9G8fg83b6u/9N+G/LfhBnH3HKb9a15O4lK1HpBNRLpsb0gXx/SHOYxyUzUwL0kS4fH9IB6PSOnKA5KlkgmQyzej0i71R05AWivKwZEdeuAZNo6aAaFiIMxhlgmWNTBYEidJEToZgYCEQSCiHRYqmEiSLGK0ka04xypPSIug0j2uqM11b9JKquO1V8OUjuxqQKunfpG66PSFqq9I7VT6SS8oxSLpj+kOuP6RxKfSGFQk1ZQ9CYo2EsdG0FtXs82zxLgodmYcDaRzVT27n8hx5OaNob6zaXfxJgI2z2DgbCOaKf3P5Djy2ppSilaqkVK0UKqqNgoHQQ5Tlcn5F1S3xRV3Y9Xk+R5SeT4fB5fh+r4eW23aYvUdKOnW+JN2xHOysTuUPut8j15c+e6uGxiN9S2VtW6B0YFWVhuCOxgTeun4Ga6MO2OCOUA+P6S6ycI4NoXctjudq3J3Kn3W+R6/GBakdpzpw9M7Wyjso9IrZT6S+to9IjbT6R0ZQXJS2U+kVsq9Jc21ekTtq9JXGQW5KiyuLOktLEidiSuLFtFe6wDCO2LFnWUyxbQswnSbCdGpghkWMIsFWI1WIi2GkFqSO1JA1LvtHqlkmShkoLUkeqrgaklhTXIcljUgtNUerq9IOqvlHa12EhyWNSOSuWGkaM+s3ncsmCh2ssB2Ln3VP7npy58o6bpz6tdsGKYaHaywHYufdX5np8eW7xq68ehKqkVK0UKqKNgB6RmDF3yoTlyaWpPUprx6EpprWupAFVFGwUdhKP2j13G0LC82weZfZutFAOzWN8gOp6fGN+0Gu4ug4Pn3A2XWErRQp+ta3yA6npPl9/wBK1PNsz8+zzMmzhw+yi9FUdAP7mVUpXtWJxy2KjVNVq1Y6wb/Mym4WVncVun/b26AdDzB48dzN5pmp42r4K5OMx8JPhdG+1W3VWHf9+cxjY3DlA0W5OkZv03D4kja2onZbV7Hsex6fCLpzl6fn99FC9k3l9K3VsjoGVhsynkRKO2hsO0VuS1THauw89/db19ev/MutP1DG1TBXKxmJQ7ghhsyN1Vh0InX1JajI6BkYbMp6xOvuWM89oo7KgREbqfSWVlb4tgqsJatv5dh6+h9f3594GxNxE+1FaZ3kpbavSJW1y6tqiFyCVY7BaKW6uJWr6S2uSIWpL8dCaRWWLFHXjLG1YlYsthimhRhOk2E6PTADIsaqWArEcqEnthoZqEeqXjFahHql5SLIxsjlKcpYUrtE6RH6yAJBkY1DVfAbx3T8OzVLSASmIh2ssHAsfdU/uenx5J4OK2o3eEFkxlO1lg4Fj7q/M9PjNjjJXVSldaKiKNlVRsAIrjx7fkLyO4lSU1pVUipWgAVVGwAnaxruLoOB9Iv3stc+GmhT9a1uw7Duekr9U1rG0TCORfu7sfDVSv2rW7D5noJhzZlapntn57h72GyqPs1r0VfT9+Zj8b4rnX8iajk9E3bL1XPfUNQcWZD8AB9mteiqOgH68zHUxuHKFx6QBGlG7muuu2xwNytdZYgdN9uXKRZMt5K67Y5SpRXPQAIk+PdbVfbTjvZTR/NdeS/DvtzO3ITRUaVlajf5ZquxsdeNltiFSR2UHr68hNAMarFoSmhBXWg2VV6f53jscuVu18AXSb0j5diZl+kZn03DHjR9hdTvsLV+TDoflN1iZmPqeEmXiP46n78Cp6qR0I7Sg9odGXBZs3GCjGYjzauXlknbdfQk8unThypcPMydDzTl4ymyl9vPx99hYO47MOh/I+lNSrS/H0f6P9/6MT4m5txq762rtXxI3Mf5yMpMimzCuFNxLI2/lW7fa9D2Yf3EvsLKx9Qxa8rFsFlNg3DfuCOhHUQ1+JXmUPReniRvXYg9CD0I7yd/21/Az3oyVqxC9ecs8zGuwMj6PefEDua7dthYPkR1HyiNwmSnL0zPJU3LK+5Ja3KOMr7hL8TF0VtqxG0SytEQuEuxsSxF+c6TcTpUmLC1x6kROqPUiT5A0N1CP0jlE6hHaekhyMdI7VGses5eQaA3hRADaQfrbHkB8djx6fGL1CdZValqZWM3gyKxspPJh1Vu4MlWuXYZr8MJWqV1qFRRsFHICNahqtGkac+ZcGZVIVUQcXY8h6b9zKfSNQrzqi6gpah8NtRPFD8x2PWXy115FD1XItlVi+F0YcCOxg0kq9oPyujBm7J1TOOdnMGuYbKi/ZqX3V9PXqZa49YAEFqGlWaLkrsWfDsO1Vh5qfcb17Hr8YWmwbCB9Ibb9wMlghCiW/soGsz87JCnyCldYs6FgWJA+G4mdxvLzdVqwLL/ACldS/A7NZtzVT3699uXpv8ACWuilKqkVK0HhVVGwAgYMfB8n6gZXudIYs4ysz8mnExrcjIsWqmtfE7tyAlo/ETNe02jjWsFahYUspfzKwT9RmHRh8+h4ylpOtPwKx+4xmdnXa/lra6tVh1tvRQ3Pf32/F2HT4yNtAK7SVG6M1VqGu2s+F0bmp7Q1hAWJyW+WvGihLorcHPyPZ/Oa+lGtxbD/uMcfe/EvZh+vLtPouFlY+dh1ZWLattFg8SOvX+/pMVp+ktrOQfGWTCQ7WOOBc+6p/c9Pjy3ONTVRjpVSi11IPCqKNgBDytOVvyZO1+QHPw6c7Gai9SVPEEcCp6EdjMRmY92HktjXkFgPErjk68t9unw7zV69rVWkY6gKLsy3fyad9t/xN2Ud/yExSi6y2zJybDbkWnd3PDfsAOgHQTpWo3XwNb76AXCV9wlnaN5X3COxsFldaOcQuEsLRziNol+MTQjZOntk6VoWFqj1MQqj1MRkDQ/VHaeYiNUeqMhyDZLCrpHFXeJUnlH6+UhydDELW1XY+QuZiELeg2IP2XXqren7c5qtF1OnUccWV7qynw2Vt9qtux/r1lKFDCKML9PzBnYW3mgbPWeC2r7p+R6GdNqlxr4G+Oz6CcenMxnx8isWU2DZkPWY3UtOu0TLFNjGzHsP8G4/e/C34h+vPvtqtF1LH1TDXIx2O2/hZG+0jdVYdDG9Rxqc3EfHyED1uOIP6EHoR3hLpObAf2uj55lY4yax9ZldSGR1OzKw5EHoZf6b7ZjF0+yvU63fPqGyLWv/qexHRT72/Ac/SVGTi26XlDHuYvW38q7bbxjsezDqPzhq1U9BB5vF1S2jXPIjj+0GuYuqNqeVY2RTbsLcND9RE6eWOjDv97jv0229WXRm4teTjWLZTYviVh1HyPpMj5aldorjZ1ugZb2IGfBube+ocSh99R37jqPWcs313T8/vozgp7Rd63pS538ejZMxBspPAWD3W+R6fCZDItsemxFUrcp8LI+4II5g9R2m+Ftd9KXVOtlbqGV1O4YHkRKLWtL+ln6RjgLlKNuwtHun17H8vgUPb1XlBNfgO6NqGJn6ej4iipa/wCG1HI1EfdPyPXnJ6trtWkY6hVFuXbv5NO+2/4j2UdT+QmLxGycXMGXhMEt+xZXYD4bB7rDnwP5gxirHssvfJybDbkWcXc/oAOgHQQqUS+T/wAGbbWiKV3XZFmXl2m3JtO7uf0AHQDoIRwAIcrsICw8Ip06e2FrQncdpX3nnHrjK+6VYkAxKzrErhHbYlaZdjEsRs5zp7ZOla8Cz2ox6oyvqPGP1GKyBIeqMdp5xCox2kyLIhsljSZYVGVtJj1TcJDkQ1D68p6ygjjArZsOc9rF2Zkri4qhrWG5J+yg95vT95OobekFsDRkZGi5/wBPwh4gdhfRvsLl+TDofkZu8bUsXVMCvMxLPHU/cbFT1UjoR1EzmrezluFgrlYb25ArX/cI3Fm7uo6eq9uXXfO4Op3aPlnLxgbca3bz6FP2x0ZfxD9Rw7bV8HU6fwf6CtrezZ59FWXU9Ny7oePDgQehB6ETNEW4V/kXnxE8UsA2Djv6HuJo0yaM3Hryca0WU2L4kcdR/nSJ5mPXlUmq0Hw77grzU9CPX/8AItLa4V/A1r1Qkto25wdxDqQYkz24l5x79vGBurDk69x/TpPWyFCksQB3JiXic0Zs7TtUOhZBqtJ/021tz/7DH7w/Ceo6c+81LMHIPMEbgjkRMdd4bVI4EGT0PV/9MvXAzH/2bnam1j/JJ+6fwnp2+HKpTzW/X5/9MVa69C71PTjcxysZd7wProP+oP8A7fvy7StqtWxAyngZprF2BG0o9Tw2R2y8dSW521j734h69x1+PMHPNe81rXYu5G0UtMkL1dAykEHiDAWPvAmWmc2LWnnEbTzjdpiNplmNC2KWmJ3Rq0xO085bjQpilhnSNk6VrwLPazG6jEazG6zAtGosKjHajK2ox2ppHkQ2WWdTbRtLNhK6t+EIHay6qhGVXtbwgtyHX8z6dZI8fJ6GJljSbsvIGPjgF9t2Y/ZQdz8h1my0fDqwqRXWN9z4ndvtOe5/zhKPTaKsWsV1b7b7sx5se59ZocewV1mxiSqqWOwJOw48hxPwi7WvZkNLXbLW3KpwsWzIyLVqpqXxPYx2CifMb7qc7UcrIxcU42LY29dZ5+rbfd3PHbpJajrV/tJkq7BqsCtvFTQebH33/F2HT48YaqsBeE239XPH1FpbexTCzbdDyWcBnwbW3urHEoffX17jr8ZrVsS6pba3V63HiVlO4IPIiZy6sMpBETwdRbRMjyrSTp9jbnr5LHqPwnqPz7zp/qr3/MNPj+Roc7Fry8c1Wbgg+JHHNG7j5jrJ6P7NX1H6VqgQup/hUjio/G2/XsOnXjy0mlaSE8OVkrvZzRD931PrGcw85jtqdGbTrowWuaQcBmy8Vf8Aa87ax/0vUfh/b4cqS2pb6yCAQR/zNP7Qa79EY4OGQ2a4+s224pU9T3J6D8zw55+mny6FTidhtuYbbUqn5Met6Q97O641DppOe5Kk+HGvY/8AFbHv2P5dpo7l2HUGYPNx0trZWG4M0PszqWVqGJdj5Su74uyjJ24WDoCffH6jYzalUua+Js1p8WLaliGjx5VC/wAP7VtY6fiHp3H595Wm0MNwZqrlKnxDnMnqdVWHmotTKBcC3kjmnqPwn9DuJqnn36nUtArGiVrQzvFLWjYkW2L2mJ2mMWNE7TLMaFsXczpFzOlSQs8RozW0RraNIZlo5D9TRyt5XVtG0aSXIxMsq24T26oXV+E79wQdiD3HrF6njSNvJWtPaGIudC1Zr7BhZhAyQPqPy84D/wCXcdefebbCJIHGfL7aRYoIJVlO6sp2KkciD0M2Hstrv01voWWQuag3B5C5R94evcfny5JzRyXKRk16MN7R6A1BfVcCvdT9bJpUcu7qP3H595SVZCsoII2M+lqfq8DxmE9pNE/02x8/CT/aMd7alH8o+8Pw9+3w5LWsq0/PzM8FfdkqiFmOwl37PaJvkJn5yfxVO9NLD+X+I/i9Onx5ZWrPTDz6Mq6rzaU38QA3Kb/fA6kfPhxn0PTrq7a67K3V63AZGU7gg8jOcvHO16mrTNCh/hyuz22U89/hM17U+1zYnj0rSrAczldeOIo9B3f9vjwmJAzG+1qWoHvvlWf1hrFuU6ehcvT6LHJVf9c1FtuJvO//AAJMsAIjUPJB+szMTuWdixJ7kniY7p2FfrGX5FLFKk2867bcIOw7seg/Mzrnk9+gSYTTtKv1zLNNJKUIR51+3BPQd2P9zNouBj4OImNjViumscAP1JPUnvHsDEx8DCrxsasJUnIdSepJ6k95Ue02uUaLjAsBblW7+TQDsW9T2UdT+Q4xe3bUx4CXXbKbXtVq0qkcBZk2b+VVvz9T2Uf2Exiix7XyL3L3WHd3PX0HYDoJNjdk5NmVlWebkWHdm22+AA6AdBPWIAlaSlcUA229sE7RaxpOxotY8dEgNgrWidphrH5xSxpXEi2wTmdIOZ0oSFniGMIYophkaZSNQ7W0braV6NGK3k9yGmWNbxut5W1vGq3ktyMTLFW3kbEbxJZW7V2owZLEOzKw5EGCSyHVtxEdy9oM3/sx7TLq9Bxcrw16jUu7qOAtX31+Y6H0lvcwO4OxB6HjvPkrGyq6u/Hsaq+pvFXYvNT/AJ06zc6J7Q16zjFbFWvNqAF1Q5f+S/hP6cojLi+/IcV6Mz2v6N/pthyMZd8JzxX/ALJPT/xPTty7StwtT1HTMW/FwcgV03cQSN2pJ5lOxP6cxxm+tKujK6hkYeFlYbgjqCJhtY01tKv8VfibDsOyMeJrPun5Hr8Y7FfNafkG512hOhFqUAD+8P5oET83hD4GJkapk+TR9VV42WkbhB8z2Hyhud9sFfghrBxL9Vy/IoPgRdjbbtuEHzJ6D5Te4FFGBjJjY6eGtPXck9ST1JlfgY9GBjLj0KVReJ6lj1JPUwWq6zTpWMLX3ex/q1VKeLt8h3PST3u3wkakpW2WWr+0dGiYfmOPNyH3FFAOxc+vZR1Pznzy23IzsyzNzbPNybftNyAHRQOgHQSDWX5mU+Zlv47369FHRVHQCSLbRswsa4oW3yezmIEXseeu8WseNiQWyFjxWxpKx4s7yqJFtg3aLu0m7cYFjKZQDYNjOnjGdGpAkFMKpi6mFUzWjEMo0YRomphlaJpBpj1bxquyVqNGa3k9yGmWSWRhLPWVi2Q6WcJPUBpj5fcQPmXY2TXlYthryKzurD9QR1B6iQWyS8QMBLRuzZ6XrderYvjUeXenC2rfih+YPQxq5a76XptQWV2L4WVuRE+fJddh5KZWMwW1O/Jh1U+hmx03U6tRxPOq3Db+Gysnijdj8j1icmLj7U+PkOi+XTKGz2dyxqIxqW3xW4jIbj4B2I6t278+81uHiUafhrjUJ4UHHcncsepJ6mDDfWgNR1SnTcQ3Xkkn6qIv2nbsP69Jl3WTUo1TMdk9S1SnS8XzbSWZjtXWp+tY3YfM9JjbLrs3KbLymDWtwAHJF6Kvp+/OCuyL8/KbKymBsI2VR9lF90f5xnpfaPmFC0vImq5MOX2EE9sC9vrAPZCmAWwr2xex5Bn9YF3j5gFs8d4u7z13gGMomRbZ47bwTGekwbGOSBbPGM6QYzoxIEgphFMCDJqZrRwwrQqvFg0mGi2gkxtHhlsiStCq8VUhJjy2QyWyvWzhCLZFOAkyxWz1hRZvK5bYQWxTxhJjxbcSNGXdp2WMvG+1ts6HlYvY/I9It5vrONm4mKdHbNkdfwU00Z4csjfVWobeMv7u3Q9+m3GZa/Lv1DLOVlMC5GyqPs1r7o/r1iPhQP4th4u8J5u0ycUz9kKrdeRvzNpBrYt5vrINb6wlAOw7WbwLWQTWQRsjFALYRrIJrINng2aNUgtk2aCYyLPIFt41SC2esYMmcWkGaGkYeM06QJ3nQ9GEQZIGdOmswIGkwZ06CzQgMmG4Tp0W0ESDSYedOgtGkw8mLJ06A0jSXmT3zZ06DpG7O82eeZOnTtIzZ55kizzp01JHA2eQLzp0NIwgWkC06dDRhAmRJ2nToaMIsZAmdOhIEjOnTppp/9k=", alt:"SDC", style:{width:120,height:120,borderRadius:"16px",marginBottom:24,objectFit:"cover",boxShadow:"0 0 32px rgba(239,159,39,0.35)"} }),
+    React.createElement("img", { src:SHEYLA_IMG, alt:"SDC", style:{width:120,height:120,borderRadius:"16px",marginBottom:24,objectFit:"cover",boxShadow:"0 0 32px rgba(239,159,39,0.35)"} }),
     React.createElement("h1", { style:{fontSize:28,fontWeight:700,marginBottom:8,color:"#EF9F27"} }, "Sheyla da Contabilidade"),
     React.createElement("p", { style:{color:"#8892a4",marginBottom:40,textAlign:"center",maxWidth:300,lineHeight:1.5} }, "Seu app de finanças pessoais. Entre com sua conta Google para acessar e sincronizar seus dados em qualquer dispositivo."),
     loading
@@ -88,6 +89,1115 @@ function LoginScreen({ onLogin, loading }) {
           "Entrar com Google"
         ),
     React.createElement("p", { style:{color:"#4a5670",fontSize:12,marginTop:32,textAlign:"center",maxWidth:280} }, "Seus dados ficam seguros na sua conta Google. Cada conta tem seu próprio espaço privado.")
+  );
+}
+
+const OB_KEY = "sdc_onboarding_done";
+const NOME_KEY = "sdc_nome_usuario";
+const setNomeStorage = n => { try { localStorage.setItem(NOME_KEY,n); } catch(e){} };
+const getNome = () => { try { return localStorage.getItem(NOME_KEY)||""; } catch(e){ return ""; } };
+const DEFAULT_CARTOES = [
+  {id:"nubank", label:"NuBank", color:"#8B5CF6", vencimento:10},
+  {id:"itau",   label:"Itaú",   color:"#E87722", vencimento:15},
+];
+const CARTOES_KEY = "sdc_cartoes";
+const loadCartoes = () => {
+  try { const v=localStorage.getItem(CARTOES_KEY); if(v) return JSON.parse(v); } catch(e){}
+  return DEFAULT_CARTOES;
+};
+const saveCartoes = c => { try { localStorage.setItem(CARTOES_KEY,JSON.stringify(c)); } catch(e){} };
+const FRASES_INCENTIVO = [
+  "Cada real bem cuidado é um passo rumo à sua liberdade.",
+  "Controlar as finanças não é sobre restrição — é sobre escolha.",
+  "Quem conhece seus números, conhece seu futuro.",
+  "O orçamento de hoje é o sonho realizado de amanhã.",
+  "Pequenos hábitos financeiros constroem grandes patrimônios.",
+];
+
+function SplashScreen({ onFinish, primeiroAcesso }) {
+  const [fase, setFase] = React.useState(0);
+  const [slide, setSlide] = React.useState(0);
+  const [nomeInput, setNomeInput] = React.useState("");
+  const [nomeErr, setNomeErr] = React.useState(false);
+  const SLIDES = [
+    {icon:"💰",titulo:"Controle total do seu dinheiro",desc:"Registre receitas e despesas, acompanhe faturas de cartão e saiba exatamente quanto você tem disponível."},
+    {icon:"🏠",titulo:"Casas, cartões e contas",desc:"Cadastre seus imóveis, cartões e gastos fixos uma vez só e a Sheyla provisiona os próximos meses para você."},
+    {icon:"📥",titulo:"Importe seus extratos",desc:"Traga lançamentos por CSV e mantenha tudo organizado por categoria, cartão e mês."},
+    {icon:"📊",titulo:"Análise e planejamento",desc:"SDC Score, metas por categoria, fluxo de caixa e fechamento mensal para você tomar melhores decisões."},
+  ];
+  const frase = React.useMemo(() => FRASES_INCENTIVO[Math.floor(Math.random()*FRASES_INCENTIVO.length)],[]);
+  const nome = getNome();
+
+  React.useEffect(() => {
+    const t1 = setTimeout(() => setFase(1), 300);
+    const t2 = setTimeout(() => setFase(2), 900);
+    const t3 = setTimeout(() => {
+      if (primeiroAcesso && !getNome()) {
+        setFase(3);
+      } else {
+        // Ir direto sem animação de saída
+        onFinish();
+      }
+    }, 2200);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
+
+  const confirmarNome = () => {
+    const n = nomeInput.trim();
+    if (!n) { setNomeErr(true); return; }
+    setNomeStorage(n);
+    onFinish();
+  };
+
+  const s = {
+    wrap: {
+      minHeight:"100vh", width:"100%",
+      background:"linear-gradient(135deg,#0a0d1a 0%,#0f1117 50%,#0d1a2e 100%)",
+      display:"flex", flexDirection:"column",
+      alignItems:"center", justifyContent:"center",
+      overflow:"hidden", position:"relative", padding:"0 24px"
+    },
+    logo: {
+      fontSize:64, marginBottom:8,
+      opacity: fase>=1?1:0,
+      transform: fase>=1?"translateY(0) rotate(0deg)":"translateY(20px) rotate(-15deg)",
+      transition:"all .8s cubic-bezier(.34,1.56,.64,1)",
+      animation: fase>=2?"spin3d 3s ease-in-out infinite":"none"
+    },
+    title: {
+      fontSize:44, fontWeight:800, letterSpacing:6,
+      background:"linear-gradient(90deg,#6ea8fe,#378ADD,#1D9E75)",
+      WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
+      backgroundClip:"text",
+      opacity:fase>=1?1:0, transition:"opacity .5s ease .2s"
+    },
+    sub: {
+      fontSize:12, color:"#6ea8fe", letterSpacing:3,
+      textTransform:"uppercase", fontWeight:300,
+      opacity:fase>=1?1:0, transition:"opacity .5s ease .4s",
+      marginBottom:32
+    },
+    divider: {
+      height:1,
+      background:"linear-gradient(90deg,transparent,#378ADD44,transparent)",
+      margin:"0 auto 24px",
+      width:fase>=2?"80%":"0%", transition:"width .6s ease"
+    },
+    frase: {
+      opacity:fase>=2?1:0, transition:"opacity .6s ease",
+      textAlign:"center", maxWidth:360
+    },
+    inp: {
+      background:"#161b27", border:"1.5px solid #2a2f3e",
+      borderRadius:10, color:"#e8eaf0", padding:"12px 16px",
+      fontSize:16, width:"100%", outline:"none",
+      textAlign:"center", marginBottom:8, boxSizing:"border-box"
+    },
+    btn: {
+      background:"linear-gradient(135deg,#253580,#378ADD)",
+      color:"#fff", border:"none", borderRadius:10,
+      padding:"12px 32px", fontSize:15, fontWeight:600,
+      cursor:"pointer", width:"100%"
+    }
+  };
+
+  return React.createElement("div", {style: s.wrap},
+    // Partículas leves
+    fase >= 1 && React.createElement("div", {
+      style:{position:"absolute",inset:0,pointerEvents:"none",overflow:"hidden"}
+    },
+      ["💰","💳","🪙","📈","💎","💵","🏦","⭐","💸","🤑"].map((ico,i) =>
+        React.createElement("span", {
+          key:i,
+          style:{
+            position:"absolute",
+            left:(10+i*9)+"%", top:(15+i*7)+"%",
+            fontSize:14+i%3*6, opacity:0.08,
+            animation:`float${i%3} ${2+i%3}s ease-in-out ${i*0.2}s infinite alternate`
+          }
+        }, ico)
+      )
+    ),
+    // Linha topo
+    React.createElement("div", {style:{
+      position:"absolute",top:0,left:0,right:0,height:3,
+      background:"linear-gradient(90deg,transparent,#378ADD,#1D9E75,transparent)",
+      opacity:fase>=1?1:0,transition:"opacity .8s ease"
+    }}),
+    // Logo
+    React.createElement("img", {src:SHEYLA_IMG,style:{width:110,height:110,borderRadius:16,objectFit:"cover"},alt:"SDC"}),
+    React.createElement("div", {style:s.title}, "SDC"),
+    React.createElement("div", {style:s.sub}, "SHEYLA DO CONTÁBIL"),
+    React.createElement("div", {style:s.divider}),
+    // Fase 2: frase ou boas-vindas
+    fase === 2 && React.createElement("div", {style:s.frase},
+      !primeiroAcesso && nome
+        ? React.createElement("div", {style:{fontSize:16,color:"#e8eaf0",marginBottom:8,fontWeight:300}},
+            "Bem-vindo de volta, ",
+            React.createElement("span",{style:{color:"#6ea8fe",fontWeight:600}}, nome),
+            "! 👋"
+          )
+        : null,
+      React.createElement("div", {style:{fontSize:13,color:"#8892a4",lineHeight:1.7,fontStyle:"italic"}},
+        '"'+frase+'"'
+      ),
+      React.createElement("div", {style:{fontSize:11,color:"#378ADD",marginTop:8,fontWeight:500}},
+        "— Sheyla do Contábil"
+      )
+    ),
+    // Fase 3: slides + nome
+    fase === 3 && React.createElement("div",{style:{width:"100%",maxWidth:380,textAlign:"center"}},
+      slide < SLIDES.length
+        ? React.createElement("div",{key:"slide-"+slide,style:{animation:"fadeIn .4s ease"}},
+            React.createElement("div",{style:{fontSize:64,marginBottom:16}},SLIDES[slide].icon),
+            React.createElement("div",{style:{fontSize:20,fontWeight:700,color:"#e8eaf0",marginBottom:10,lineHeight:1.3}},SLIDES[slide].titulo),
+            React.createElement("div",{style:{fontSize:14,color:"#8892a4",lineHeight:1.7,marginBottom:28}},SLIDES[slide].desc),
+            React.createElement("div",{style:{display:"flex",justifyContent:"center",gap:6,marginBottom:24}},
+              SLIDES.map(function(_,i){return React.createElement("div",{key:i,style:{width:i===slide?20:6,height:6,borderRadius:3,background:i===slide?"#378ADD":"#2a2f3e",transition:"all .3s ease"}});})
+            ),
+            React.createElement("div",{style:{display:"flex",gap:10,alignItems:"center"}},
+              React.createElement("button",{onClick:function(){if(slide>0)setSlide(function(v){return v-1;});},style:{background:"none",border:"1px solid #2a2f3e",color:"#8892a4",borderRadius:10,padding:"12px 16px",fontSize:16,cursor:slide>0?"pointer":"default",opacity:slide>0?1:0,transition:"opacity .2s",flexShrink:0,pointerEvents:slide>0?"auto":"none"}},"←"),
+              React.createElement("button",{onClick:function(){setSlide(function(v){return v+1;});},style:{background:"linear-gradient(135deg,#253580,#378ADD)",color:"#fff",border:"none",borderRadius:10,padding:"12px 24px",fontSize:15,fontWeight:600,cursor:"pointer",flex:1}},slide===SLIDES.length-1?"Configurar agora 🚀":"Próximo →")
+            )
+          )
+        : React.createElement("div",{key:"nome",style:{animation:"fadeIn .4s ease"}},
+            React.createElement("div",{style:{fontSize:32,marginBottom:8}},"👋"),
+            React.createElement("div",{style:{fontSize:20,fontWeight:700,color:"#e8eaf0",marginBottom:6}},"Como posso te chamar?"),
+            React.createElement("div",{style:{fontSize:13,color:"#8892a4",marginBottom:20,lineHeight:1.6}},"Vou usar seu nome nas saudações e relatórios."),
+            React.createElement("input",{autoFocus:true,style:{...s.inp,borderColor:nomeErr?"#E24B4A":"#2a2f3e"},placeholder:"Seu nome ou apelido...",value:nomeInput,onChange:function(e){setNomeInput(e.target.value);setNomeErr(false);},onKeyDown:function(e){if(e.key==="Enter")confirmarNome();}}),
+            nomeErr && React.createElement("div",{style:{fontSize:12,color:"#E24B4A",marginBottom:8}},"Por favor, escreva seu nome"),
+            React.createElement("div",{style:{display:"flex",gap:10,alignItems:"center"}},
+              React.createElement("button",{onClick:function(){setSlide(SLIDES.length-1);},style:{background:"none",border:"1px solid #2a2f3e",color:"#8892a4",borderRadius:10,padding:"12px 16px",fontSize:16,cursor:"pointer",flexShrink:0}},"←"),
+              React.createElement("button",{onClick:confirmarNome,style:{background:"linear-gradient(135deg,#253580,#378ADD)",color:"#fff",border:"none",borderRadius:10,padding:"12px 24px",fontSize:15,fontWeight:600,cursor:"pointer",flex:1}},"Vamos começar 🚀")
+            )
+          )
+    ),
+    // Rodapé
+    React.createElement("div",{style:{
+      position:"absolute",bottom:20,fontSize:10,
+      color:"#2a2f3e",letterSpacing:2,textTransform:"uppercase"
+    }},"Gestão financeira pessoal"),
+    React.createElement("style",null,`
+      @keyframes float0{from{transform:translateY(0)}to{transform:translateY(-10px)}}
+      @keyframes float1{from{transform:translateY(0)}to{transform:translateY(-15px)}}
+      @keyframes float2{from{transform:translateY(0)}to{transform:translateY(-8px)}}
+    `)
+  );
+}
+
+const isFirstAccess = () => {
+  try {
+    if (localStorage.getItem(OB_KEY)) return false;
+    const d = JSON.parse(localStorage.getItem("sdc_v3") || "null");
+    return !(d && d.txs && d.txs.length > 0);
+  } catch(e){ return false; }
+};
+
+const DEFAULT_SUGESTOES_IMOVEL = [
+  {id:"aluguel",    label:"Aluguel",       cat:"moradia",     valor:"", dia:5,  icone:"🏠", tipo:"despesa", recorrencia:"mensal", cartao:""},
+  {id:"condominio", label:"Condomínio",    cat:"moradia",     valor:"", dia:10, icone:"🏢", tipo:"despesa", recorrencia:"mensal", cartao:""},
+  {id:"agua",       label:"Água",          cat:"moradia",     valor:"", dia:15, icone:"💧", tipo:"despesa", recorrencia:"mensal", cartao:""},
+  {id:"luz",        label:"Luz",           cat:"moradia",     valor:"", dia:15, icone:"💡", tipo:"despesa", recorrencia:"mensal", cartao:""},
+  {id:"internet",   label:"Internet",      cat:"outros",      valor:"", dia:10, icone:"📶", tipo:"despesa", recorrencia:"mensal", cartao:""},
+  {id:"diarista",   label:"Diarista",      cat:"moradia",     valor:"", dia:20, icone:"🧹", tipo:"despesa", recorrencia:"mensal", cartao:""},
+];
+const DEFAULT_SUGESTOES_PESSOAL = [
+  {id:"celular",    label:"Celular",       cat:"outros",      valor:"", dia:10, icone:"📱", tipo:"despesa", recorrencia:"mensal",  cartao:""},
+  {id:"mercado",    label:"Mercado",       cat:"alimentacao", valor:"", dia:5,  icone:"🛒", tipo:"despesa", recorrencia:"unico", cartao:""},
+  {id:"farmacia",   label:"Farmácia",      cat:"saude",       valor:"", dia:10, icone:"💊", tipo:"despesa", recorrencia:"unico", cartao:""},
+  {id:"academia",   label:"Academia",      cat:"saude",       valor:"", dia:5,  icone:"🏋️", tipo:"despesa", recorrencia:"mensal",  cartao:""},
+  {id:"cabeleireiro",label:"Cabeleireiro", cat:"lazer",       valor:"", dia:20, icone:"✂️", tipo:"despesa", recorrencia:"mensal",  cartao:""},
+  {id:"psicologo",  label:"Psicólogo",     cat:"saude",       valor:"", dia:12, icone:"🧠", tipo:"despesa", recorrencia:"mensal",  cartao:""},
+  {id:"curso",      label:"Curso/Escola",  cat:"educacao",    valor:"", dia:10, icone:"📚", tipo:"despesa", recorrencia:"mensal",  cartao:""},
+  {id:"streaming",  label:"Streaming",     cat:"lazer",       valor:"", dia:15, icone:"📺", tipo:"despesa", recorrencia:"mensal",  cartao:""},
+  {id:"combustivel",label:"Combustível",   cat:"transporte",  valor:"", dia:1,  icone:"⛽", tipo:"despesa", recorrencia:"unico", cartao:""},
+  {id:"transporte", label:"Transporte",    cat:"transporte",  valor:"", dia:1,  icone:"🚌", tipo:"despesa", recorrencia:"unico", cartao:""},
+  {id:"plano_saude",label:"Plano de Saúde",cat:"saude",       valor:"", dia:5,  icone:"🏥", tipo:"despesa", recorrencia:"mensal",  cartao:""},
+];
+const DEFAULT_SUGESTOES_RECEITA = [
+  {id:"sal_mes",    label:"Salário — Mês",          cat:"salario",      tipo:"receita", valor:"", dia:5,  icone:"💰", recorrencia:"mensal", cartao:""},
+  {id:"sal_vale",   label:"Salário — Vale",          cat:"salario",      tipo:"receita", valor:"", dia:20, icone:"💳", recorrencia:"mensal", cartao:""},
+  {id:"freelance",  label:"Freelance",               cat:"freelance",    tipo:"receita", valor:"", dia:1,  icone:"💼", recorrencia:"unico",  cartao:""},
+  {id:"aluguel_rec",label:"Recebimento de Aluguel",  cat:"receita",      tipo:"receita", valor:"", dia:5,  icone:"🏠", recorrencia:"mensal", cartao:""},
+  {id:"outros_rec", label:"Outros",                  cat:"receita",      tipo:"receita", valor:"", dia:1,  icone:"➕", recorrencia:"unico",  cartao:""},
+];
+
+const ICONES_DISPONIVEIS = [
+  {g:"Moradia",  icons:["🏠","🏢","🏗️","🏘️","🚪","🛋️","🪑","🛏️","🚿","🛁","💡","💧","🔥","⚡","📶","🧹","🔧","🪣"]},
+  {g:"Alimentação", icons:["🛒","🍔","🍕","🍣","🥗","☕","🍺","🍰","🥩","🌮","🍜","🥡","🛵","🍱"]},
+  {g:"Saúde",    icons:["💊","🏥","🧠","🦷","👓","🩺","💉","🩹","🧘","🏋️","🚴","🏊"]},
+  {g:"Transporte",icons:["🚗","🚌","🚇","✈️","⛽","🛵","🚲","🛺","🚕","🚙","🏍️","⛴️"]},
+  {g:"Educação", icons:["📚","🎓","✏️","📐","🖥️","🎒","📖","🔬","🎨","🎸","🎹","🎬"]},
+  {g:"Lazer",    icons:["🎮","🎬","📺","🎵","✂️","🎭","🎪","🎠","🏖️","🎯","🎲","🏆"]},
+  {g:"Finanças", icons:["💰","💳","💵","🏦","📈","📉","💼","🏧","💸","🪙","💎","🏠"]},
+  {g:"Pessoal",  icons:["👤","👨‍👩‍👧","🎁","📱","⌚","👔","👟","💍","🧴","🪥","🪒","💄"]},
+  {g:"Outros",   icons:["📌","📎","🔑","📦","🗂️","📋","🔔","⭐","❤️","🌟","✅","❌","🎀","🌈"]},
+];
+
+function BtnSelectAll({itens, onSelectAll, onClearAll}) {
+  const total = itens.length;
+  const selecionados = itens.filter(it => it.ativo).length;
+  const todosSelecionados = selecionados === total && total > 0;
+  return /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: todosSelecionados ? onClearAll : onSelectAll,
+    style: {
+      background: "none", border: "1px solid var(--brd)", borderRadius: 6,
+      padding: "3px 10px", fontSize: 11,
+      color: todosSelecionados ? "#E24B4A" : "var(--txt2)",
+      cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap"
+    }
+  }, todosSelecionados ? "✕ Remover todos" : "✓ Selecionar todos");
+}
+
+function DiaInput({value, onChange, style}) {
+  const v = parseInt(value)||1;
+  const dec = () => onChange(Math.max(1, v-1));
+  const inc = () => onChange(Math.min(31, v+1));
+  const btnStyle = {
+    background:"var(--bg3)",border:"1px solid var(--brd)",color:"var(--txt)",
+    width:26,height:26,borderRadius:5,cursor:"pointer",fontSize:14,fontWeight:600,
+    display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,lineHeight:1,padding:0
+  };
+  return /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",gap:3,...(style||{})}},
+    /*#__PURE__*/React.createElement("button",{type:"button",onClick:dec,style:btnStyle},"−"),
+    /*#__PURE__*/React.createElement("input",{
+      type:"text",inputMode:"numeric",pattern:"[0-9]*",value:v,
+      onChange:e=>{const n=parseInt(e.target.value.replace(/\D/g,""));if(!isNaN(n))onChange(Math.min(31,Math.max(1,n)));},
+      style:{width:36,textAlign:"center",background:"var(--inp-bg)",border:"1px solid var(--brd)",borderRadius:6,color:"var(--txt)",padding:"3px 4px",fontSize:13,outline:"none"}
+    }),
+    /*#__PURE__*/React.createElement("button",{type:"button",onClick:inc,style:btnStyle},"＋")
+  );
+}
+
+function IconeSelector({value, onChange}) {
+  const [open, setOpen] = React.useState(false);
+  const [pos, setPos] = React.useState({top:0,left:0});
+  const btnRef = React.useRef();
+  const handleOpen = e => {
+    e.stopPropagation();
+    if(!open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({top:r.bottom+window.scrollY+4,left:Math.min(r.left+window.scrollX,window.innerWidth-272)});
+    }
+    setOpen(o=>!o);
+  };
+  React.useEffect(()=>{
+    if(!open) return;
+    const close=e=>{if(btnRef.current&&!btnRef.current.contains(e.target))setOpen(false);};
+    document.addEventListener("mousedown",close);
+    return()=>document.removeEventListener("mousedown",close);
+  },[open]);
+  const popup = open && ReactDOM.createPortal(
+    /*#__PURE__*/React.createElement("div",{
+      onMouseDown:e=>e.stopPropagation(),
+      style:{position:"absolute",top:pos.top,left:pos.left,zIndex:9999,background:"var(--bg2)",
+             border:"1px solid var(--brd)",borderRadius:10,padding:10,width:268,
+             boxShadow:"0 8px 32px rgba(0,0,0,.35)",maxHeight:320,overflowY:"auto"}
+    },
+      /*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:"var(--txt2)",marginBottom:8,fontWeight:600,display:"flex",justifyContent:"space-between",alignItems:"center"}},
+        "Escolher ícone",
+        /*#__PURE__*/React.createElement("button",{type:"button",onClick:()=>setOpen(false),style:{background:"none",border:"none",color:"var(--txt2)",cursor:"pointer",fontSize:14}},"✕")
+      ),
+      ICONES_DISPONIVEIS.map(cat=>/*#__PURE__*/React.createElement("div",{key:cat.g,style:{marginBottom:8}},
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:10,color:"var(--txt2)",marginBottom:3,fontWeight:500}},cat.g),
+        /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:2}},
+          cat.icons.map(ic=>/*#__PURE__*/React.createElement("button",{
+            key:ic,type:"button",title:ic,
+            onClick:e=>{e.stopPropagation();onChange(ic);setOpen(false);},
+            style:{fontSize:18,background:ic===value?"var(--nav-act-bg)":"none",
+                   border:ic===value?"1px solid var(--nav-act-col)":"1px solid transparent",
+                   cursor:"pointer",borderRadius:6,padding:"3px 4px",lineHeight:1}
+          },ic))
+        )
+      ))
+    ), document.body
+  );
+  return /*#__PURE__*/React.createElement(React.Fragment,null,
+    /*#__PURE__*/React.createElement("button",{
+      ref:btnRef,type:"button",onClick:handleOpen,title:"Clique para trocar o ícone",
+      style:{fontSize:20,background:"none",border:"none",cursor:"pointer",padding:"2px 4px",
+             borderRadius:6,flexShrink:0,lineHeight:1,outline:open?"2px solid #378ADD":"none"}
+    },value||"📌"),
+    popup
+  );
+}
+
+function ItemRow({it, onChange, onToggle, accentColor, cartoesDisponiveis, onRemove, hasError, catsDisponiveis}) {
+  const inpBase = {background:"var(--inp-bg)",border:"1px solid var(--brd)",borderRadius:6,color:"var(--txt)",padding:"4px 8px",fontSize:12,outline:"none"};
+  return /*#__PURE__*/React.createElement("div", {
+    id:"item-erro-"+it.id, style:{borderRadius:10,border:"1.5px solid "+(hasError?"#E24B4A":it.ativo?accentColor:"var(--brd)"),background:hasError?"#E24B4A0d":it.ativo?accentColor+"0d":"var(--bg)",marginBottom:6,transition:"border .2s,background .2s"}
+  },
+    // Linha principal: checkbox + ícone + nome + valor
+    /*#__PURE__*/React.createElement("div", {
+      style:{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",cursor:"pointer"},
+      onClick: e => { if(e.target.type !== "checkbox" && e.target.type !== "number" && e.target.tagName !== "INPUT" && e.target.tagName !== "SELECT") onToggle(it.id); }
+    },
+      /*#__PURE__*/React.createElement("input", {type:"checkbox",checked:it.ativo,onChange:()=>onToggle(it.id),style:{accentColor:accentColor,width:16,height:16,flexShrink:0,cursor:"pointer"}}),
+      /*#__PURE__*/React.createElement(IconeSelector, {value:it.icone||"📌", onChange:ic=>onChange(it.id,"icone",ic)}),
+      /*#__PURE__*/React.createElement("input", {
+        style:{...inpBase,flex:1,fontWeight:500,border:"none",background:"transparent",color:"var(--txt)",fontSize:13},
+        value:it.nome,placeholder:"Nome do lançamento",
+        onChange:e=>onChange(it.id,"nome",e.target.value),
+        onClick:e=>e.stopPropagation()
+      }),
+      /*#__PURE__*/React.createElement("span",{style:{fontSize:11,color:"var(--txt2)",flexShrink:0}},"R$"),
+      /*#__PURE__*/React.createElement("input",{
+        style:{...inpBase,width:80,textAlign:"right"},
+        type:"number",placeholder:"0,00",min:"0",step:"0.01",value:it.valor,
+        onChange:e=>{const v=e.target.value;if(v===""||parseFloat(v)>=0){onChange(it.id,"valor",v);if(!it.ativo&&v)onToggle(it.id);}},
+        onKeyDown:e=>{if(e.key==="-")e.preventDefault();},
+        onClick:e=>e.stopPropagation()
+      }),
+      onRemove && /*#__PURE__*/React.createElement("button",{type:"button",onClick:e=>{e.stopPropagation();onRemove();},style:{background:"none",border:"none",color:"#E24B4A",cursor:"pointer",fontSize:16,flexShrink:0,padding:"0 4px",lineHeight:1}},"✕")
+    ),
+    // Linha de detalhes (expandida quando ativo)
+    it.ativo && /*#__PURE__*/React.createElement("div", {
+      style:{display:"flex",gap:8,padding:"6px 10px 10px 38px",flexWrap:"wrap",borderTop:"1px solid var(--brd)"}
+    },
+      // Dia de vencimento — muda conforme a recorrência
+      (it.recorrencia==="semanal"||it.recorrencia==="quinzenal")
+        ? /*#__PURE__*/React.createElement(React.Fragment,null,
+            /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",gap:4}},
+              /*#__PURE__*/React.createElement("span",{style:{fontSize:11,color:"var(--txt2)"}},"Dia da semana:"),
+              /*#__PURE__*/React.createElement("select",{
+                style:{background:"var(--inp-bg)",border:"1px solid var(--brd)",borderRadius:6,color:"var(--txt)",padding:"4px 8px",fontSize:12,outline:"none"},
+                value:it.diaSemana!==undefined?it.diaSemana:1,
+                onChange:e=>onChange(it.id,"diaSemana",parseInt(e.target.value))
+              },
+                ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map((d,i)=>
+                  /*#__PURE__*/React.createElement("option",{key:i,value:i},d)
+                )
+              )
+            ),
+            /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",gap:4}},
+              /*#__PURE__*/React.createElement("span",{style:{fontSize:11,color:"var(--txt2)"}},it.recorrencia==="semanal"?"Semanas:":"Quinzenas:"),
+              /*#__PURE__*/React.createElement("input",{
+                style:{background:"var(--inp-bg)",border:"1px solid var(--brd)",borderRadius:6,color:"var(--txt)",padding:"4px 6px",fontSize:12,outline:"none",width:44,textAlign:"center"},
+                type:"number",min:1,max:52,
+                value:it.repeticoes||12,
+                onChange:e=>onChange(it.id,"repeticoes",parseInt(e.target.value)||1)
+              })
+            )
+          )
+        : /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",gap:4}},
+            /*#__PURE__*/React.createElement("span",{style:{fontSize:11,color:"var(--txt2)"}},"Dia:"),
+            /*#__PURE__*/React.createElement(DiaInput,{value:it.dia,onChange:v=>onChange(it.id,"dia",v)})
+          ),
+      // Recorrência
+      /*#__PURE__*/React.createElement("select",{
+        style:{background:"var(--inp-bg)",border:"1px solid var(--brd)",borderRadius:6,
+               color:"var(--txt)",padding:"4px 8px",fontSize:12,outline:"none"},
+        value:it.recorrencia||"mensal",
+        onChange:e=>onChange(it.id,"recorrencia",e.target.value)
+      },
+        /*#__PURE__*/React.createElement("option",{value:"unico"},"Único"),
+        /*#__PURE__*/React.createElement("option",{value:"mensal"},"Mensal"),
+        /*#__PURE__*/React.createElement("option",{value:"quinzenal"},"Quinzenal"),
+        /*#__PURE__*/React.createElement("option",{value:"semanal"},"Semanal"),
+        /*#__PURE__*/React.createElement("option",{value:"parcelado"},"Parcelado")
+      ),
+      // Nº parcelas (só se parcelado)
+      (it.recorrencia||"mensal") === "parcelado" && /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",gap:4}},
+        /*#__PURE__*/React.createElement("span",{style:{fontSize:11,color:"var(--txt2)"}},"x"),
+        /*#__PURE__*/React.createElement("input",{
+          style:{background:"var(--inp-bg)",border:"1px solid var(--brd)",borderRadius:6,
+                 color:"var(--txt)",padding:"4px 8px",fontSize:12,outline:"none",width:48,textAlign:"center"},
+          type:"number",min:2,max:48,
+          value:it.parcelas||2,
+          onChange:e=>onChange(it.id,"parcelas",parseInt(e.target.value)||2)
+        })
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{width:"100%",marginTop:4,fontSize:11,color:"var(--txt2)",lineHeight:1.5,padding:"4px 6px",background:"var(--bg3)",borderRadius:6}},
+        (()=>{
+          const hoje=new Date();
+          const MESES=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+          const DIAS_S=["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+          if(it.recorrencia==="semanal"||it.recorrencia==="quinzenal"){
+            const alvo=it.diaSemana!==undefined?it.diaSemana:1;
+            const diasAteFim=((alvo-hoje.getDay())+7)%7||7;
+            const prox=new Date(hoje); prox.setDate(hoje.getDate()+diasAteFim);
+            const rep=it.repeticoes||12;
+            const intervalo=it.recorrencia==="quinzenal"?14:7;
+            return "📅 "+DIAS_S[alvo]+" — próximo: "+String(prox.getDate()).padStart(2,"0")+"/"+String(prox.getMonth()+1).padStart(2,"0")+" · "+rep+"× a cada "+intervalo+"d";
+          }
+          const diaHoje=hoje.getDate(),d=parseInt(it.dia)||5;
+          let m=hoje.getMonth(),a=hoje.getFullYear();
+          if(diaHoje>=d){m++;if(m>11){m=0;a++;}}
+          const maxDia=new Date(a,m+1,0).getDate();
+          const diaFinal=Math.min(d,maxDia);
+          return "📅 Próximo lançamento: "+String(diaFinal).padStart(2,"0")+"/"+String(m+1).padStart(2,"0")+"/"+a+" ("+MESES[m]+")";
+        })()
+      ),
+      // Cartão
+      catsDisponiveis && catsDisponiveis.length > 0 && /*#__PURE__*/React.createElement("select",{
+        style:{background:"var(--inp-bg)",border:"1px solid var(--brd)",borderRadius:6,color:"var(--txt)",padding:"4px 8px",fontSize:12,outline:"none"},
+        value:it.cat||"outros",
+        onChange:e=>onChange(it.id,"cat",e.target.value)
+      },
+        catsDisponiveis
+          .filter(c=>!c.tipo || c.tipo===(it.tipo||"despesa"))
+          .map(c=>/*#__PURE__*/React.createElement("option",{key:c.id,value:c.id},c.label))
+      ),
+      cartoesDisponiveis && cartoesDisponiveis.length > 0 && (it.recorrencia||"mensal") === "parcelado" && /*#__PURE__*/React.createElement("select",{
+        style:{...inpBase,maxWidth:130},
+        value:it.cartao||"",
+        onChange:e=>onChange(it.id,"cartao",e.target.value)
+      },
+        /*#__PURE__*/React.createElement("option",{value:""},"Sem cartão"),
+        cartoesDisponiveis.map(c=>/*#__PURE__*/React.createElement("option",{key:c.id,value:c.id},c.icone+" "+c.label))
+      )
+    )
+  );
+}
+
+function Onboarding({onComplete}) {
+  const [step, setStep] = React.useState(0);
+
+  // Passo -1 (0) — Categorias
+  const CATS_SUGERIDAS_RECEITA = [
+    {id:"salario",  label:"Salário",        color:"#1D9E75", tipo:"receita",  ativo:true},
+    {id:"freelance",label:"Freelance",      color:"#5DCAA5", tipo:"receita",  ativo:false},
+    {id:"bonus",    label:"Bônus",          color:"#378ADD", tipo:"receita",  ativo:false},
+    {id:"investimento",label:"Investimento",color:"#7F77DD", tipo:"receita",  ativo:false},
+  ];
+  const CATS_SUGERIDAS_DESPESA = [
+    {id:"alimentacao",label:"Alimentação",  color:"#EF9F27", tipo:"despesa",  ativo:true},
+    {id:"moradia",    label:"Moradia",      color:"#7F77DD", tipo:"despesa",  ativo:true},
+    {id:"transporte", label:"Transporte",   color:"#378ADD", tipo:"despesa",  ativo:true},
+    {id:"saude",      label:"Saúde",        color:"#E24B4A", tipo:"despesa",  ativo:true},
+    {id:"educacao",   label:"Estudos",      color:"#5DCAA5", tipo:"despesa",  ativo:true},
+    {id:"lazer",      label:"Lazer",        color:"#D4537E", tipo:"despesa",  ativo:true},
+    {id:"outros",     label:"Outros",       color:"#888780", tipo:"despesa",  ativo:true},
+  ];
+  const [catsRec, setCatsRec] = React.useState(CATS_SUGERIDAS_RECEITA);
+  const [catsDes, setCatsDes] = React.useState(CATS_SUGERIDAS_DESPESA);
+  const [catsExtras, setCatsExtras] = React.useState([]);
+  const [showPularConfirm, setShowPularConfirm] = React.useState(false);
+  const [saldoInicialInv, setSaldoInicialInv] = React.useState("");
+  const [cxsOb, setCxsOb] = React.useState([]);
+  const SUG_CX = ["Reserva de emergência","Renda fixa (CDB/Tesouro)","Ações e fundos","Viagem","Casa própria"];
+  const addCxOb = (nome) => setCxsOb(p=>[...p,{id:"cx"+Date.now()+p.length,nome:nome||"",saldo:"",meta:""}]);
+  const updCxOb = (id,f,v) => setCxsOb(p=>p.map(c=>c.id===id?{...c,[f]:v}:c));
+  const rmCxOb = id => setCxsOb(p=>p.filter(c=>c.id!==id));
+  const invOb = parseFloat(saldoInicialInv)||0;
+  const cxsValidas = invOb>0 ? [{id:"inv",nome:"Investimentos",saldo:String(invOb),meta:""}] : [];
+  const totalCxOb = invOb;
+  const livreOb = 0;
+  const toggleCat = (setter, id) => setter(p=>p.map(c=>c.id===id?{...c,ativo:!c.ativo}:c));
+  const addCatExtra = () => setCatsExtras(p=>[...p,{id:"cx"+Date.now(),label:"",color:"#378ADD",tipo:"despesa",ativo:true,novo:true}]);
+  const updateCatExtra = (id,f,v) => setCatsExtras(p=>p.map(c=>c.id===id?{...c,[f]:v}:c));
+  const removeCatExtra = id => setCatsExtras(p=>p.filter(c=>c.id!==id));
+
+  // Passo 1 — Cartões
+  const [cartoesCad, setCartoesCad] = React.useState([
+    {id:"nubank",  label:"NuBank", color:"#8B5CF6", icone:"💜", vencimento:10, editando:false},
+    {id:"itau",    label:"Itaú",   color:"#E87722", icone:"🟠", vencimento:15, editando:false},
+  ]);
+  const addCartao = () => setCartoesCad(p=>[...p,{id:"c"+Date.now(),label:"",color:"#378ADD",icone:"💳",vencimento:10,editando:true}]);
+  const removeCartao = id => setCartoesCad(p=>p.filter(c=>c.id!==id));
+  const updateCartao = (id,f,v) => setCartoesCad(p=>p.map(c=>c.id===id?{...c,[f]:v}:c));
+
+  // Passos 1-3 — Lançamentos
+  const [imoveis, setImoveis] = React.useState([
+    {id:"im0", nome:"", itens:DEFAULT_SUGESTOES_IMOVEL.map(s=>({...s,ativo:false,nome:s.label}))}
+  ]);
+  const [pessoal, setPessoal] = React.useState(DEFAULT_SUGESTOES_PESSOAL.map(s=>({...s,ativo:false,nome:s.label})));
+  const [receitas, setReceitas] = React.useState(DEFAULT_SUGESTOES_RECEITA.map(s=>({...s,ativo:false,nome:s.label})));
+
+  // Extras (linha "outro" no final de cada seção)
+  const [extrasImovel, setExtrasImovel] = React.useState([]);
+  const [extrasPessoal, setExtrasPessoal] = React.useState([]);
+  const [extrasReceita, setExtrasReceita] = React.useState([]);
+
+  const addExtra = (setter, tipo) => setter(p=>[...p,{id:"ex"+Date.now(),nome:"",valor:"",dia:5,recorrencia:"mensal",cartao:"",ativo:true,icone:"📌",tipo:tipo||"despesa"}]);
+  const updateExtra = (setter,id,f,v) => setter(p=>p.map(it=>it.id===id?{...it,[f]:v}:it));
+  const removeExtra = (setter,id) => setter(p=>p.filter(it=>it.id!==id));
+
+  const addImovel = () => setImoveis(p=>[...p,{id:"im"+Date.now(),nome:"",itens:DEFAULT_SUGESTOES_IMOVEL.map(s=>({...s,ativo:false,nome:s.label}))}]);
+  const removeImovel = id => setImoveis(p=>p.filter(im=>im.id!==id));
+  const updateImovel = (id,f,v) => setImoveis(p=>p.map(im=>im.id===id?{...im,[f]:v}:im));
+  const toggleItemImovel = (imId,itId) => setImoveis(p=>p.map(im=>im.id===imId?{...im,itens:im.itens.map(it=>it.id===itId?{...it,ativo:!it.ativo}:it)}:im));
+  const updateItemImovel = (imId,itId,f,v) => setImoveis(p=>p.map(im=>im.id===imId?{...im,itens:im.itens.map(it=>it.id===itId?{...it,[f]:v}:it)}:im));
+
+  const togglePessoal = id => setPessoal(p=>p.map(it=>it.id===id?{...it,ativo:!it.ativo}:it));
+  const updatePessoal = (id,f,v) => setPessoal(p=>p.map(it=>it.id===id?{...it,[f]:v}:it));
+  const toggleReceita = id => setReceitas(p=>p.map(it=>it.id===id?{...it,ativo:!it.ativo}:it));
+  const updateReceita = (id,f,v) => setReceitas(p=>p.map(it=>it.id===id?{...it,[f]:v}:it));
+
+
+  const validarItens = (itens) => {
+    const semValor = itens.filter(it => it.ativo && (!it.valor || parseFloat(it.valor) <= 0));
+    setErrosValidacao(semValor.map(it=>it.id));
+    if (semValor.length > 0) {
+      setTimeout(()=>{
+        const el = document.getElementById("item-erro-"+semValor[0].id);
+        if(el) el.scrollIntoView({behavior:"smooth", block:"center"});
+      }, 50);
+      return false;
+    }
+    return true;
+  };
+  const limparErros = () => setErrosValidacao([]);
+
+  const [errosValidacao, setErrosValidacao] = React.useState([]); // ids dos itens com erro
+  const cartoesAtivos = cartoesCad.filter(c=>c.label.trim());
+  const catsDisponiveisList = [
+    ...[...catsRec, ...catsDes].filter(c=>c.ativo).map(c=>({id:c.id, label:c.label, tipo:c.tipo})),
+    ...catsExtras.filter(c=>c.label.trim()).map(c=>({id:c.id, label:c.label, tipo:c.tipo}))
+  ];
+
+  const totalSel = imoveis.reduce((a,im)=>a+im.itens.filter(it=>it.ativo).length+extrasImovel.filter(it=>it.ativo&&it.nome).length,0)
+    + pessoal.filter(it=>it.ativo).length + extrasPessoal.filter(it=>it.nome).length
+    + receitas.filter(it=>it.ativo).length + extrasReceita.filter(it=>it.nome).length;
+
+  const gerarTxs = () => {
+    const txs=[]; let id=1000;
+    const grp=(p,i)=>p+"_"+i;
+    const mkTxs = (it, nomeFinal, tipo, gId) => {
+      if(!it.valor||!nomeFinal) return;
+      const val=parseFloat(it.valor)||0; if(!val) return;
+      // Calcular vezes e datas conforme recorrência
+      const _isSemanal = it.recorrencia==="semanal";
+      const _isQuinzenal = it.recorrencia==="quinzenal";
+      const vezes = it.recorrencia === "mensal" ? 6
+        : it.recorrencia === "parcelado" ? (it.parcelas||2)
+        : _isSemanal ? (it.repeticoes||12)
+        : _isQuinzenal ? (it.repeticoes||12)
+        : 1; // único
+      const _hoje = new Date();
+      const _diaHoje = _hoje.getDate();
+      // Se tem cartão, usar o vencimento do cartão para a data
+      const cartaoObj = it.cartao ? cartoesAtivos.find(c=>c.id===it.cartao) : null;
+      const diaBase = cartaoObj ? cartaoObj.vencimento : (it.dia||5);
+      // Mês base: se o dia de vencimento já passou este mês, começa no próximo
+      let ano=_hoje.getFullYear(), mes=_hoje.getMonth();
+      if(_diaHoje >= diaBase){ mes++; if(mes>11){mes=0;ano++;} }
+      for(let i=0;i<vezes;i++){
+        let dataStr;
+        if(_isSemanal||_isQuinzenal){
+          // Calcular próxima ocorrência a partir de hoje
+          const alvo = it.diaSemana!==undefined ? it.diaSemana : 1;
+          const intervalo = _isQuinzenal ? 14 : 7;
+          const base = new Date();
+          const diasAte = ((alvo - base.getDay()) + 7) % 7 || (i===0?7:0);
+          const d = new Date(base);
+          d.setDate(base.getDate() + diasAte + (i * intervalo));
+          dataStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+        } else {
+          let m=mes+i,a=ano; if(m>11){m-=12;a++;}
+          const maxD=new Date(a,m+1,0).getDate();
+          const dia=Math.min(diaBase,maxD);
+          dataStr=`${a}-${String(m+1).padStart(2,"0")}-${String(dia).padStart(2,"0")}`;
+        }
+        txs.push({id:id++,desc:nomeFinal,valor:val,tipo,cat:it.cat||"outros",data:dataStr,pago:false,
+          icone:it.icone||null,
+          recorrencia:it.recorrencia||"mensal",parcelaAtual:it.recorrencia==="parcelado"?i+1:null,totalParcelas:it.recorrencia==="parcelado"?(it.parcelas||2):null,
+          grupoId:it.recorrencia!=="unico"?gId:null,cartao:it.cartao||null});
+      }
+    };
+    imoveis.forEach((im,imIdx)=>{
+      im.itens.filter(it=>it.ativo&&it.valor).forEach(it=>{
+        const nome=im.nome?it.nome+" ("+im.nome+")":it.nome;
+        mkTxs(it,nome,"despesa",grp("im"+imIdx,it.id));
+      });
+      extrasImovel.filter(it=>it.nome&&it.valor).forEach(it=>{
+        const nome=im.nome&&imoveis.length>1?it.nome+" ("+im.nome+")":it.nome;
+        mkTxs(it,nome,"despesa",grp("imex"+imIdx,it.id));
+      });
+    });
+    pessoal.filter(it=>it.ativo&&it.valor).forEach(it=>mkTxs(it,it.nome,"despesa",grp("pes",it.id)));
+    extrasPessoal.filter(it=>it.nome&&it.valor).forEach(it=>mkTxs(it,it.nome,"despesa",grp("pesex",it.id)));
+    receitas.filter(it=>it.ativo&&it.valor).forEach(it=>mkTxs(it,it.nome,"receita",grp("rec",it.id)));
+    extrasReceita.filter(it=>it.nome&&it.valor).forEach(it=>mkTxs(it,it.nome,"receita",grp("recex",it.id)));
+    return txs;
+  };
+
+  const finalizar = () => {
+    const txs = gerarTxs();
+    const cartoesParaSalvar = cartoesAtivos.map(c=>({id:c.id,label:c.label,color:c.color,vencimento:c.vencimento}));
+    saveCartoes(cartoesParaSalvar);
+    // Construir objeto de categorias a partir das selecionadas
+    const catsParaSalvar = {...DEFAULT_CATS};
+    // Remover categorias desmarcadas
+    [...catsRec, ...catsDes].forEach(c => {
+      if (!c.ativo && catsParaSalvar[c.id]) delete catsParaSalvar[c.id];
+    });
+    // Adicionar categorias personalizadas
+    catsExtras.filter(c=>c.label.trim()).forEach(c => {
+      catsParaSalvar[c.id] = {label:c.label.trim(), color:c.color, tipo:c.tipo};
+    });
+    // Adicionar categorias de cartões ativos
+    cartoesParaSalvar.forEach(c => {
+      if (!catsParaSalvar[c.id]) catsParaSalvar[c.id] = {label:c.label, color:c.color, tipo:"despesa"};
+    });
+    try { localStorage.setItem(OB_KEY,"1"); } catch(e){}
+    try { localStorage.setItem("sdc_saldo_inicial", JSON.stringify(livreOb + totalCxOb)); } catch(e){}
+    const CX_CORES=["#6ea8fe","#1D9E75","#EF9F27","#E24B4A","#c084fc","#f97316","#38bdf8","#a3e635"];
+    const cxsParaSalvar = cxsValidas.map((c,i)=>({id:Date.now()+i,nome:c.nome.trim(),saldo:parseFloat(c.saldo)||0,cor:CX_CORES[i%CX_CORES.length],meta:parseFloat(c.meta)>0?parseFloat(c.meta):null,prazo:null}));
+    onComplete(txs, cartoesParaSalvar, catsParaSalvar, cxsParaSalvar);
+  };
+
+  // Estilos
+  const bg="var(--bg)",bg2="var(--bg2)",brd="var(--brd)",txt="var(--txt)",txt2="var(--txt2)";
+  const inpStyle={background:"var(--inp-bg)",border:"1px solid var(--brd)",borderRadius:8,color:"var(--txt)",padding:"7px 10px",fontSize:13,width:"100%",boxSizing:"border-box",outline:"none"};
+  const card={background:bg2,border:"1px solid "+brd,borderRadius:12,padding:"14px 16px",marginBottom:12};
+  const btnPrimary={background:"#253580",color:"#fff",border:"none",borderRadius:10,padding:"12px 28px",fontSize:14,fontWeight:600,cursor:"pointer"};
+  const btnSec={background:"none",color:txt2,border:"1px solid "+brd,borderRadius:10,padding:"12px 20px",fontSize:14,cursor:"pointer"};
+  const btnAdd={background:"none",color:"#378ADD",border:"1px dashed #378ADD",borderRadius:8,padding:"7px 14px",fontSize:12,cursor:"pointer",width:"100%",marginTop:4};
+
+  const STEPS=["Categorias","Cartões","Moradia","Pessoal","Receitas","Investimento","Revisão"];
+
+  return /*#__PURE__*/React.createElement("div",{style:{minHeight:"100vh",background:bg,display:"flex",flexDirection:"column",alignItems:"center",paddingBottom:60}},
+    /*#__PURE__*/React.createElement("div",{style:{width:"100%",maxWidth:620,padding:"24px 20px 0"}},
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}},
+        /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"baseline",gap:8}},
+          /*#__PURE__*/React.createElement("span",{style:{fontSize:22,fontWeight:700,color:"#6ea8fe"}},"SDC"),
+          /*#__PURE__*/React.createElement("span",{style:{fontSize:13,color:txt2}}, getNome() ? "Olá, "+getNome()+"! Vamos configurar 👋" : "Configuração inicial")
+        ),
+        step>=0 && /*#__PURE__*/React.createElement("span",{style:{fontSize:12,color:txt2}},STEPS[step]," — ",step+1," de ",STEPS.length)
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:4,marginBottom:24}},
+        STEPS.map((s,i)=>/*#__PURE__*/React.createElement("div",{key:i,style:{flex:1,height:4,borderRadius:4,background:i<=step?"#378ADD":"var(--brd)",transition:"background .3s"}}))
+      )
+    ),
+
+    /*#__PURE__*/React.createElement("div",{style:{width:"100%",maxWidth:620,padding:"0 20px"}},
+
+    // ── STEP 0: Cartões ─────────────────────────────────────────────────────
+    step===0 && /*#__PURE__*/React.createElement("div",null,
+      /*#__PURE__*/React.createElement("h2",{style:{fontSize:20,fontWeight:600,color:txt,marginBottom:6}},"\uD83C\uDFF7\uFE0F Categorias"),
+      /*#__PURE__*/React.createElement("p",{style:{fontSize:14,color:txt2,marginBottom:16,lineHeight:1.6}},
+        "Selecione as categorias que fazem parte da sua vida financeira. Nos passos seguintes voc\xEA poder\xE1 usá-las nos lançamentos."
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{marginBottom:14}},
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#1D9E75",marginBottom:8,textTransform:"uppercase",letterSpacing:1}},"\uD83D\uDCB0 Receitas"),
+        /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:8}},
+          catsRec.map(c=>/*#__PURE__*/React.createElement("button",{
+            key:c.id,type:"button",
+            onClick:()=>toggleCat(setCatsRec,c.id),
+            style:{display:"flex",alignItems:"center",gap:6,padding:"7px 14px",borderRadius:99,
+                   border:"2px solid "+(c.ativo?c.color:"var(--brd)"),
+                   background:c.ativo?c.color+"22":"none",cursor:"pointer",
+                   fontSize:13,color:c.ativo?c.color:"var(--txt2)",fontWeight:c.ativo?600:400,
+                   transition:"all .15s"}
+          },
+            /*#__PURE__*/React.createElement("span",{style:{width:10,height:10,borderRadius:"50%",background:c.ativo?c.color:"var(--brd)",display:"inline-block",flexShrink:0}}),
+            c.label
+          ))
+        )
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{marginBottom:14}},
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#E24B4A",marginBottom:8,textTransform:"uppercase",letterSpacing:1}},"\uD83D\uDCB8 Despesas"),
+        /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:8}},
+          catsDes.map(c=>/*#__PURE__*/React.createElement("button",{
+            key:c.id,type:"button",
+            onClick:()=>toggleCat(setCatsDes,c.id),
+            style:{display:"flex",alignItems:"center",gap:6,padding:"7px 14px",borderRadius:99,
+                   border:"2px solid "+(c.ativo?c.color:"var(--brd)"),
+                   background:c.ativo?c.color+"22":"none",cursor:"pointer",
+                   fontSize:13,color:c.ativo?c.color:"var(--txt2)",fontWeight:c.ativo?600:400,
+                   transition:"all .15s"}
+          },
+            /*#__PURE__*/React.createElement("span",{style:{width:10,height:10,borderRadius:"50%",background:c.ativo?c.color:"var(--brd)",display:"inline-block",flexShrink:0}}),
+            c.label
+          ))
+        )
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{marginBottom:20}},
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"var(--txt2)",marginBottom:8}},"\u2795 Categorias personalizadas"),
+        catsExtras.map(c=>/*#__PURE__*/React.createElement("div",{key:c.id,style:{display:"flex",gap:8,alignItems:"center",marginBottom:8}},
+          /*#__PURE__*/React.createElement("input",{style:{...inpStyle,flex:1},placeholder:"Nome da categoria...",value:c.label,onChange:e=>updateCatExtra(c.id,"label",e.target.value)}),
+          /*#__PURE__*/React.createElement("select",{style:{...inpStyle,width:100},value:c.tipo,onChange:e=>updateCatExtra(c.id,"tipo",e.target.value)},
+            /*#__PURE__*/React.createElement("option",{value:"despesa"},"Despesa"),
+            /*#__PURE__*/React.createElement("option",{value:"receita"},"Receita")
+          ),
+          /*#__PURE__*/React.createElement("input",{type:"color",value:c.color,onChange:e=>updateCatExtra(c.id,"color",e.target.value),
+            style:{width:36,height:36,borderRadius:6,objectFit:"cover",border:"1px solid var(--brd)",borderRadius:6,cursor:"pointer",padding:2,background:"var(--bg)"}}),
+          /*#__PURE__*/React.createElement("button",{type:"button",onClick:()=>removeCatExtra(c.id),
+            style:{background:"none",border:"none",color:"#E24B4A",cursor:"pointer",fontSize:18}},"\u2715")
+        )),
+        /*#__PURE__*/React.createElement("button",{type:"button",onClick:addCatExtra,
+          style:{background:"none",color:"#378ADD",border:"1px dashed #378ADD",borderRadius:8,padding:"7px 14px",fontSize:12,cursor:"pointer"}},"\uFF0B Adicionar categoria")
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:10,justifyContent:"space-between"}},
+        /*#__PURE__*/React.createElement(React.Fragment,null,
+          showPularConfirm && /*#__PURE__*/React.createElement("div",{
+            style:{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.7)",
+                   zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:20}
+          },
+            /*#__PURE__*/React.createElement("div",{
+              style:{background:"var(--bg2)",border:"2px solid #EF9F27",borderRadius:16,
+                     padding:"28px 24px",maxWidth:360,width:"100%",textAlign:"center"}
+            },
+              /*#__PURE__*/React.createElement("div",{style:{fontSize:40,marginBottom:12}},"⚠️"),
+              /*#__PURE__*/React.createElement("div",{style:{fontSize:17,fontWeight:700,color:"var(--txt)",marginBottom:10}},
+                "Pular a configuração?"
+              ),
+              /*#__PURE__*/React.createElement("div",{style:{fontSize:13,color:"var(--txt2)",lineHeight:1.7,marginBottom:20}},
+                "Você irá pular a configuração. Antes, informe seu nome:",
+        /*#__PURE__*/React.createElement("input",{
+          style:{marginTop:10,width:"100%",padding:"8px 12px",borderRadius:8,border:"1px solid var(--brd)",
+                 background:"var(--inp-bg)",color:"var(--txt)",fontSize:14,outline:"none"},
+          placeholder:"Seu nome (ex: João)...",
+          id:"pular-nome-input",
+          onKeyDown:e=>{if(e.key==="Enter")document.getElementById("pular-confirm-ok")?.click();}
+        }),
+                /*#__PURE__*/React.createElement("br",null),
+                /*#__PURE__*/React.createElement("strong",{style:{color:"var(--txt)"}},"Isso pode ser refeito a qualquer momento em Configuração.")
+              ),
+              /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:10}},
+                /*#__PURE__*/React.createElement("button",{
+                  style:{flex:1,padding:"11px",borderRadius:10,border:"1px solid var(--brd)",
+                         background:"none",color:"var(--txt2)",cursor:"pointer",fontSize:14},
+                  onClick:()=>setShowPularConfirm(false)
+                },"← Voltar"),
+                /*#__PURE__*/React.createElement("button",{
+                  style:{flex:1,padding:"11px",borderRadius:10,border:"none",
+                         background:"#EF9F27",color:"#fff",cursor:"pointer",fontSize:14,fontWeight:600},
+                  id:"pular-confirm-ok",
+                  onClick:()=>{
+                    const nm=document.getElementById("pular-nome-input")?.value?.trim();
+                    if(nm){try{localStorage.setItem(NOME_KEY,nm);}catch(e){}}
+                    setShowPularConfirm(false);
+                    try{localStorage.setItem(OB_KEY,"1");}catch(e){}
+                    onComplete([],[],DEFAULT_CATS);
+                  }
+                },"Sim, pular tudo")
+              )
+            )
+          ),
+          /*#__PURE__*/React.createElement("button",{
+            style:{...btnSec,borderColor:"#EF9F27",color:"#EF9F27",fontWeight:500},
+            onClick:()=>setShowPularConfirm(true)
+          },"⏭ Pular configuração")
+        ),
+        /*#__PURE__*/React.createElement("button",{style:btnPrimary,onClick:()=>setStep(1)},"Pr\xF3ximo \u2192")
+      )
+    ),
+
+    step===1 && /*#__PURE__*/React.createElement("div",null,
+      /*#__PURE__*/React.createElement("h2",{style:{fontSize:20,fontWeight:600,color:txt,marginBottom:6}},"💳 Seus cartões de crédito"),
+      /*#__PURE__*/React.createElement("p",{style:{fontSize:14,color:txt2,marginBottom:20,lineHeight:1.6}},
+        "Cadastre os cartões que você usa. O vencimento será usado automaticamente nos lançamentos vinculados ao cartão. Pode editar ou remover os que não usa."
+      ),
+      cartoesCad.map(c=>/*#__PURE__*/React.createElement("div",{key:c.id,style:{...card,display:"flex",gap:10,alignItems:"center"}},
+        /*#__PURE__*/React.createElement("span",{style:{fontSize:22,flexShrink:0}},c.icone),
+        /*#__PURE__*/React.createElement("input",{style:{...inpStyle,flex:1},placeholder:"Nome do cartão (ex: NuBank)",value:c.label,onChange:e=>updateCartao(c.id,"label",e.target.value)}),
+        /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",gap:6,flexShrink:0}},
+          /*#__PURE__*/React.createElement("span",{style:{fontSize:12,color:txt2,whiteSpace:"nowrap"}},"Vence dia"),
+          /*#__PURE__*/React.createElement(DiaInput,{value:c.vencimento,onChange:v=>updateCartao(c.id,"vencimento",v)})
+        ),
+        /*#__PURE__*/React.createElement("input",{type:"color",value:c.color,onChange:e=>updateCartao(c.id,"color",e.target.value),style:{width:32,height:32,border:"1px solid var(--brd)",borderRadius:6,background:"var(--bg)",cursor:"pointer",padding:2,flexShrink:0}}),
+        cartoesCad.length>0 && /*#__PURE__*/React.createElement("button",{onClick:()=>removeCartao(c.id),style:{background:"none",border:"none",color:"#E24B4A",cursor:"pointer",fontSize:18,flexShrink:0}},"✕")
+      )),
+      /*#__PURE__*/React.createElement("button",{onClick:addCartao,style:btnAdd},"＋ Adicionar cartão"),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:10,justifyContent:"space-between",marginTop:20}},
+        /*#__PURE__*/React.createElement("button",{style:btnSec,onClick:()=>{try{localStorage.setItem(OB_KEY,"1");}catch(e){}onComplete([],cartoesCad.filter(c=>c.label).map(c=>({id:c.id,label:c.label,color:c.color,vencimento:c.vencimento})),DEFAULT_CATS);}},
+          "Pular tudo"
+        ),
+        /*#__PURE__*/React.createElement("button",{style:btnSec,onClick:()=>setStep(0)},"← Categorias"),
+        /*#__PURE__*/React.createElement("button",{style:btnPrimary,onClick:()=>setStep(2)},"Próximo →")
+      )
+    ),
+
+    // ── STEP 1: Moradia ─────────────────────────────────────────────────────
+    step===2 && /*#__PURE__*/React.createElement("div",null,
+      /*#__PURE__*/React.createElement("h2",{style:{fontSize:20,fontWeight:600,color:txt,marginBottom:6}},"🏠 Moradia"),
+      /*#__PURE__*/React.createElement("p",{style:{fontSize:14,color:txt2,marginBottom:20,lineHeight:1.6}},
+        "Você pode ter mais de um imóvel. Para cada um, dê um apelido e escolha as contas. Edite nomes, valores, dia de vencimento e se é recorrente mensal."
+      ),
+      errosValidacao.length > 0 && /*#__PURE__*/React.createElement("div", {
+        style:{background:"var(--danger-bg)",border:"1px solid #E24B4A66",borderRadius:10,
+               padding:"10px 14px",marginBottom:14,animation:"fadeInUp .3s ease"}
+      },
+        /*#__PURE__*/React.createElement("div",{style:{fontWeight:600,fontSize:13,color:"#E24B4A",marginBottom:4}},
+          "⚠️ "+errosValidacao.length+" lançamento(s) selecionado(s) sem valor"
+        ),
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:"#E24B4A88"}},
+          "Preencha o valor ou desmarque os itens destacados em vermelho abaixo."
+        )
+      ),
+      imoveis.map((im,imIdx)=>/*#__PURE__*/React.createElement("div",{key:im.id,style:{...card,marginBottom:16}},
+        /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:10,alignItems:"center",marginBottom:12}},
+          /*#__PURE__*/React.createElement("span",{style:{fontSize:18}},imIdx===0?"🏠":"🏢"),
+          /*#__PURE__*/React.createElement("input",{style:{...inpStyle,fontWeight:500},placeholder:imIdx===0?"Apelido do imóvel (ex: Tamanduateí)...":"Ex: Itaim Bibi, Imóvel 2...",value:im.nome,onChange:e=>updateImovel(im.id,"nome",e.target.value)}),
+          imoveis.length>1 && /*#__PURE__*/React.createElement("button",{onClick:()=>removeImovel(im.id),style:{background:"none",border:"none",color:"#E24B4A",cursor:"pointer",fontSize:18,flexShrink:0}},"✕")
+        ),
+        /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}},
+          /*#__PURE__*/React.createElement("span",{style:{fontSize:11,color:"var(--txt2)"}},"Contas do imóvel"),
+          /*#__PURE__*/React.createElement(BtnSelectAll,{itens:im.itens,
+            onSelectAll:()=>setImoveis(p=>p.map(im2=>im2.id===im.id?{...im2,itens:im2.itens.map(it=>({...it,ativo:true}))}:im2)),
+            onClearAll:()=>setImoveis(p=>p.map(im2=>im2.id===im.id?{...im2,itens:im2.itens.map(it=>({...it,ativo:false}))}:im2))
+          })
+        ),
+        im.itens.map(it=>/*#__PURE__*/React.createElement(ItemRow,{key:it.id,it,accentColor:"#378ADD",cartoesDisponiveis:cartoesAtivos,catsDisponiveis:catsDisponiveisList,
+          hasError:errosValidacao.includes(it.id),
+          onToggle:itId=>{toggleItemImovel(im.id,itId);limparErros();},
+          onChange:(itId,f,v)=>updateItemImovel(im.id,itId,f,v)
+        })),
+        extrasImovel.map(it=>/*#__PURE__*/React.createElement(ItemRow,{key:it.id,it,accentColor:"#7F77DD",cartoesDisponiveis:cartoesAtivos,catsDisponiveis:catsDisponiveisList,onToggle:()=>{},onChange:(id,f,v)=>updateExtra(setExtrasImovel,id,f,v),onRemove:()=>removeExtra(setExtrasImovel,it.id)})),
+        /*#__PURE__*/React.createElement("button",{onClick:()=>addExtra(setExtrasImovel,"despesa"),style:btnAdd},"＋ Outro lançamento")
+      )),
+      /*#__PURE__*/React.createElement("button",{onClick:addImovel,style:{...btnAdd,marginBottom:20}},"＋ Adicionar outro imóvel"),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:10,justifyContent:"space-between"}},
+        /*#__PURE__*/React.createElement("button",{style:btnSec,onClick:()=>{limparErros();setStep(1);}},"← Voltar"),
+        /*#__PURE__*/React.createElement("button",{style:btnPrimary,onClick:()=>{
+          const todosItens = imoveis.flatMap(im=>im.itens);
+          const todosExtras = extrasImovel;
+          if(!validarItens([...todosItens,...todosExtras])) return;
+          setStep(3);
+        }},"Próximo →")
+      )
+    ),
+
+    // ── STEP 2: Pessoal ─────────────────────────────────────────────────────
+    step===3 && /*#__PURE__*/React.createElement("div",null,
+      /*#__PURE__*/React.createElement("h2",{style:{fontSize:20,fontWeight:600,color:txt,marginBottom:6}},"🛒 Gastos pessoais"),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}},
+        /*#__PURE__*/React.createElement("p",{style:{fontSize:14,color:txt2,margin:0,lineHeight:1.6}},"Selecione os que se aplicam. Clique para expandir."),
+        /*#__PURE__*/React.createElement(BtnSelectAll,{itens:pessoal,onSelectAll:()=>setPessoal(p=>p.map(it=>({...it,ativo:true}))),onClearAll:()=>setPessoal(p=>p.map(it=>({...it,ativo:false})))})
+      ),
+            errosValidacao.length > 0 && /*#__PURE__*/React.createElement("div", {
+        style:{background:"var(--danger-bg)",border:"1px solid #E24B4A66",borderRadius:10,
+               padding:"10px 14px",marginBottom:14,animation:"fadeInUp .3s ease"}
+      },
+        /*#__PURE__*/React.createElement("div",{style:{fontWeight:600,fontSize:13,color:"#E24B4A",marginBottom:4}},
+          "⚠️ "+errosValidacao.length+" lançamento(s) selecionado(s) sem valor"
+        ),
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:"#E24B4A88"}},
+          "Preencha o valor ou desmarque os itens destacados em vermelho abaixo."
+        )
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{marginBottom:12}},
+        pessoal.map(it=>/*#__PURE__*/React.createElement(ItemRow,{key:it.id,it,accentColor:"#378ADD",cartoesDisponiveis:cartoesAtivos,catsDisponiveis:catsDisponiveisList,hasError:errosValidacao.includes(it.id),onToggle:(id)=>{togglePessoal(id);limparErros();},onChange:updatePessoal}))
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{...card,background:"var(--bg3)",marginBottom:12}},
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:12,fontWeight:600,color:txt2,marginBottom:8}},"Outros lançamentos"),
+        extrasPessoal.map(it=>/*#__PURE__*/React.createElement(ItemRow,{key:it.id,it,accentColor:"#7F77DD",cartoesDisponiveis:cartoesAtivos,catsDisponiveis:catsDisponiveisList,onToggle:()=>{},onChange:(id,f,v)=>updateExtra(setExtrasPessoal,id,f,v),onRemove:()=>removeExtra(setExtrasPessoal,it.id)})),
+        /*#__PURE__*/React.createElement("button",{onClick:()=>addExtra(setExtrasPessoal,"despesa"),style:btnAdd},"＋ Outro gasto")
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:10,justifyContent:"space-between"}},
+        /*#__PURE__*/React.createElement("button",{style:btnSec,onClick:()=>{limparErros();setStep(2);}},"← Voltar"),
+        /*#__PURE__*/React.createElement("button",{style:btnPrimary,onClick:()=>{
+          if(!validarItens([...pessoal,...extrasPessoal])) return;
+          setStep(4);
+        }},"Próximo →")
+      )
+    ),
+
+    // ── STEP 3: Receitas ────────────────────────────────────────────────────
+    step===4 && /*#__PURE__*/React.createElement("div",null,
+      /*#__PURE__*/React.createElement("h2",{style:{fontSize:20,fontWeight:600,color:txt,marginBottom:6}},"💰 Receitas"),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}},
+        /*#__PURE__*/React.createElement("p",{style:{fontSize:14,color:txt2,margin:0,lineHeight:1.6}},"Salário, vale, freelance — o que entra."),
+        /*#__PURE__*/React.createElement(BtnSelectAll,{itens:receitas,onSelectAll:()=>setReceitas(p=>p.map(it=>({...it,ativo:true}))),onClearAll:()=>setReceitas(p=>p.map(it=>({...it,ativo:false})))})
+      ),
+            errosValidacao.length > 0 && /*#__PURE__*/React.createElement("div", {
+        style:{background:"var(--danger-bg)",border:"1px solid #E24B4A66",borderRadius:10,
+               padding:"10px 14px",marginBottom:14,animation:"fadeInUp .3s ease"}
+      },
+        /*#__PURE__*/React.createElement("div",{style:{fontWeight:600,fontSize:13,color:"#E24B4A",marginBottom:4}},
+          "⚠️ "+errosValidacao.length+" lançamento(s) selecionado(s) sem valor"
+        ),
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:"#E24B4A88"}},
+          "Preencha o valor ou desmarque os itens destacados em vermelho abaixo."
+        )
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{marginBottom:12}},
+        receitas.map(it=>/*#__PURE__*/React.createElement(ItemRow,{key:it.id,it,accentColor:"#1D9E75",cartoesDisponiveis:[],catsDisponiveis:catsDisponiveisList,hasError:errosValidacao.includes(it.id),onToggle:(id)=>{toggleReceita(id);limparErros();},onChange:updateReceita}))
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{...card,background:"var(--bg3)",marginBottom:12}},
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:12,fontWeight:600,color:txt2,marginBottom:8}},"Outras receitas"),
+        extrasReceita.map(it=>/*#__PURE__*/React.createElement(ItemRow,{key:it.id,it,accentColor:"#1D9E75",cartoesDisponiveis:[],catsDisponiveis:catsDisponiveisList,onToggle:()=>{},onChange:(id,f,v)=>updateExtra(setExtrasReceita,id,f,v),onRemove:()=>removeExtra(setExtrasReceita,it.id)})),
+        /*#__PURE__*/React.createElement("button",{onClick:()=>addExtra(setExtrasReceita,"receita"),style:btnAdd},"＋ Outra receita")
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:10,justifyContent:"space-between"}},
+        /*#__PURE__*/React.createElement("button",{style:btnSec,onClick:()=>{limparErros();setStep(3);}},"← Voltar"),
+        /*#__PURE__*/React.createElement("button",{style:btnPrimary,onClick:()=>{
+          if(!validarItens([...receitas,...extrasReceita])) return;
+          setStep(5);
+        }},"Revisar →")
+      )
+    ),
+
+    // ── STEP 4: Revisão ─────────────────────────────────────────────────────
+    step===5 && /*#__PURE__*/React.createElement("div",null,
+      /*#__PURE__*/React.createElement("h2",{style:{fontSize:20,fontWeight:600,color:txt,marginBottom:6}},"📈 Investimentos"),
+      /*#__PURE__*/React.createElement("p",{style:{fontSize:14,color:txt2,marginBottom:20,lineHeight:1.6}},
+        "Se você já possui dinheiro investido (poupança, CDB, Tesouro, ações etc.), informe o saldo total atual. Ele ficará separado do caixa e não será contado como dinheiro disponível."
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{...card,textAlign:"center",padding:"28px 20px"}},
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:48,marginBottom:12}},"📈"),
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:14,color:txt2,marginBottom:20,lineHeight:1.7}},
+          "Patrimônio Fora do Caixa",
+          /*#__PURE__*/React.createElement("br",null),
+          /*#__PURE__*/React.createElement("span",{style:{fontSize:12}},"Soma de todos os seus investimentos atuais")
+        ),
+        /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:8}},
+          /*#__PURE__*/React.createElement("span",{style:{fontSize:16,color:txt2,fontWeight:500}},"R$"),
+          /*#__PURE__*/React.createElement("input",{
+            style:{...inpStyle,width:200,fontSize:22,fontWeight:600,textAlign:"center",color:"#7F77DD",border:"2px solid #7F77DD33"},
+            type:"number",min:"0",step:"0.01",
+            placeholder:"0,00",
+            value:saldoInicialInv,
+            onChange:e=>{const v=e.target.value;if(v===""||parseFloat(v)>=0)setSaldoInicialInv(v);},
+            onKeyDown:e=>{if(e.key==="-")e.preventDefault();}
+          })
+        ),
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:txt2,fontStyle:"italic"}},
+          "Se não tiver, deixe em branco ou zero."
+        )
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:10,justifyContent:"space-between",marginTop:16}},
+        /*#__PURE__*/React.createElement("button",{style:btnSec,onClick:()=>setStep(4)},"← Voltar"),
+        /*#__PURE__*/React.createElement("button",{style:btnPrimary,onClick:()=>setStep(6)},"Revisar →")
+      )
+    ),
+
+    step===6 && /*#__PURE__*/React.createElement("div",null,
+      /*#__PURE__*/React.createElement("h2",{style:{fontSize:20,fontWeight:600,color:txt,marginBottom:6}},"✅ Revisão"),
+      (()=>{
+        const semValor=[
+          ...imoveis.flatMap(im=>im.itens.filter(it=>it.ativo&&(!it.valor||parseFloat(it.valor)<=0))),
+          ...extrasImovel.filter(it=>it.ativo&&(!it.valor||parseFloat(it.valor)<=0)),
+          ...pessoal.filter(it=>it.ativo&&(!it.valor||parseFloat(it.valor)<=0)),
+          ...extrasPessoal.filter(it=>it.ativo&&(!it.valor||parseFloat(it.valor)<=0)),
+          ...receitas.filter(it=>it.ativo&&(!it.valor||parseFloat(it.valor)<=0)),
+          ...extrasReceita.filter(it=>it.ativo&&(!it.valor||parseFloat(it.valor)<=0)),
+        ];
+        if(!semValor.length) return null;
+        return /*#__PURE__*/React.createElement("div",{style:{background:"var(--danger-bg)",border:"1px solid #E24B4A55",borderRadius:10,padding:"10px 14px",marginBottom:12}},
+          /*#__PURE__*/React.createElement("div",{style:{fontWeight:600,fontSize:13,color:"#E24B4A",marginBottom:6}},"⚠️ "+semValor.length+" lançamento(s) sem valor — volte e preencha ou desmarque"),
+          semValor.map((it,i)=>/*#__PURE__*/React.createElement("div",{key:i,style:{fontSize:12,color:"#E24B4A",marginBottom:2}},(it.icone||"📌")+" "+it.nome))
+        );
+      })(),
+      /*#__PURE__*/React.createElement("p",{style:{fontSize:14,color:txt2,marginBottom:14,lineHeight:1.6}},
+        totalSel>0 ? totalSel+" lançamento(s) prontos. Recorrentes geram 6 meses." : "Nenhum selecionado — pode adicionar manualmente depois."
+      ),
+      saldoInicialInv && parseFloat(saldoInicialInv)>0 && /*#__PURE__*/React.createElement("div",{style:{...card,marginBottom:10,borderLeft:"3px solid #7F77DD"}},
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:600,color:"#7F77DD",marginBottom:8}},"📈 Investimentos"),
+        /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0"}},
+          /*#__PURE__*/React.createElement("span",{style:{color:txt}},"Saldo inicial"),
+          /*#__PURE__*/React.createElement("span",{style:{color:"#7F77DD",fontWeight:600}},
+            "R$ "+parseFloat(saldoInicialInv).toLocaleString("pt-BR",{minimumFractionDigits:2})
+          )
+        ),
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:txt2,marginTop:4,fontStyle:"italic"}},
+          "Patrimônio fora do caixa — não entra no saldo operacional"
+        )
+      ),
+      cartoesAtivos.length>0 && /*#__PURE__*/React.createElement("div",{style:{...card,marginBottom:10}},
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:600,color:txt,marginBottom:8}},"💳 Cartões"),
+        cartoesAtivos.map(c=>/*#__PURE__*/React.createElement("div",{key:c.id,style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"5px 0",borderBottom:"1px solid var(--brd)",fontSize:13}},
+          /*#__PURE__*/React.createElement("span",{style:{color:c.color,fontWeight:500,display:"flex",alignItems:"center",gap:6}},c.icone||"💳"," ",c.label),
+          /*#__PURE__*/React.createElement("span",{style:{color:"var(--txt2)",fontSize:12}},"Vence dia ",c.vencimento)
+        ))
+      ),
+      (()=>{
+        const items=[...receitas.filter(it=>it.ativo&&parseFloat(it.valor)>0),...extrasReceita.filter(it=>it.nome&&parseFloat(it.valor)>0)];
+        if(!items.length) return null;
+        const total=items.reduce((a,it)=>a+parseFloat(it.valor),0);
+        return /*#__PURE__*/React.createElement("div",{style:{...card,marginBottom:10,borderLeft:"3px solid #1D9E75"}},
+          /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}},
+            /*#__PURE__*/React.createElement("span",{style:{fontSize:13,fontWeight:600,color:"#1D9E75"}},"💰 Receitas — "+items.length+" lançamento(s)"),
+            /*#__PURE__*/React.createElement("span",{style:{fontSize:13,fontWeight:600,color:"#1D9E75"}},"+"+total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"}))
+          ),
+          items.map((it,i)=>/*#__PURE__*/React.createElement("div",{key:i,style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"5px 0",borderBottom:"1px solid var(--brd)",fontSize:12}},
+            /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",gap:6}},
+              /*#__PURE__*/React.createElement("span",null,it.icone||"💰"),
+              /*#__PURE__*/React.createElement("span",{style:{color:"var(--txt)"}},it.nome)
+            ),
+            /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10,flexShrink:0}},
+              it.ciclico&&/*#__PURE__*/React.createElement("span",{style:{fontSize:10,color:"var(--txt2)",background:"var(--bg3)",borderRadius:4,padding:"1px 6px"}},"mensal"),
+              it.dia&&/*#__PURE__*/React.createElement("span",{style:{fontSize:10,color:"var(--txt2)"}},"dia "+it.dia),
+              /*#__PURE__*/React.createElement("span",{style:{color:"#1D9E75",fontWeight:600}},"+"+parseFloat(it.valor).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}))
+            )
+          ))
+        );
+      })(),
+      (()=>{
+        const grupos=[];
+        imoveis.forEach((im,idx)=>{
+          const items=[...im.itens.filter(it=>it.ativo&&parseFloat(it.valor)>0),...(idx===0?extrasImovel:[]).filter(it=>it.nome&&parseFloat(it.valor)>0)];
+          if(!items.length) return;
+          grupos.push({label:"🏠 "+(im.nome||("Imóvel "+(idx+1))),items,color:"#7F77DD"});
+        });
+        const pesItems=[...pessoal.filter(it=>it.ativo&&parseFloat(it.valor)>0),...extrasPessoal.filter(it=>it.nome&&parseFloat(it.valor)>0)];
+        if(pesItems.length) grupos.push({label:"🛒 Gastos pessoais",items:pesItems,color:"#EF9F27"});
+        if(!grupos.length) return null;
+        const totalGeral=grupos.flatMap(g=>g.items).reduce((a,it)=>a+parseFloat(it.valor),0);
+        return /*#__PURE__*/React.createElement("div",null,
+          /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}},
+            /*#__PURE__*/React.createElement("span",{style:{fontSize:13,fontWeight:600,color:"var(--txt)"}},"💸 Despesas"),
+            /*#__PURE__*/React.createElement("span",{style:{fontSize:13,fontWeight:600,color:"#E24B4A"}},"-"+totalGeral.toLocaleString("pt-BR",{style:"currency",currency:"BRL"}))
+          ),
+          grupos.map((g,gi)=>/*#__PURE__*/React.createElement("div",{key:gi,style:{...card,marginBottom:8,borderLeft:"3px solid "+g.color}},
+            /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}},
+              /*#__PURE__*/React.createElement("span",{style:{fontSize:12,fontWeight:600,color:g.color}},g.label),
+              /*#__PURE__*/React.createElement("span",{style:{fontSize:12,color:"#E24B4A"}},"-"+g.items.reduce((a,it)=>a+parseFloat(it.valor),0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}))
+            ),
+            g.items.map((it,i)=>/*#__PURE__*/React.createElement("div",{key:i,style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",borderBottom:i<g.items.length-1?"1px solid var(--brd)":"none",fontSize:12}},
+              /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",gap:6}},
+                /*#__PURE__*/React.createElement("span",null,it.icone||"📌"),
+                /*#__PURE__*/React.createElement("div",null,
+                  /*#__PURE__*/React.createElement("div",{style:{color:"var(--txt)"}},it.nome),
+                  it.cartao&&/*#__PURE__*/React.createElement("div",{style:{fontSize:10,color:"var(--txt2)"}},"💳 "+(cartoesAtivos.find(c=>c.id===it.cartao)?.label||it.cartao))
+                )
+              ),
+              /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10,flexShrink:0}},
+                it.ciclico&&/*#__PURE__*/React.createElement("span",{style:{fontSize:10,color:"var(--txt2)",background:"var(--bg3)",borderRadius:4,padding:"1px 6px"}},"mensal"),
+                it.dia&&/*#__PURE__*/React.createElement("span",{style:{fontSize:10,color:"var(--txt2)"}},"dia "+it.dia),
+                /*#__PURE__*/React.createElement("span",{style:{color:"#E24B4A",fontWeight:600}},"-"+parseFloat(it.valor).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}))
+              )
+            ))
+          ))
+        );
+      })(),
+      totalSel===0&&/*#__PURE__*/React.createElement("div",{style:{...card,textAlign:"center",padding:"24px",marginBottom:12}},
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:32,marginBottom:8}},"📋"),
+        /*#__PURE__*/React.createElement("div",{style:{color:"var(--txt2)",fontSize:14}},"Tudo bem — adicione pelo botão + depois.")
+      ),
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:10,justifyContent:"space-between",marginTop:16}},
+        /*#__PURE__*/React.createElement("button",{style:btnSec,onClick:()=>{limparErros();setStep(4);}},"← Voltar"),
+        (()=>{
+          const bloqueado=[
+            ...imoveis.flatMap(im=>im.itens.filter(it=>it.ativo&&(!it.valor||parseFloat(it.valor)<=0))),
+            ...extrasImovel.filter(it=>it.ativo&&(!it.valor||parseFloat(it.valor)<=0)),
+            ...pessoal.filter(it=>it.ativo&&(!it.valor||parseFloat(it.valor)<=0)),
+            ...extrasPessoal.filter(it=>it.ativo&&(!it.valor||parseFloat(it.valor)<=0)),
+            ...receitas.filter(it=>it.ativo&&(!it.valor||parseFloat(it.valor)<=0)),
+            ...extrasReceita.filter(it=>it.ativo&&(!it.valor||parseFloat(it.valor)<=0)),
+          ].length > 0;
+          return /*#__PURE__*/React.createElement("button",{
+            style:{...btnPrimary,flex:1,opacity:bloqueado?0.5:1,cursor:bloqueado?"not-allowed":"pointer"},
+            onClick:bloqueado?()=>alert("Preencha o valor ou desmarque os lançamentos destacados em vermelho."):()=>{
+              const nm=document.getElementById("ob-nome-final")?.value?.trim();
+              if(nm){try{localStorage.setItem(NOME_KEY,nm);}catch(e){}}
+              finalizar();
+            }
+          },totalSel>0?"🚀 Importar e começar!":"Começar sem lançamentos");
+        })()
+      )
+    )
+    )
+  );
+}
+
+
+function SobreSheyla() {
+  const P = (k, tx) => React.createElement("p",{key:k,style:{color:"var(--txt2)",lineHeight:1.6,fontSize:14,margin:"0 0 12px"}},tx);
+  return React.createElement("div",{style:{maxWidth:640,margin:"0 auto",padding:"8px 0"}},
+    React.createElement("div",{style:{...s.card,textAlign:"center"}},
+      React.createElement("img",{src:SHEYLA_IMG,style:{width:"100%",maxWidth:320,borderRadius:16,objectFit:"cover",marginBottom:16}}),
+      React.createElement("h2",{style:{color:"#EF9F27",margin:"0 0 4px",fontSize:22}},"Sobre a Sheyla"),
+      React.createElement("div",{style:{color:"var(--txt2)",fontSize:12,marginBottom:16}},"SDC · Sheyla do Contábil"),
+      React.createElement("div",{style:{textAlign:"left"}},
+        P("a","A Sheyla é a parte do SYS que cuida do seu dinheiro. Ela junta receitas, despesas, cartões, caixinhas e metas num só lugar, para você saber onde está e para onde vai."),
+        P("b","O conceito é simples: finanças pessoais sem planilha complicada. Você lança, ela provisiona os próximos meses, compara previsto com realizado e avisa quando algo foge do plano."),
+        P("c","Seus dados ficam na sua conta Google, em um espaço só seu. Ninguém mais acessa, e a Sheyla só abre dentro do SYS.")
+      )
+    )
   );
 }
 
@@ -113,6 +1223,11 @@ function AuthWrapper({ children }) {
         console.log("[SDC] Conta diferente detectada, limpando dados locais.");
         localStorage.removeItem("sdc_v3");
         localStorage.removeItem("sdc_onboarding_done");
+        localStorage.removeItem("sdc_fechados");
+        localStorage.removeItem("sdc_saldo_inicial");
+        localStorage.removeItem("sdc_cartoes");
+        localStorage.removeItem("sdc_nome_usuario");
+        localStorage.removeItem("sdc_summary");
         localStorage.removeItem(SYS_UID_KEY);
       }
       const cloudData = await loadFromCloud(u.uid);
@@ -137,12 +1252,14 @@ function AuthWrapper({ children }) {
           await saveToCloud(u.uid, local);
           console.log("[SDC] local ganhou, enviado pro cloud. txs:", localTxCount);
         }
-      } else if (local && local.txs) {
+      } else if (local && local.txs && localTxCount > 0) {
         // Só tem local → sobe pro cloud
+        localStorage.setItem("sdc_onboarding_done", "1");
         await saveToCloud(u.uid, local);
         console.log("[SDC] só local, enviado pro cloud. txs:", localTxCount);
       } else {
         console.log("[SDC] sem dados em nenhum lugar");
+        localStorage.removeItem("sdc_onboarding_done");
       }
       localStorage.setItem(SYS_UID_KEY, u.uid);
       window._sdcSaveToCloud = (data) => saveToCloud(u.uid, data);
@@ -189,15 +1306,7 @@ function AuthWrapper({ children }) {
 
 const {useState,useMemo,useRef,useEffect}=React;
 // ── Constants ──
-const CARTOES = [{
-  id: "nubank",
-  label: "NuBank",
-  color: "#8B5CF6"
-}, {
-  id: "itau",
-  label: "Itaú",
-  color: "#E87722"
-}];
+const CARTOES = loadCartoes();
 const PALETTE = ["#EF9F27", "#378ADD", "#7F77DD", "#E24B4A", "#D4537E", "#5DCAA5", "#888780", "#1D9E75", "#BA7517", "#185FA5", "#533AB7", "#A32D2D", "#993556", "#0F6E56"];
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 const DIAS_SEMANA = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
@@ -331,7 +1440,7 @@ const provisionar = (id0, desc, valor, tipo, cat, dia, pago0, grupoId) => {
   }
   return arr;
 };
-const INITIAL_TX = [...provisionar(1, "Salário Início", 11000, "receita", "salario", 10, true, "g_r1"), ...provisionar(7, "Salário Fim", 9500, "receita", "salario", 25, true, "g_r2"), ...provisionar(13, "Vivo Internet 500 (Tamanduateí)", 130.99, "despesa", "outros", 10, false, "g_d1"), ...provisionar(19, "Luz (Tamanduateí)", 79.85, "despesa", "outros", 15, false, "g_d2"), ...provisionar(25, "Condomínio (Tamanduateí)", 474.30, "despesa", "moradia", 5, false, "g_d3"), ...provisionar(31, "Vivo Controle Família + Fibra 700 (Itaim Bibi)", 429.90, "despesa", "outros", 10, false, "g_d4"), ...provisionar(37, "Luz (Itaim Bibi)", 213.39, "despesa", "outros", 15, false, "g_d5"), ...provisionar(43, "Condomínio (Itaim Bibi)", 400.00, "despesa", "moradia", 5, false, "g_d6"), ...provisionar(49, "Aluguel (Itaim Bibi)", 3881.00, "despesa", "moradia", 1, false, "g_d7"), ...provisionar(55, "Cabeleireiro", 120.00, "despesa", "lazer", 20, false, "g_d8"), ...provisionar(61, "Inglês — Bia", 100.00, "despesa", "educacao", 10, false, "g_d9"), ...provisionar(67, "Psicólogo — Stephany", 140.00, "despesa", "saude", 12, false, "g_d10"), ...provisionar(73, "Dona Rose Limpeza", 250.00, "despesa", "outros", 18, false, "g_d11"), ...provisionar(79, "Protocolos Instituto K", 900.00, "despesa", "saude", 8, false, "g_d12")];
+const INITIAL_TX = [];
 const SK = "sdc_v3";
 const load = () => {
   try {
@@ -2988,6 +4097,7 @@ function App() {
         {k:"metas", label:"Metas", icon:"🎯", desc:"Tetos de gasto por categoria"},
         {k:"categorias", label:"Categorias", icon:"🏷️", desc:"Gráficos por categoria"},
         {k:"cat_config", label:"Gerenciar Cats.", icon:"🛠️", desc:"Criar e editar categorias"},
+        {k:"sobre", label:"Sobre a Sheyla", icon:"💛", desc:"Quem é ela e o conceito"},
       ]
     }
   ].map(group => {
@@ -6001,7 +7111,7 @@ function App() {
         }
       }))));
     })));
-  })(), tab === "cat_config" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  })(), tab === "sobre" && React.createElement(SobreSheyla, null), tab === "cat_config" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       ...s.card,
       marginBottom: 12
@@ -6126,10 +7236,25 @@ function App() {
   }, "\"Importar CSV\""), " no cabe\xE7alho.")))));
 }
 
+function Root() {
+  const first = React.useMemo(() => isFirstAccess(), []);
+  const [splash, setSplash] = React.useState(first);
+  const [needs, setNeeds] = React.useState(first);
+  if (splash) return React.createElement(SplashScreen, { primeiroAcesso: true, onFinish: () => setSplash(false) });
+  if (!needs) return React.createElement(App);
+  return React.createElement(Onboarding, { onComplete: (newTxs, novoCartoes, novoCats, novasCx) => {
+    try { localStorage.setItem("sdc_onboarding_done", "1"); } catch (e) {}
+    if (novoCartoes && novoCartoes.length) { CARTOES.length = 0; novoCartoes.forEach(c => CARTOES.push(c)); saveCartoes(novoCartoes); }
+    const txs = newTxs || [];
+    save({ txs, cats: novoCats || DEFAULT_CATS, nextId: txs.length ? Math.max(...txs.map(x => x.id)) + 1 : 200, metas: {}, caixinhas: novasCx || [], cxMovimentos: [] });
+    setNeeds(false);
+  } });
+}
+
 function mountApp() {
   ReactDOM.createRoot(document.getElementById('root')).render(
     React.createElement(AuthWrapper, null,
-      React.createElement(App)
+      React.createElement(Root)
     )
   );
 }
