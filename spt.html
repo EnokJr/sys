@@ -43,10 +43,11 @@ button,input,select{font:inherit;color:inherit}
 .chip{display:inline-flex;align-items:center;gap:6px;background:var(--branco);border:2px solid var(--tinta);border-radius:999px;padding:3px 12px;font-weight:700;font-size:.85rem}
 .chip.aviso{background:var(--creme2)}
 /* Balão da Sheyla */
-.bubble{display:flex;gap:12px;align-items:flex-start;margin:14px 0}
+.bubble{display:flex;gap:12px;align-items:stretch;margin:14px 0}
 .bubble .face{flex:none;width:104px;height:104px;border-radius:22px;border:3px solid var(--tinta);overflow:hidden;background:var(--esm-700)}
-.bubble .face img{width:100%;height:100%;display:block}
-.bubble .txt{position:relative;background:var(--branco);border:3px solid var(--tinta);border-radius:6px 20px 20px 20px;padding:10px 14px;font-weight:700;box-shadow:0 4px 0 var(--tinta)}
+.bubble .face{min-height:104px;height:auto}
+.bubble .face img{width:100%;height:100%;display:block;object-fit:cover;object-position:center top}
+.bubble .txt{position:relative;background:var(--branco);border:3px solid var(--tinta);border-radius:6px 20px 20px 20px;padding:10px 14px;font-weight:700;box-shadow:0 4px 0 var(--tinta);flex:1;display:flex;flex-direction:column;justify-content:center}
 .bubble.oops .txt{background:var(--creme2);border-color:var(--lar-700);box-shadow:0 4px 0 var(--lar-700)}
 .bubble.ok .txt{background:var(--esm-100);border-color:var(--esm-700);box-shadow:0 4px 0 var(--esm-700)}
 .bubble .who{display:block;font-size:.72rem;font-weight:800;letter-spacing:.5px;color:var(--tinta2);text-transform:uppercase;margin-bottom:2px}
@@ -109,12 +110,16 @@ input[aria-invalid=true]{border-color:var(--erro);background:#FFF1EF}
 .modal .box{background:var(--branco);border:3px solid var(--tinta);border-radius:24px;padding:20px;max-width:420px;width:100%;box-shadow:0 8px 0 var(--tinta)}
 .modal .box h2{margin-bottom:8px}
 .modal .box p{margin:0 0 16px;font-weight:700}
-.wrap.largo{max-width:720px}
+.wrap.largo{max-width:820px}
 .intro{display:grid;gap:16px;margin-top:12px}
-@media (min-width:560px){.intro{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);align-items:center}}
+@media (min-width:560px){.intro{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:stretch}.bigimg{height:100%;aspect-ratio:auto;min-height:340px;object-position:center top}.dialog{justify-content:space-between}}
 .bigimg{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;border:3px solid var(--tinta);border-radius:26px;box-shadow:0 6px 0 var(--tinta);background:var(--esm-900)}
-.dialog{background:var(--branco);border:3px solid var(--tinta);border-radius:22px;padding:16px 18px;box-shadow:0 5px 0 var(--tinta);font-weight:700}
-.dialog p{margin:0}.dialog p+p{margin-top:10px}
+.dialog{display:flex;flex-direction:column;gap:12px;background:var(--branco);border:3px solid var(--tinta);border-radius:22px;padding:18px 20px;box-shadow:0 5px 0 var(--tinta);font-weight:700}
+.dialog p{margin:0}
+.dialog .saud{font-family:"Baloo 2",Nunito,sans-serif;font-weight:800;font-size:1.3rem;line-height:1.2;color:var(--esm-700)}
+.dialog .nome{display:inline-block;background:var(--esm-300);color:var(--tinta);border-radius:10px;padding:0 8px;font-family:"Baloo 2",Nunito,sans-serif;font-weight:800}
+.dialog .fim{color:var(--tinta2)}
+.chamada{margin-top:6px;background:var(--creme2);border:3px solid var(--lar-700);border-radius:16px;padding:10px 14px;font-weight:800;color:var(--tinta)}
 .destaque{background:var(--lar-500);color:var(--tinta);border-radius:8px;padding:0 6px;font-family:"Baloo 2",Nunito,sans-serif;font-weight:800;white-space:nowrap}
 .skinimg{width:44px;height:44px;border-radius:12px;border:2px solid var(--tinta);object-fit:cover}
 .opt{padding:6px 8px}
@@ -354,9 +359,10 @@ function vIntro() {
       h("div", { class: "intro" },
         h("img", { class: "bigimg", src: BIG[st.skin] || BIG.laranja, alt: sk.alt }),
         h("div", { class: "dialog" },
-          h("p", null, "Olá! Tudo bem com você" + (nome ? ", " + nome : "") + "?"),
-          h("p", null, "Deixa eu me apresentar: eu sou a ", h("span", { class: "destaque" }, "Sheyla Pet!"), " Vou ser sua auxiliar no cuidado desse serzinho que você gosta tanto!"),
-          h("p", null, "Para começarmos, qual dos meus companheiros você gostaria que viesse comigo? Se preferir, podemos ir só eu e você."))),
+          h("p", { class: "saud" }, "Olá! Tudo bem com você" + (nome ? ", " : "?"), nome ? h("span", { class: "nome" }, nome) : null, nome ? "?" : null),
+          h("p", null, "Que alegria te receber! Eu sou a ", h("span", { class: "destaque" }, "Sheyla Pet!"), " Vou ser a sua auxiliar no cuidado do serzinho que amamos tanto, eu e você", nome ? ", " : ".", nome ? h("span", { class: "nome" }, nome) : null, nome ? "." : null),
+          h("p", { class: "fim" }, "Antes de começar, me conta: quem você quer que venha comigo? Escolha um dos meus companheiros. Se preferir, podemos ir só eu e você."),
+          h("p", { class: "chamada" }, "👇 Agora é com você: escolha quem vem comigo e toque em Confirmar para começarmos o cadastro."))),
       h("h2", { class: "sec-title" }, "Quem está com a Sheyla?"),
       menuSkins(function (k) { setSkin(k.id); }),
       h("div", { style: "margin-top:18px" }, h("button", { class: "btn verde", type: "button", onclick: concluirIntro }, "💚 Confirmar e começar o cadastro"))));
