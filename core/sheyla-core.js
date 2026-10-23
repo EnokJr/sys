@@ -1,13 +1,12 @@
-
 /* ═══════════════════════════════════════════════
-   SHEYLA CORE v1 — núcleo da Primordial
+   SHEYLA CORE v2 — núcleo da Primordial
    Login Google, isolamento por usuário, sync e resumos.
    Todo dado fica em users/{uid}/{appId}/data
 ═══════════════════════════════════════════════ */
 (function () {
   "use strict";
 
-  var VERSION = "1";
+  var VERSION = "2";
   var FB = "https://cdn.jsdelivr.net/npm/firebase@10.12.2/";
   var CFG = {
     apiKey: "AIzaSyAGzRK009HOKHrsIG5bSHDNYF7hUia6CX4",
@@ -72,7 +71,7 @@
     },
 
     user: function () {
-      return user ? { uid: user.uid, name: user.displayName, email: user.email, photo: user.photoURL } : null;
+      return user ? { uid: user.uid, name: user.displayName, email: user.email, photo: user.photoURL, displayName: user.displayName, photoURL: user.photoURL } : null;
     },
 
     signIn: async function () {
