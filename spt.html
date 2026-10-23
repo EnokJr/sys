@@ -135,6 +135,8 @@ input[aria-invalid=true]{border-color:var(--erro);background:#FFF1EF}
 .tag.ok{background:var(--esm-100)}.tag.logo{background:var(--creme2);border-color:var(--lar-700)}.tag.atraso{background:#FFE3DF;border-color:var(--erro);color:var(--erro)}
 .vazio{font-weight:700;color:var(--tinta2);margin:18px 2px}
 .box.rolavel{max-height:92vh;overflow-y:auto}
+.box .opts.big.cinco,.box .opts.big.quatro{display:grid}.box .opts.big.cinco{grid-template-columns:repeat(3,1fr)}.box .opts.big.quatro{grid-template-columns:repeat(2,1fr)}
+.dias .mini[aria-checked=true]{background:var(--esm-700);color:#fff}
 input[type=time]{width:100%;min-height:54px;padding:10px 14px;background:var(--branco);border:3px solid var(--tinta);border-radius:16px;font-weight:700}
 .tabs{gap:6px}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;font-size:.82rem;line-height:1.15;padding:6px 2px;min-width:0}
@@ -471,7 +473,7 @@ function vCard() {
   var e = ESPECIES[p.especie] || ESPECIES.cachorro;
   var conv = p.convenio && (p.convenio.nome || p.convenio.numero) ? [p.convenio.nome, p.convenio.numero].filter(Boolean).join(" · ") : "Sem convênio";
   var cu = cuidados(p), urgente = cu.some(function (c) { return c.n <= 7; });
-  var iso = hojeISO(), sl = slotsDoDia(p, iso), pend = sl.filter(function (x) { return !feito(p, iso, x.key); }).length;
+  var pend = pendentesHoje(p);
   var abas = [{ id: "resumo", em: "📋", t: "Resumo" }, { id: "hoje", em: "✅", t: "Hoje" + (pend ? " (" + pend + ")" : "") }, { id: "peso", em: "⚖️", t: "Peso" }, { id: "saude", em: "💉", t: "Saúde" + (urgente ? " ⚠️" : "") }];
   var painel = st.aba === "peso" ? painelPeso(p) : st.aba === "saude" ? painelSaude(p) : st.aba === "hoje" ? painelHoje(p) : painelResumo(p, cu);
   return h("div", null,
@@ -537,13 +539,19 @@ function modalRemover(p) {
 var TIPOS = {
   vacina: { em: "💉", t: "Vacina", q: "Qual vacina?" },
   vermifugo: { em: "💊", t: "Vermífugo", q: "Qual vermífugo?" },
-  antipulgas: { em: "🐜", t: "Antipulgas", q: "Qual produto?" }
+  antipulgas: { em: "🐜", t: "Antipulgas", q: "Qual produto?" },
+  exame: { em: "🩻", t: "Exame", q: "Qual exame?" },
+  consulta: { em: "🩺", t: "Consulta", q: "Que consulta?" },
+  compra: { em: "🛒", t: "Compra", q: "" }
 };
+var TIPOS_SAUDE = ["vacina", "vermifugo", "antipulgas", "exame", "consulta"];
 var SUGESTOES = {
   vacina: {
     cachorro: ["V10 (polivalente)", "Antirrábica", "Gripe canina", "Giárdia", "Leishmaniose"],
     gato: ["V4 ou V5 (polivalente)", "Antirrábica", "Leucemia felina (FeLV)"]
-  }
+  },
+  exame: { todos: ["Raio X", "Ultrassom", "Hemograma", "Exame de urina", "Eletrocardiograma", "Ecocardiograma"] },
+  consulta: { todos: ["Consulta de rotina", "Retorno", "Check-up"] }
 };
 function diasAte(iso) { var d = parseISO(iso), t = parseISO(hojeISO()); return d ? Math.round((d - t) / 86400000) : null; }
 function fmtCurto(iso) { var d = parseISO(iso); return d ? d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" }) : ""; }
@@ -559,6 +567,12 @@ function vigentes(p) {
 }
 function statusCuidado(r) {
   var n = diasAte(r.prox);
+  if (r.tipo === "compra" && n != null) {
+    if (n < 0) return { cls: "atraso", em: "⚠️", t: "compra atrasada há " + (-n) + (n === -1 ? " dia" : " dias") };
+    if (n === 0) return { cls: "logo", em: "🛒", t: "comprar hoje" };
+    if (n <= 7) return { cls: "logo", em: "🛒", t: "comprar em " + n + (n === 1 ? " dia" : " dias") };
+    return { cls: "ok", em: "✅", t: "em dia" };
+  }
   if (n == null) return { cls: "", em: "📌", t: "sem próxima data" };
   if (n < 0) return { cls: "atraso", em: "⚠️", t: "prazo vencido há " + (-n) + (n === -1 ? " dia" : " dias") };
   if (n === 0) return { cls: "logo", em: "⏰", t: "é hoje" };
@@ -577,6 +591,9 @@ function alertas() {
       if (c.n > 7) return;
       out.push({ n: c.n, txt: (c.n < 0 ? "⚠️ " : "⏰ ") + p.nome + " · " + c.r.nome + (c.n < 0 ? ": prazo vencido" : c.n === 0 ? ": é hoje" : " em " + c.n + (c.n === 1 ? " dia" : " dias")) });
     });
+  });
+  st.pets.forEach(function (p) {
+    comprasDe(p).forEach(function (c) { if (c.n <= 3) out.push({ n: c.n, txt: "🛒 " + p.nome + " · " + c.it.nome + ": " + c.s.t }); });
   });
   return out.sort(function (a, b) { return a.n - b.n; });
 }
@@ -650,7 +667,7 @@ function itemSaude(p, r, vig, compacto) {
   return h("div", { class: "item" }, h("span", { class: "emj", "aria-hidden": "true" }, t.em),
     h("div", { class: "inf" },
       h("div", { class: "nm" }, r.nome),
-      h("small", null, t.t + " · feito em " + fmtData(r.d)),
+      h("small", null, t.t + " · " + (r.tipo === "compra" ? "comprado em " : "feito em ") + fmtData(r.d)),
       r.prox ? h("small", null, "Próxima: " + fmtData(r.prox)) : null,
       r.obs ? h("small", null, r.obs) : null,
       s ? h("span", { class: "tag " + s.cls }, s.em + " " + s.t) : (!vig ? h("span", { class: "tag" }, "🗂️ histórico") : null),
@@ -666,8 +683,8 @@ function painelSaude(p) {
   var lista = (p.saude || []).slice().sort(function (a, b) { return a.d < b.d ? 1 : a.d > b.d ? -1 : 0; });
   var vig = {}; vigentes(p).forEach(function (r) { vig[r.id] = true; });
   return h("div", null,
-    bubble("Anote aqui as vacinas, vermífugos e antipulgas. Quando a próxima data estiver chegando, eu aviso. Quem decide o quê e quando aplicar é o veterinário, combinado? 💚"),
-    h("button", { class: "btn verde", type: "button", onclick: function () { modalSaude(p, null); } }, "➕ Registrar vacina ou vermífugo"),
+    bubble("Anote aqui vacinas, vermífugos, antipulgas, exames e consultas. Quando a próxima data estiver chegando, eu aviso. Quem decide o quê e quando fazer é o veterinário, combinado? 💚"),
+    h("button", { class: "btn verde", type: "button", onclick: function () { modalSaude(p, null); } }, "➕ Registrar vacina, exame ou outro cuidado"),
     lista.length ? h("h2", { class: "sec-title" }, "Histórico de cuidados")
       : h("p", { class: "vazio" }, "Nada anotado ainda. Se tiver a carteirinha de vacinação, é um bom começo 🐾"),
     lista.map(function (r) { return itemSaude(p, r, !!vig[r.id], false); }));
@@ -687,7 +704,7 @@ function itemAtivo(it, iso) {
 function slotsDoDia(p, iso) {
   var out = [];
   (p.rotina || []).forEach(function (it) {
-    if (!itemAtivo(it, iso)) return;
+    if (it.tipo === "compra" || !itemAtivo(it, iso)) return;
     (it.horas && it.horas.length ? it.horas : [""]).forEach(function (hr) { out.push({ it: it, hr: hr, key: it.id + "|" + (hr || "-") }); });
   });
   return out.sort(function (a, b) { var x = a.hr || "99:99", y = b.hr || "99:99"; return x < y ? -1 : x > y ? 1 : 0; });
@@ -710,38 +727,93 @@ function resumoDias(it) {
   if (!it.dias || !it.dias.length || it.dias.length === 7) return "todos os dias";
   return it.dias.slice().sort().map(function (d) { return DIAS[d]; }).join(", ");
 }
+var ICONE = { remedio: "💊", refeicao: "🍽️", tarefa: "🥣", compra: "🛒" };
+var ROTULO = { remedio: "Remédio", refeicao: "Refeição", tarefa: "Tarefa", compra: "Compra" };
+function pad2(n) { return String(n).padStart(2, "0"); }
+function isoDe(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+function somarIntervalo(iso, n, un) {
+  var d = parseISO(iso); if (!d) return "";
+  if (un === "meses") { var dia = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + n); d.setDate(Math.min(dia, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate())); }
+  else d.setDate(d.getDate() + n * (un === "semanas" ? 7 : 1));
+  return isoDe(d);
+}
+function fmtG(g) { return String(g).replace(".", ",") + " g"; }
+function comprasDe(p) {
+  return (p.rotina || []).filter(function (it) { return it.tipo === "compra" && !it.pausado && it.repete && it.ultimo; }).map(function (it) {
+    var prox = somarIntervalo(it.ultimo, it.repete.n, it.repete.un), r = { id: it.id, tipo: "compra", nome: it.nome, d: it.ultimo, prox: prox };
+    return { it: it, prox: prox, n: diasAte(prox), r: r, s: statusCuidado(r) };
+  }).sort(function (a, b) { return a.n - b.n; });
+}
+function pendentesHoje(p) {
+  var iso = hojeISO();
+  return slotsDoDia(p, iso).filter(function (x) { return !feito(p, iso, x.key); }).length + comprasDe(p).filter(function (c) { return c.n <= 0; }).length;
+}
+function gerarHoras(inicio, passo) {
+  var base = minu(/^\d{2}:\d{2}$/.test(inicio || "") ? inicio : "08:00"), out = [];
+  for (var i = 0; i < Math.floor(24 / passo); i++) { var m = (base + i * passo * 60) % 1440; out.push(pad2(Math.floor(m / 60)) + ":" + pad2(m % 60)); }
+  return out.sort();
+}
+function detalheRot(it) {
+  if (it.tipo === "remedio") return it.dose || "";
+  if (it.tipo === "refeicao") return it.qtd ? fmtG(it.qtd) : "";
+  return "";
+}
 function painelHoje(p) {
   var iso = hojeISO(), sl = slotsDoDia(p, iso), n = sl.length, ok = sl.filter(function (x) { return feito(p, iso, x.key); }).length, agora = hhmm(new Date());
-  var texto = !n ? "Nada marcado para hoje. Quer anotar a ração, o passeio ou um remédio do " + p.nome + "? 💚"
-    : ok === n ? "Tudo certo por hoje com " + p.nome + "! Que cuidado lindo 💚"
-    : "Faltam " + (n - ok) + " para hoje. Eu aviso quando chegar a hora 💚";
+  var cs = comprasDe(p).filter(function (c) { return c.n <= 7; }), pendC = cs.filter(function (c) { return c.n <= 0; }).length;
+  var avul = (p.avulsos || []).filter(function (a) { return a.d === iso; }).sort(function (a, b) { return (a.hr || "") < (b.hr || "") ? -1 : 1; });
+  var gPlan = 0, gFeito = 0;
+  sl.forEach(function (x) { if (x.it.tipo === "refeicao" && x.it.qtd) { gPlan += x.it.qtd; if (feito(p, iso, x.key)) gFeito += x.it.qtd; } });
+  var falta = n - ok + pendC;
+  var texto = !n && !cs.length ? "Nada marcado para hoje. Quer anotar a ração, o passeio ou um remédio do " + p.nome + "? 💚"
+    : !falta ? "Tudo certo por hoje com " + p.nome + "! Que cuidado lindo 💚"
+    : "Faltam " + falta + " para hoje. Eu aviso quando chegar a hora 💚";
   var rotina = p.rotina || [];
   var temRemedio = rotina.some(function (x) { return x.tipo === "remedio"; });
   return h("div", null,
-    bubble(texto, ok === n && n ? "ok" : ""),
-    n ? h("div", { class: "painel" }, h("div", { class: "nm", style: "margin-bottom:8px" }, ok + " de " + n + " feitos hoje"), progresso(ok, n)) : null,
+    bubble(texto, !falta && (n || cs.length) ? "ok" : ""),
+    n ? h("div", { class: "painel" }, h("div", { class: "nm", style: "margin-bottom:8px" }, ok + " de " + n + " feitos hoje"), progresso(ok, n),
+      gPlan ? h("div", { class: "hint", style: "margin-top:8px;font-size:.95rem" }, "🍽️ Refeições: " + fmtG(gFeito) + " de " + fmtG(gPlan) + " previstos hoje") : null) : null,
     sl.map(function (x) {
-      var f = feito(p, iso, x.key), atraso = !f && x.hr && x.hr < agora, t = x.it.tipo === "remedio";
+      var f = feito(p, iso, x.key), atraso = !f && x.hr && x.hr < agora, t = x.it.tipo, det = detalheRot(x.it);
       return h("button", { class: "slot" + (f ? " feito" : ""), type: "button", role: "checkbox", "aria-checked": f ? "true" : "false",
-        "aria-label": (t ? "Remédio " : "Tarefa ") + x.it.nome + (x.hr ? " às " + x.hr : "") + (f ? ", feito" : ", pendente"),
+        "aria-label": ROTULO[t] + " " + x.it.nome + (x.hr ? " às " + x.hr : "") + (det ? ", " + det : "") + (f ? ", feito" : ", pendente"),
         onclick: function () { marcar(p, iso, x.key, !f); salvarPet(p); } },
         h("span", { class: "chk", "aria-hidden": "true" }, f ? "✓" : ""),
         h("span", { class: "inf" },
-          h("span", { class: "nm" }, (t ? "💊 " : "🥣 ") + x.it.nome),
-          h("small", null, [x.hr || "Durante o dia", t && x.it.dose ? x.it.dose : null].filter(Boolean).join(" · ")),
+          h("span", { class: "nm" }, ICONE[t] + " " + x.it.nome),
+          h("small", null, [x.hr || "Durante o dia", det].filter(Boolean).join(" · ")),
           atraso ? h("span", { class: "tag atraso" }, "⏰ passou do horário") : null));
     }),
-    h("button", { class: "btn verde", type: "button", style: "margin-top:14px", onclick: function () { modalRotina(p, null); } }, "➕ Novo remédio ou tarefa"),
+    cs.length ? h("h2", { class: "sec-title" }, "Compras") : null,
+    cs.map(function (c) {
+      return h("div", { class: "item" }, h("span", { class: "emj", "aria-hidden": "true" }, "🛒"),
+        h("div", { class: "inf" }, h("div", { class: "nm" }, c.it.nome), h("small", null, "Última: " + fmtData(c.it.ultimo) + " · próxima: " + fmtData(c.prox)),
+          h("span", { class: "tag " + c.s.cls }, c.s.em + " " + c.s.t),
+          h("div", { class: "acoes" }, h("button", { class: "mini", type: "button", "aria-label": "Marcar como comprado: " + c.it.nome, onclick: function () {
+            c.it.ultimo = iso; salvarPet(p, "Anotado! A próxima compra fica para " + fmtData(somarIntervalo(iso, c.it.repete.n, c.it.repete.un)) + " 💚");
+          } }, "✅ Comprei hoje"))));
+    }),
+    avul.length ? h("h2", { class: "sec-title" }, "Extras de hoje") : null,
+    avul.map(function (a) {
+      return h("div", { class: "item" }, h("span", { class: "emj", "aria-hidden": "true" }, "⭐"),
+        h("div", { class: "inf" }, h("div", { class: "nm" }, a.nome), h("small", null, [a.hr, a.qtd].filter(Boolean).join(" · "))),
+        h("button", { class: "mini", type: "button", "aria-label": "Apagar o extra " + a.nome, onclick: function () { p.avulsos = (p.avulsos || []).filter(function (x) { return x.id !== a.id; }); salvarPet(p, "Extra apagado."); } }, "Apagar"));
+    }),
+    h("button", { class: "btn sec", type: "button", style: "margin-top:14px", onclick: function () { modalAvulso(p); } }, "⭐ Registrar algo avulso"),
+    h("p", { class: "hint", style: "margin:6px 2px 0" }, "Para o que não tem hora marcada, como um sachê de pâté ou um petisco."),
+    h("button", { class: "btn verde", type: "button", style: "margin-top:14px", onclick: function () { modalRotina(p, null); } }, "➕ Novo na rotina"),
     temRemedio ? h("p", { class: "hint", style: "margin:10px 2px" }, "💊 Dose e horário dos remédios: sempre como o veterinário receitou. Eu só ajudo a lembrar.") : null,
     avisosBox(),
     rotina.length ? h("h2", { class: "sec-title" }, "Rotina de " + p.nome) : null,
     rotina.map(function (it) {
-      var t = it.tipo === "remedio";
-      return h("div", { class: "item" }, h("span", { class: "emj", "aria-hidden": "true" }, t ? "💊" : "🥣"),
+      var t = it.tipo, det = detalheRot(it);
+      return h("div", { class: "item" }, h("span", { class: "emj", "aria-hidden": "true" }, ICONE[t] || "🥣"),
         h("div", { class: "inf" },
           h("div", { class: "nm" }, it.nome),
-          h("small", null, [t ? "Remédio" : "Tarefa", t && it.dose ? it.dose : null].filter(Boolean).join(" · ")),
-          h("small", null, (it.horas && it.horas.length ? it.horas.join(", ") : "Sem horário fixo") + " · " + resumoDias(it)),
+          h("small", null, [ROTULO[t] || "Tarefa", det ? (t === "refeicao" ? det + " por refeição" : det) : null].filter(Boolean).join(" · ")),
+          t === "compra" ? h("small", null, "A cada " + it.repete.n + " " + (it.repete.n === 1 ? it.repete.un.replace("meses", "mês").replace("semanas", "semana").replace("dias", "dia") : it.repete.un) + " · próxima: " + fmtData(somarIntervalo(it.ultimo, it.repete.n, it.repete.un)))
+            : h("small", null, (it.horas && it.horas.length ? it.horas.join(", ") : "Sem horário fixo") + " · " + resumoDias(it)),
           it.fim ? h("small", null, "Até " + fmtData(it.fim)) : null,
           it.pausado ? h("span", { class: "tag" }, "⏸️ pausado") : null,
           h("div", { class: "acoes" },
@@ -758,56 +830,123 @@ function avisosBox() {
   var ok = "Notification" in window, perm = ok ? Notification.permission : "denied";
   return h("div", { class: "avisosbox" },
     h("div", { class: "nm" }, "🔔 Avisos de horário"),
-    h("small", null, "Quando chegar a hora de um remédio ou tarefa, eu mostro um aviso na tela. Funciona enquanto o Sheyla Pet estiver aberto neste aparelho."),
+    h("small", null, "Quando chegar a hora de um remédio, refeição ou tarefa, eu mostro um aviso na tela. Funciona enquanto o Sheyla Pet estiver aberto neste aparelho."),
     ok && perm === "default" ? h("button", { class: "mini", type: "button", onclick: function () { Notification.requestPermission().then(function () { render(); }); } }, "Ativar também as notificações do aparelho") : null,
     ok && perm === "granted" ? h("small", null, "✅ Notificações do aparelho ativadas.") : null,
     ok && perm === "denied" ? h("small", null, "Notificações do aparelho bloqueadas neste navegador. Os avisos na tela continuam funcionando.") : null);
 }
+function modalAvulso(p) {
+  var v = { nome: "", qtd: "", hr: hhmm(new Date()) }, msg = "";
+  abrirModal("Registrar algo avulso", function (close, draw) {
+    function ok() {
+      var nome = v.nome.trim();
+      if (!nome) { msg = "Ops, o que foi oferecido? Por exemplo: sachê de pâté 🐾"; return draw("#a-nome"); }
+      var lim = new Date(); lim.setDate(lim.getDate() - 60); var li = isoDe(lim);
+      p.avulsos = (p.avulsos || []).filter(function (x) { return x.d >= li; }).concat([{ id: uid(), d: hojeISO(), hr: /^\d{2}:\d{2}$/.test(v.hr) ? v.hr : "", nome: nome, qtd: v.qtd.trim(), criado: Date.now() }]);
+      close(); salvarPet(p, "Anotado! 💚");
+    }
+    return [h("h2", null, "Algo avulso para " + p.nome),
+      msg ? h("div", { class: "avisomodal", role: "alert" }, msg) : null,
+      h("div", { class: "stack" },
+        campo("a-nome", "O que foi?", h("input", { id: "a-nome", type: "text", maxlength: "50", autocomplete: "off", list: "a-sug", value: v.nome, oninput: function (x) { v.nome = x.target.value; } }), "Escolha uma sugestão ou escreva o que quiser."),
+        h("datalist", { id: "a-sug" }, ["Pâté (sachê)", "Petisco", "Água extra", "Leite para filhote"].map(function (n) { return h("option", { value: n }); })),
+        campo("a-qtd", "Quantidade (opcional)", h("input", { id: "a-qtd", type: "text", maxlength: "30", autocomplete: "off", value: v.qtd, oninput: function (x) { v.qtd = x.target.value; } }), "Por exemplo: 1 sachê, meia lata, 20 g."),
+        campo("a-hr", "Horário", h("input", { id: "a-hr", type: "time", value: v.hr, oninput: function (x) { v.hr = x.target.value; } })),
+        h("button", { class: "btn verde", type: "button", onclick: ok }, "💚 Salvar"),
+        h("button", { class: "btn sec", type: "button", onclick: close }, "Cancelar"))];
+  }, "#a-nome");
+}
 function modalRotina(p, it) {
-  var v = it ? { id: it.id, tipo: it.tipo, nome: it.nome, dose: it.dose || "", horas: (it.horas || []).slice(), dias: (it.dias && it.dias.length ? it.dias : [0, 1, 2, 3, 4, 5, 6]).slice(), fim: it.fim || "" }
-    : { id: null, tipo: "remedio", nome: "", dose: "", horas: ["08:00"], dias: [0, 1, 2, 3, 4, 5, 6], fim: "" };
+  var v = it ? { id: it.id, tipo: it.tipo, nome: it.nome, dose: it.dose || "", qtd: it.qtd ? String(it.qtd) : "", horas: (it.horas || []).slice(), dias: (it.dias && it.dias.length ? it.dias : [0, 1, 2, 3, 4, 5, 6]).slice(), fim: it.fim || "",
+      n: it.repete ? String(it.repete.n) : "1", un: it.repete ? it.repete.un : "meses", ultimo: it.ultimo || hojeISO() }
+    : { id: null, tipo: "remedio", nome: "", dose: "", qtd: "", horas: ["08:00"], dias: [0, 1, 2, 3, 4, 5, 6], fim: "", n: "1", un: "meses", ultimo: hojeISO() };
   var msg = "";
+  var NOMES = { refeicao: "Qual alimento? Por exemplo: ração 🐾", remedio: "Qual é o nome? Pode copiar da receita 🐾", tarefa: "O que fazer? Por exemplo: passeio 🐾", compra: "O que precisa comprar? Por exemplo: pacote de ração 🐾" };
   abrirModal(it ? "Editar rotina" : "Nova rotina", function (close, draw) {
+    var t = v.tipo, comHora = t === "remedio" || t === "refeicao";
     function ok() {
       var nome = v.nome.trim(), horas = v.horas.filter(function (x) { return /^\d{2}:\d{2}$/.test(x); });
       horas = horas.filter(function (x, i) { return horas.indexOf(x) === i; }).sort();
-      if (!nome) { msg = "Ops, qual é o nome? " + (v.tipo === "remedio" ? "Pode copiar da receita 🐾" : "Por exemplo: ração, passeio… 🐾"); return draw("#r-nome"); }
-      if (v.tipo === "remedio" && !horas.length) { msg = "Ops, para o remédio eu preciso de pelo menos um horário, para avisar na hora certa."; return draw(".hrow input"); }
-      if (!v.dias.length) { msg = "Ops, escolha pelo menos um dia da semana."; return draw(".dias button"); }
-      if (v.fim && !parseISO(v.fim)) { msg = "Ops, não entendi a data final. Vamos conferir?"; return draw("#r-fim"); }
-      if (v.fim && v.fim < hojeISO()) { msg = "Ops, essa data final já passou. Vamos conferir?"; return draw("#r-fim"); }
-      var novo = { id: v.id || uid(), tipo: v.tipo, nome: nome, dose: v.tipo === "remedio" ? v.dose.trim() : "", horas: horas, dias: v.dias.length === 7 ? [] : v.dias.slice().sort(),
-        ini: (it && it.ini) || hojeISO(), fim: v.tipo === "remedio" ? v.fim : "", pausado: !!(it && it.pausado), criado: (it && it.criado) || Date.now() };
+      if (!nome) { msg = "Ops, " + NOMES[t].replace(/^./, function (c) { return c.toLowerCase(); }).replace("qual é o nome?", "qual é o nome?"); return draw("#r-nome"); }
+      var novo = { id: v.id || uid(), tipo: t, nome: nome, dose: "", qtd: 0, horas: [], dias: [], ini: (it && it.ini) || hojeISO(), fim: "", pausado: !!(it && it.pausado), criado: (it && it.criado) || Date.now() };
+      if (t === "compra") {
+        var n = parseInt(v.n, 10);
+        if (!isFinite(n) || n < 1 || n > 365) { msg = "Ops, de quanto em quanto tempo? Escreva um número, por exemplo 1 mês."; return draw("#r-n"); }
+        if (!parseISO(v.ultimo)) { msg = "Ops, falta a data da última compra. Se não lembrar, pode ser hoje."; return draw("#r-ult"); }
+        if (parseISO(v.ultimo) > parseISO(hojeISO())) { msg = "Ops, essa data ainda não chegou! Vamos conferir a última compra?"; return draw("#r-ult"); }
+        novo.repete = { n: n, un: v.un }; novo.ultimo = v.ultimo;
+      } else {
+        if (comHora && !horas.length) { msg = "Ops, " + (t === "remedio" ? "para o remédio" : "para a refeição") + " eu preciso de pelo menos um horário, para avisar na hora certa."; return draw(".hrow input"); }
+        if (!v.dias.length) { msg = "Ops, escolha pelo menos um dia da semana."; return draw(".dias button"); }
+        if (t === "refeicao" && v.qtd.trim() !== "") {
+          var q = parseFloat(v.qtd.replace(",", "."));
+          if (!isFinite(q) || q <= 0 || q > 5000) { msg = "Ops, essa quantidade não parece certa. Escreva em gramas, por exemplo 45."; return draw("#r-qtd"); }
+          novo.qtd = q;
+        }
+        if (t === "remedio") {
+          if (v.fim && !parseISO(v.fim)) { msg = "Ops, não entendi a data final. Vamos conferir?"; return draw("#r-fim"); }
+          if (v.fim && v.fim < hojeISO()) { msg = "Ops, essa data final já passou. Vamos conferir?"; return draw("#r-fim"); }
+          novo.dose = v.dose.trim(); novo.fim = v.fim;
+        }
+        novo.horas = horas; novo.dias = v.dias.length === 7 ? [] : v.dias.slice().sort();
+      }
       p.rotina = (p.rotina || []).filter(function (x) { return x.id !== novo.id; }).concat([novo]);
       close(); salvarPet(p, "Anotado na rotina de " + p.nome + "! 💚");
     }
-    var rem = v.tipo === "remedio";
+    var tipos = [["remedio", "💊", "Remédio"], ["refeicao", "🍽️", "Refeição"], ["tarefa", "🥣", "Tarefa"], ["compra", "🛒", "Compra"]];
     return [h("h2", null, it ? "Editar rotina" : "Nova rotina"),
       msg ? h("div", { class: "avisomodal", role: "alert" }, msg) : null,
       h("div", { class: "stack" },
         h("div", null, h("div", { class: "lbl" }, "O que é?"),
-          h("div", { class: "opts big", role: "radiogroup", "aria-label": "Tipo" },
-            [["remedio", "💊", "Remédio"], ["tarefa", "🥣", "Tarefa do dia"]].map(function (o) {
-              return h("button", { class: "opt", type: "button", role: "radio", "aria-checked": v.tipo === o[0] ? "true" : "false", onclick: function () { v.tipo = o[0]; draw(); } }, h("span", { class: "em", "aria-hidden": "true" }, o[1]), o[2]);
-            }))),
-        campo("r-nome", rem ? "Nome do remédio" : "O que fazer?", h("input", { id: "r-nome", type: "text", maxlength: "50", autocomplete: "off", list: rem ? null : "r-sug", value: v.nome, oninput: function (x) { v.nome = x.target.value; } }),
-          rem ? "Escreva como está na receita." : "Escolha uma sugestão ou escreva o que quiser."),
-        rem ? null : h("datalist", { id: "r-sug" }, SUG_TAREFA.map(function (n) { return h("option", { value: n }); })),
-        rem ? campo("r-dose", "Dose (opcional)", h("input", { id: "r-dose", type: "text", maxlength: "40", autocomplete: "off", value: v.dose, oninput: function (x) { v.dose = x.target.value; } }), "Escreva como está na receita, por exemplo: 1 comprimido.") : null,
-        h("div", null, h("div", { class: "lbl" }, rem ? "Horários" : "Horários (opcional)"),
+          h("div", { class: "opts big quatro", role: "radiogroup", "aria-label": "Tipo" }, tipos.map(function (o) {
+            return h("button", { class: "opt", type: "button", role: "radio", "aria-checked": t === o[0] ? "true" : "false", onclick: function () {
+              v.tipo = o[0];
+              if (o[0] === "refeicao" && !v.nome.trim()) v.nome = "Ração";
+              if (o[0] === "refeicao" && !v.horas.length) v.horas = ["08:00"];
+              draw();
+            } }, h("span", { class: "em", "aria-hidden": "true" }, o[1]), o[2]);
+          }))),
+        campo("r-nome", t === "refeicao" ? "Qual alimento?" : t === "remedio" ? "Nome do remédio" : t === "compra" ? "O que comprar?" : "O que fazer?",
+          h("input", { id: "r-nome", type: "text", maxlength: "50", autocomplete: "off", list: t === "tarefa" ? "r-sug" : t === "compra" ? "r-sugc" : null, value: v.nome, oninput: function (x) { v.nome = x.target.value; } }),
+          t === "remedio" ? "Escreva como está na receita." : t === "tarefa" ? "Escolha uma sugestão ou escreva o que quiser." : null),
+        t === "tarefa" ? h("datalist", { id: "r-sug" }, SUG_TAREFA.map(function (n) { return h("option", { value: n }); })) : null,
+        t === "compra" ? h("datalist", { id: "r-sugc" }, ["Pacote de ração", "Areia", "Petisco", "Tapete higiênico", "Remédio"].map(function (n) { return h("option", { value: n }); })) : null,
+        t === "remedio" ? campo("r-dose", "Dose (opcional)", h("input", { id: "r-dose", type: "text", maxlength: "40", autocomplete: "off", value: v.dose, oninput: function (x) { v.dose = x.target.value; } }), "Escreva como está na receita, por exemplo: 1 comprimido.") : null,
+        t === "refeicao" ? campo("r-qtd", "Quantidade por refeição, em gramas (opcional)", h("input", { id: "r-qtd", type: "number", inputmode: "decimal", step: "1", min: "0", value: v.qtd, oninput: function (x) { v.qtd = x.target.value; } }), "Exemplo: 45. Siga a orientação do veterinário, se houver.") : null,
+        comHora ? h("div", null, h("div", { class: "lbl" }, "Horários"),
           v.horas.map(function (hr, i) {
             return h("div", { class: "hrow" },
               h("input", { type: "time", "aria-label": "Horário " + (i + 1), value: hr, oninput: function (x) { v.horas[i] = x.target.value; } }),
               h("button", { class: "mini", type: "button", "aria-label": "Tirar o horário " + (i + 1), onclick: function () { v.horas.splice(i, 1); draw(); } }, "Tirar"));
           }),
-          v.horas.length < 6 ? h("button", { class: "mini", type: "button", style: "margin-top:8px", onclick: function () { v.horas.push(""); draw(".hrow:last-of-type input"); } }, "➕ Adicionar horário") : null,
-          !rem && !v.horas.length ? h("div", { class: "hint" }, "Sem horário: aparece na lista do dia, sem aviso.") : null),
-        h("div", null, h("div", { class: "lbl" }, "Em quais dias?"),
+          v.horas.length < 8 ? h("button", { class: "mini", type: "button", style: "margin-top:8px", onclick: function () { v.horas.push(""); draw(".hrow:last-of-type input"); } }, "➕ Adicionar horário") : null,
+          h("div", { class: "lbl", style: "margin-top:14px" }, "Ou repetir de tantas em tantas horas"),
+          h("div", { class: "dias", role: "group", "aria-label": "Repetir a cada" }, [3, 4, 6, 8, 12].map(function (k) {
+            return h("button", { class: "mini", type: "button", onclick: function () {
+              var ini = v.horas.filter(function (x) { return /^\d{2}:\d{2}$/.test(x); })[0]; v.horas = gerarHoras(ini, k); draw();
+            } }, "a cada " + k + "h");
+          })),
+          h("div", { class: "hint" }, "Eu uso o primeiro horário como início. Depois você pode ajustar cada um.")) : null,
+        t === "tarefa" ? h("div", null, h("div", { class: "lbl" }, "Horários (opcional)"),
+          v.horas.map(function (hr, i) {
+            return h("div", { class: "hrow" },
+              h("input", { type: "time", "aria-label": "Horário " + (i + 1), value: hr, oninput: function (x) { v.horas[i] = x.target.value; } }),
+              h("button", { class: "mini", type: "button", "aria-label": "Tirar o horário " + (i + 1), onclick: function () { v.horas.splice(i, 1); draw(); } }, "Tirar"));
+          }),
+          v.horas.length < 8 ? h("button", { class: "mini", type: "button", style: "margin-top:8px", onclick: function () { v.horas.push(""); draw(".hrow:last-of-type input"); } }, "➕ Adicionar horário") : null,
+          !v.horas.length ? h("div", { class: "hint" }, "Sem horário: aparece na lista do dia, sem aviso.") : null) : null,
+        t !== "compra" ? h("div", null, h("div", { class: "lbl" }, "Em quais dias?"),
           h("div", { class: "dias", role: "group", "aria-label": "Dias da semana" }, DIAS.map(function (d, i) {
             var on = v.dias.indexOf(i) >= 0;
             return h("button", { class: "mini", type: "button", "aria-pressed": on ? "true" : "false", onclick: function () { v.dias = on ? v.dias.filter(function (x) { return x !== i; }) : v.dias.concat([i]); draw(); } }, d);
-          }))),
-        rem ? campo("r-fim", "Até quando? (opcional)", h("input", { id: "r-fim", type: "date", value: v.fim, oninput: function (x) { v.fim = x.target.value; } }), "Para tratamentos com data para terminar.") : null,
+          }))) : null,
+        t === "remedio" ? campo("r-fim", "Até quando? (opcional)", h("input", { id: "r-fim", type: "date", value: v.fim, oninput: function (x) { v.fim = x.target.value; } }), "Para tratamentos com data para terminar.") : null,
+        t === "compra" ? h("div", null,
+          campo("r-n", "Repetir a cada", h("input", { id: "r-n", type: "number", inputmode: "numeric", min: "1", max: "365", step: "1", value: v.n, oninput: function (x) { v.n = x.target.value; } })),
+          h("div", { class: "dias", role: "radiogroup", "aria-label": "Unidade", style: "margin-top:8px" }, [["dias", "dias"], ["semanas", "semanas"], ["meses", "meses"]].map(function (u) {
+            return h("button", { class: "mini", type: "button", role: "radio", "aria-checked": v.un === u[0] ? "true" : "false", "aria-pressed": v.un === u[0] ? "true" : "false", onclick: function () { v.un = u[0]; draw(); } }, u[1]);
+          }))) : null,
+        t === "compra" ? campo("r-ult", "Data da última compra", h("input", { id: "r-ult", type: "date", max: hojeISO(), value: v.ultimo, oninput: function (x) { v.ultimo = x.target.value; } }), "Eu conto a partir dela e aviso quando a próxima estiver chegando.") : null,
         h("button", { class: "btn verde", type: "button", onclick: ok }, "💚 Salvar"),
         h("button", { class: "btn sec", type: "button", onclick: close }, "Cancelar"))];
   }, "#r-nome");
@@ -859,8 +998,13 @@ function textoFicha(p) {
   if (p.convenio && (p.convenio.nome || p.convenio.numero)) L.push("Convênio: " + [p.convenio.nome, p.convenio.numero].filter(Boolean).join(" · "));
   var vs = (p.saude || []).slice().sort(function (a, b) { return a.d < b.d ? 1 : -1; });
   if (vs.length) {
-    L.push(""); L.push("VACINAS, VERMÍFUGOS E ANTIPULGAS");
+    L.push(""); L.push("SAÚDE: VACINAS, VERMÍFUGOS, EXAMES E CONSULTAS");
     vs.forEach(function (r) { L.push("- " + r.nome + " (" + (TIPOS[r.tipo] || TIPOS.vacina).t.toLowerCase() + "): feito em " + fmtData(r.d) + (r.prox ? "; próxima em " + fmtData(r.prox) : "") + (r.obs ? " — " + r.obs : "")); });
+  }
+  var ali = (p.rotina || []).filter(function (x) { return x.tipo === "refeicao" && !x.pausado && itemAtivo(x, hojeISO()); });
+  if (ali.length) {
+    L.push(""); L.push("ALIMENTAÇÃO (conforme anotado pelo tutor)");
+    ali.forEach(function (x) { L.push("- " + x.nome + (x.qtd ? " — " + fmtG(x.qtd) + " por refeição" : "") + (x.horas && x.horas.length ? " — " + x.horas.join(", ") : "")); });
   }
   var rem = (p.rotina || []).filter(function (x) { return x.tipo === "remedio" && !x.pausado && itemAtivo(x, hojeISO()); });
   if (rem.length) {
@@ -958,21 +1102,27 @@ function modalSaude(p, r) {
       p.saude = (p.saude || []).filter(function (x) { return x.id !== novo.id; }).concat([novo]);
       close(); salvarPet(p, "Anotado no cartão de " + p.nome + "! 💚");
     }
-    var sug = (SUGESTOES[v.tipo] && SUGESTOES[v.tipo][p.especie]) || [];
+    var sug = (SUGESTOES[v.tipo] && (SUGESTOES[v.tipo][p.especie] || SUGESTOES[v.tipo].todos)) || [];
     return [h("h2", null, r ? "Editar registro" : "Novo registro"),
       msg ? h("div", { class: "avisomodal", role: "alert" }, msg) : null,
       h("div", { class: "stack" },
         h("div", null, h("div", { class: "lbl" }, "O que foi?"),
-          h("div", { class: "opts big", role: "radiogroup", "aria-label": "Tipo de cuidado" }, Object.keys(TIPOS).map(function (k) {
+          h("div", { class: "opts big cinco", role: "radiogroup", "aria-label": "Tipo de cuidado" }, TIPOS_SAUDE.map(function (k) {
             return h("button", { class: "opt", type: "button", role: "radio", "aria-checked": v.tipo === k ? "true" : "false", onclick: function () { v.tipo = k; draw(); } },
               h("span", { class: "em", "aria-hidden": "true" }, TIPOS[k].em), TIPOS[k].t);
           }))),
         campo("m-nome", TIPOS[v.tipo].q, h("input", { id: "m-nome", type: "text", maxlength: "60", autocomplete: "off", list: sug.length ? "m-sug" : null, value: v.nome, oninput: function (x) { v.nome = x.target.value; } }),
-          v.tipo === "vacina" ? "Pode escolher uma sugestão ou escrever o que está na carteirinha." : "Escreva o nome que está na embalagem."),
+          v.tipo === "vacina" ? "Pode escolher uma sugestão ou escrever o que está na carteirinha." : sug.length ? "Pode escolher uma sugestão ou escrever o que quiser." : "Escreva o nome que está na embalagem."),
         sug.length ? h("datalist", { id: "m-sug" }, sug.map(function (n) { return h("option", { value: n }); })) : null,
         campo("m-d", "Data em que foi feito", h("input", { id: "m-d", type: "date", max: hojeISO(), value: v.d, oninput: function (x) { v.d = x.target.value; } })),
-        campo("m-px", "Próxima dose ou reforço (opcional)", h("input", { id: "m-px", type: "date", value: v.prox, oninput: function (x) { v.prox = x.target.value; } }), "Se você preencher, eu aviso quando estiver chegando."),
-        campo("m-obs", "Observação (opcional)", h("input", { id: "m-obs", type: "text", maxlength: "80", autocomplete: "off", value: v.obs, oninput: function (x) { v.obs = x.target.value; } }), "Por exemplo: clínica ou veterinário."),
+        campo("m-px", v.tipo === "exame" ? "Refazer em (opcional)" : v.tipo === "consulta" ? "Próxima consulta (opcional)" : "Próxima dose ou reforço (opcional)", h("input", { id: "m-px", type: "date", value: v.prox, oninput: function (x) { v.prox = x.target.value; } }), "Se você preencher, eu aviso quando estiver chegando."),
+        h("div", { class: "dias", role: "group", "aria-label": "Atalhos para a próxima data" }, [["3 meses", 3], ["6 meses", 6], ["1 ano", 12]].map(function (a) {
+          return h("button", { class: "mini", type: "button", onclick: function () {
+            if (!parseISO(v.d)) { msg = "Ops, primeiro a data em que foi feito, para eu contar a partir dela."; return draw("#m-d"); }
+            v.prox = somarIntervalo(v.d, a[1], "meses"); msg = ""; draw("#m-px");
+          } }, "+ " + a[0]);
+        })),
+        campo("m-obs", "Observação (opcional)", h("input", { id: "m-obs", type: "text", maxlength: "160", autocomplete: "off", value: v.obs, oninput: function (x) { v.obs = x.target.value; } }), v.tipo === "exame" ? "Por exemplo: resultado resumido, clínica ou veterinário." : "Por exemplo: clínica ou veterinário."),
         h("button", { class: "btn verde", type: "button", onclick: ok }, "💚 Salvar"),
         h("button", { class: "btn sec", type: "button", onclick: close }, "Cancelar"))];
   }, "#m-nome");
@@ -1080,7 +1230,7 @@ function salvar() {
   if (peso != null && peso !== ant) pesos = pesos.concat([{ d: hojeISO(), kg: peso }]);
   var pet = {
     id: d.id || uid(), nome: nome, especie: d.especie, sexo: d.sexo || "", raca: (d.raca || "").trim(),
-    nasc: d.nasc, aprox: !!d.aprox, peso: peso, pesos: pesos, saude: (existente && existente.saude) || [], rotina: (existente && existente.rotina) || [], feitos: (existente && existente.feitos) || {}, foto: d.foto || "",
+    nasc: d.nasc, aprox: !!d.aprox, peso: peso, pesos: pesos, saude: (existente && existente.saude) || [], rotina: (existente && existente.rotina) || [], avulsos: (existente && existente.avulsos) || [], feitos: (existente && existente.feitos) || {}, foto: d.foto || "",
     convenio: { nome: (d.convenio.nome || "").trim(), numero: (d.convenio.numero || "").trim() },
     criado: (existente && existente.criado) || Date.now(), editado: Date.now()
   };
