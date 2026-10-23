@@ -135,6 +135,34 @@ input[aria-invalid=true]{border-color:var(--erro);background:#FFF1EF}
 .tag.ok{background:var(--esm-100)}.tag.logo{background:var(--creme2);border-color:var(--lar-700)}.tag.atraso{background:#FFE3DF;border-color:var(--erro);color:var(--erro)}
 .vazio{font-weight:700;color:var(--tinta2);margin:18px 2px}
 .box.rolavel{max-height:92vh;overflow-y:auto}
+input[type=time]{width:100%;min-height:54px;padding:10px 14px;background:var(--branco);border:3px solid var(--tinta);border-radius:16px;font-weight:700}
+.tabs{gap:6px}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;font-size:.82rem;line-height:1.15;padding:6px 2px;min-width:0}
+.tab .te{font-size:1.35rem;line-height:1.1}
+.prog{height:14px;border:3px solid var(--tinta);border-radius:999px;background:var(--creme);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--esm-700);border-radius:999px}
+.hojecard{display:block;width:100%;text-align:left;padding:14px;border:3px solid var(--tinta);border-radius:20px;background:var(--branco);box-shadow:0 5px 0 var(--tinta);margin-top:16px;cursor:pointer}
+.hojecard .nm,.painel .nm,.avisosbox .nm,.slot .nm{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:1.1rem;line-height:1.2;display:block}
+.hojecard .prog{margin-top:8px}
+.slot{display:flex;gap:14px;align-items:center;width:100%;text-align:left;padding:12px 14px;border:3px solid var(--tinta);border-radius:18px;background:var(--branco);margin-top:10px;cursor:pointer}
+.slot .chk{flex:none;width:44px;height:44px;border:3px solid var(--tinta);border-radius:14px;background:var(--creme);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:900;color:#fff}
+.slot.feito{background:var(--esm-100)}
+.slot.feito .chk{background:var(--esm-700)}
+.slot.feito .nm{text-decoration:line-through;opacity:.75}
+.slot .inf{flex:1;min-width:0}
+.slot small{display:block;font-weight:700;color:var(--tinta2);font-size:.85rem}
+.avisosbox{margin-top:14px;padding:12px 14px;border:3px dashed var(--tinta2);border-radius:18px}
+.avisosbox small{display:block;font-weight:700;color:var(--tinta2);font-size:.85rem;margin-top:2px}
+.avisosbox .mini{margin-top:10px}
+.hrow{display:flex;gap:8px;align-items:center;margin-top:8px}
+.hrow input{flex:1}
+.dias{display:flex;gap:6px;flex-wrap:wrap}
+.dias .mini{padding:0 10px;min-width:44px}
+.dias .mini[aria-pressed=true]{background:var(--esm-700);color:#fff}
+.ficha{white-space:pre-wrap;word-break:break-word;font:600 .92rem/1.45 Nunito,sans-serif;background:var(--creme);border:3px solid var(--tinta);border-radius:14px;padding:12px;margin:0;max-height:42vh;overflow:auto}
+.folha{display:none}
+@media print{body.imprimindo>*:not(.folha){display:none!important}body.imprimindo .folha{display:block;padding:24px;background:#fff}.folha h1{margin-bottom:12px}.folha pre{white-space:pre-wrap;font:14px/1.5 Nunito,Arial,sans-serif}}
+
 .box .opts.big{gap:8px}.box .opts.big .opt{min-width:0;padding:6px 2px;font-size:.9rem}.box .opts.big .opt .em{font-size:1.9rem}
 .avisomodal{background:var(--creme2);border:3px solid var(--lar-700);border-radius:14px;padding:10px 14px;font-weight:700;margin:0 0 14px}
 
@@ -443,8 +471,9 @@ function vCard() {
   var e = ESPECIES[p.especie] || ESPECIES.cachorro;
   var conv = p.convenio && (p.convenio.nome || p.convenio.numero) ? [p.convenio.nome, p.convenio.numero].filter(Boolean).join(" · ") : "Sem convênio";
   var cu = cuidados(p), urgente = cu.some(function (c) { return c.n <= 7; });
-  var abas = [{ id: "resumo", t: "📋 Resumo" }, { id: "peso", t: "⚖️ Peso" }, { id: "saude", t: "💉 Saúde" + (urgente ? " ⚠️" : "") }];
-  var painel = st.aba === "peso" ? painelPeso(p) : st.aba === "saude" ? painelSaude(p) : painelResumo(p, cu);
+  var iso = hojeISO(), sl = slotsDoDia(p, iso), pend = sl.filter(function (x) { return !feito(p, iso, x.key); }).length;
+  var abas = [{ id: "resumo", em: "📋", t: "Resumo" }, { id: "hoje", em: "✅", t: "Hoje" + (pend ? " (" + pend + ")" : "") }, { id: "peso", em: "⚖️", t: "Peso" }, { id: "saude", em: "💉", t: "Saúde" + (urgente ? " ⚠️" : "") }];
+  var painel = st.aba === "peso" ? painelPeso(p) : st.aba === "saude" ? painelSaude(p) : st.aba === "hoje" ? painelHoje(p) : painelResumo(p, cu);
   return h("div", null,
     topbar("Cartão do pet", btnVoltar(function () { go("picker"); }, "Voltar para a escolha do amiguinho")),
     h("main", { class: "wrap" },
@@ -465,19 +494,23 @@ function vCard() {
                 dado("Convênio", conv, true))
             : h("p", { class: "linha" }, idade(p.nasc) + " · " + fmtPeso(p.peso)))),
       h("div", { class: "tabs", role: "tablist", "aria-label": "Seções do cartão" }, abas.map(function (a) {
-        return h("button", { class: "tab", type: "button", role: "tab", "aria-selected": st.aba === a.id ? "true" : "false", onclick: function () { st.aba = a.id; render(); } }, a.t);
+        return h("button", { class: "tab", type: "button", role: "tab", "aria-selected": st.aba === a.id ? "true" : "false", onclick: function () { st.aba = a.id; render(); } }, h("span", { class: "te", "aria-hidden": "true" }, a.em), a.t);
       })),
       h("div", { role: "tabpanel" }, painel)));
 }
 function painelResumo(p, cu) {
+  var iso = hojeISO(), sl = slotsDoDia(p, iso), ok = sl.filter(function (x) { return feito(p, iso, x.key); }).length;
   return h("div", null,
+    sl.length ? h("button", { class: "hojecard", type: "button", onclick: function () { st.aba = "hoje"; render(); } },
+      h("span", { class: "nm" }, "✅ Hoje: " + ok + " de " + sl.length + " feitos"), progresso(ok, sl.length)) : null,
     cu.length ? h("div", null,
       h("h2", { class: "sec-title" }, "Próximos cuidados"),
       cu.slice(0, 3).map(function (c) { return itemSaude(p, c.r, true, true); }),
       h("button", { class: "btn sec", type: "button", style: "margin-top:12px", onclick: function () { st.aba = "saude"; render(); } }, "Ver vacinas e vermífugos")) : null,
     h("h2", { class: "sec-title" }, "Em breve por aqui"),
-    h("div", { class: "soon" }, soon("✅", "Tarefas do dia"), soon("💊", "Remédios e lembretes"), soon("🗂️", "Arquivo de fotos e exames")),
+    h("div", { class: "soon" }, soon("🗂️", "Arquivo de fotos e exames")),
     h("div", { class: "stack", style: "margin-top:24px" },
+      h("button", { class: "btn", type: "button", onclick: function () { modalFicha(p); } }, "📤 Compartilhar com o veterinário"),
       h("button", { class: "btn verde", type: "button", onclick: function () { abrirForm(p); } }, "✏️ Editar cadastro"),
       h("button", { class: "btn sec", type: "button", onclick: function () { go("picker"); } }, "🐾 Trocar de amiguinho"),
       h("button", { class: "btn perigo", type: "button", onclick: function () { modalRemover(p); } }, "Remover amiguinho")));
@@ -640,6 +673,231 @@ function painelSaude(p) {
     lista.map(function (r) { return itemSaude(p, r, !!vig[r.id], false); }));
 }
 
+/* ─── Hoje: remédios e tarefas ─── */
+var SUG_TAREFA = ["Ração", "Água fresca", "Passeio", "Caixa de areia", "Escovar", "Brincar"];
+var DIAS = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+function hhmm(d) { return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
+function minu(hm) { var m = /^(\d{2}):(\d{2})$/.exec(hm || ""); return m ? +m[1] * 60 + +m[2] : 0; }
+function itemAtivo(it, iso) {
+  var d = parseISO(iso); if (!d || it.pausado) return false;
+  if (it.ini && iso < it.ini) return false;
+  if (it.fim && iso > it.fim) return false;
+  return !(it.dias && it.dias.length) || it.dias.indexOf(d.getDay()) >= 0;
+}
+function slotsDoDia(p, iso) {
+  var out = [];
+  (p.rotina || []).forEach(function (it) {
+    if (!itemAtivo(it, iso)) return;
+    (it.horas && it.horas.length ? it.horas : [""]).forEach(function (hr) { out.push({ it: it, hr: hr, key: it.id + "|" + (hr || "-") }); });
+  });
+  return out.sort(function (a, b) { var x = a.hr || "99:99", y = b.hr || "99:99"; return x < y ? -1 : x > y ? 1 : 0; });
+}
+function feito(p, iso, key) { return !!(p.feitos && p.feitos[iso] && p.feitos[iso].indexOf(key) >= 0); }
+function marcar(p, iso, key, val) {
+  p.feitos = p.feitos || {};
+  var l = (p.feitos[iso] || []).filter(function (k) { return k !== key; });
+  if (val) l.push(key);
+  if (l.length) p.feitos[iso] = l; else delete p.feitos[iso];
+  var corte = new Date(); corte.setDate(corte.getDate() - 45);
+  var lim = corte.getFullYear() + "-" + String(corte.getMonth() + 1).padStart(2, "0") + "-" + String(corte.getDate()).padStart(2, "0");
+  Object.keys(p.feitos).forEach(function (d) { if (d < lim) delete p.feitos[d]; });
+}
+function progresso(ok, n) {
+  return h("div", { class: "prog", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(n), "aria-valuenow": String(ok), "aria-label": ok + " de " + n + " feitos" },
+    h("i", { style: "width:" + (n ? Math.round(ok / n * 100) : 0) + "%" }));
+}
+function resumoDias(it) {
+  if (!it.dias || !it.dias.length || it.dias.length === 7) return "todos os dias";
+  return it.dias.slice().sort().map(function (d) { return DIAS[d]; }).join(", ");
+}
+function painelHoje(p) {
+  var iso = hojeISO(), sl = slotsDoDia(p, iso), n = sl.length, ok = sl.filter(function (x) { return feito(p, iso, x.key); }).length, agora = hhmm(new Date());
+  var texto = !n ? "Nada marcado para hoje. Quer anotar a ração, o passeio ou um remédio do " + p.nome + "? 💚"
+    : ok === n ? "Tudo certo por hoje com " + p.nome + "! Que cuidado lindo 💚"
+    : "Faltam " + (n - ok) + " para hoje. Eu aviso quando chegar a hora 💚";
+  var rotina = p.rotina || [];
+  var temRemedio = rotina.some(function (x) { return x.tipo === "remedio"; });
+  return h("div", null,
+    bubble(texto, ok === n && n ? "ok" : ""),
+    n ? h("div", { class: "painel" }, h("div", { class: "nm", style: "margin-bottom:8px" }, ok + " de " + n + " feitos hoje"), progresso(ok, n)) : null,
+    sl.map(function (x) {
+      var f = feito(p, iso, x.key), atraso = !f && x.hr && x.hr < agora, t = x.it.tipo === "remedio";
+      return h("button", { class: "slot" + (f ? " feito" : ""), type: "button", role: "checkbox", "aria-checked": f ? "true" : "false",
+        "aria-label": (t ? "Remédio " : "Tarefa ") + x.it.nome + (x.hr ? " às " + x.hr : "") + (f ? ", feito" : ", pendente"),
+        onclick: function () { marcar(p, iso, x.key, !f); salvarPet(p); } },
+        h("span", { class: "chk", "aria-hidden": "true" }, f ? "✓" : ""),
+        h("span", { class: "inf" },
+          h("span", { class: "nm" }, (t ? "💊 " : "🥣 ") + x.it.nome),
+          h("small", null, [x.hr || "Durante o dia", t && x.it.dose ? x.it.dose : null].filter(Boolean).join(" · ")),
+          atraso ? h("span", { class: "tag atraso" }, "⏰ passou do horário") : null));
+    }),
+    h("button", { class: "btn verde", type: "button", style: "margin-top:14px", onclick: function () { modalRotina(p, null); } }, "➕ Novo remédio ou tarefa"),
+    temRemedio ? h("p", { class: "hint", style: "margin:10px 2px" }, "💊 Dose e horário dos remédios: sempre como o veterinário receitou. Eu só ajudo a lembrar.") : null,
+    avisosBox(),
+    rotina.length ? h("h2", { class: "sec-title" }, "Rotina de " + p.nome) : null,
+    rotina.map(function (it) {
+      var t = it.tipo === "remedio";
+      return h("div", { class: "item" }, h("span", { class: "emj", "aria-hidden": "true" }, t ? "💊" : "🥣"),
+        h("div", { class: "inf" },
+          h("div", { class: "nm" }, it.nome),
+          h("small", null, [t ? "Remédio" : "Tarefa", t && it.dose ? it.dose : null].filter(Boolean).join(" · ")),
+          h("small", null, (it.horas && it.horas.length ? it.horas.join(", ") : "Sem horário fixo") + " · " + resumoDias(it)),
+          it.fim ? h("small", null, "Até " + fmtData(it.fim)) : null,
+          it.pausado ? h("span", { class: "tag" }, "⏸️ pausado") : null,
+          h("div", { class: "acoes" },
+            h("button", { class: "mini", type: "button", "aria-label": "Editar " + it.nome, onclick: function () { modalRotina(p, it); } }, "Editar"),
+            h("button", { class: "mini", type: "button", "aria-label": (it.pausado ? "Retomar " : "Pausar ") + it.nome, onclick: function () { it.pausado = !it.pausado; salvarPet(p); } }, it.pausado ? "Retomar" : "Pausar"),
+            h("button", { class: "mini", type: "button", "aria-label": "Apagar " + it.nome, onclick: function () {
+              confirmar("Apagar da rotina?", it.nome + " sai da rotina de " + p.nome + ".", "Sim, apagar", function () {
+                p.rotina = (p.rotina || []).filter(function (x) { return x.id !== it.id; }); salvarPet(p, "Removido da rotina.");
+              });
+            } }, "Apagar"))));
+    }));
+}
+function avisosBox() {
+  var ok = "Notification" in window, perm = ok ? Notification.permission : "denied";
+  return h("div", { class: "avisosbox" },
+    h("div", { class: "nm" }, "🔔 Avisos de horário"),
+    h("small", null, "Quando chegar a hora de um remédio ou tarefa, eu mostro um aviso na tela. Funciona enquanto o Sheyla Pet estiver aberto neste aparelho."),
+    ok && perm === "default" ? h("button", { class: "mini", type: "button", onclick: function () { Notification.requestPermission().then(function () { render(); }); } }, "Ativar também as notificações do aparelho") : null,
+    ok && perm === "granted" ? h("small", null, "✅ Notificações do aparelho ativadas.") : null,
+    ok && perm === "denied" ? h("small", null, "Notificações do aparelho bloqueadas neste navegador. Os avisos na tela continuam funcionando.") : null);
+}
+function modalRotina(p, it) {
+  var v = it ? { id: it.id, tipo: it.tipo, nome: it.nome, dose: it.dose || "", horas: (it.horas || []).slice(), dias: (it.dias && it.dias.length ? it.dias : [0, 1, 2, 3, 4, 5, 6]).slice(), fim: it.fim || "" }
+    : { id: null, tipo: "remedio", nome: "", dose: "", horas: ["08:00"], dias: [0, 1, 2, 3, 4, 5, 6], fim: "" };
+  var msg = "";
+  abrirModal(it ? "Editar rotina" : "Nova rotina", function (close, draw) {
+    function ok() {
+      var nome = v.nome.trim(), horas = v.horas.filter(function (x) { return /^\d{2}:\d{2}$/.test(x); });
+      horas = horas.filter(function (x, i) { return horas.indexOf(x) === i; }).sort();
+      if (!nome) { msg = "Ops, qual é o nome? " + (v.tipo === "remedio" ? "Pode copiar da receita 🐾" : "Por exemplo: ração, passeio… 🐾"); return draw("#r-nome"); }
+      if (v.tipo === "remedio" && !horas.length) { msg = "Ops, para o remédio eu preciso de pelo menos um horário, para avisar na hora certa."; return draw(".hrow input"); }
+      if (!v.dias.length) { msg = "Ops, escolha pelo menos um dia da semana."; return draw(".dias button"); }
+      if (v.fim && !parseISO(v.fim)) { msg = "Ops, não entendi a data final. Vamos conferir?"; return draw("#r-fim"); }
+      if (v.fim && v.fim < hojeISO()) { msg = "Ops, essa data final já passou. Vamos conferir?"; return draw("#r-fim"); }
+      var novo = { id: v.id || uid(), tipo: v.tipo, nome: nome, dose: v.tipo === "remedio" ? v.dose.trim() : "", horas: horas, dias: v.dias.length === 7 ? [] : v.dias.slice().sort(),
+        ini: (it && it.ini) || hojeISO(), fim: v.tipo === "remedio" ? v.fim : "", pausado: !!(it && it.pausado), criado: (it && it.criado) || Date.now() };
+      p.rotina = (p.rotina || []).filter(function (x) { return x.id !== novo.id; }).concat([novo]);
+      close(); salvarPet(p, "Anotado na rotina de " + p.nome + "! 💚");
+    }
+    var rem = v.tipo === "remedio";
+    return [h("h2", null, it ? "Editar rotina" : "Nova rotina"),
+      msg ? h("div", { class: "avisomodal", role: "alert" }, msg) : null,
+      h("div", { class: "stack" },
+        h("div", null, h("div", { class: "lbl" }, "O que é?"),
+          h("div", { class: "opts big", role: "radiogroup", "aria-label": "Tipo" },
+            [["remedio", "💊", "Remédio"], ["tarefa", "🥣", "Tarefa do dia"]].map(function (o) {
+              return h("button", { class: "opt", type: "button", role: "radio", "aria-checked": v.tipo === o[0] ? "true" : "false", onclick: function () { v.tipo = o[0]; draw(); } }, h("span", { class: "em", "aria-hidden": "true" }, o[1]), o[2]);
+            }))),
+        campo("r-nome", rem ? "Nome do remédio" : "O que fazer?", h("input", { id: "r-nome", type: "text", maxlength: "50", autocomplete: "off", list: rem ? null : "r-sug", value: v.nome, oninput: function (x) { v.nome = x.target.value; } }),
+          rem ? "Escreva como está na receita." : "Escolha uma sugestão ou escreva o que quiser."),
+        rem ? null : h("datalist", { id: "r-sug" }, SUG_TAREFA.map(function (n) { return h("option", { value: n }); })),
+        rem ? campo("r-dose", "Dose (opcional)", h("input", { id: "r-dose", type: "text", maxlength: "40", autocomplete: "off", value: v.dose, oninput: function (x) { v.dose = x.target.value; } }), "Escreva como está na receita, por exemplo: 1 comprimido.") : null,
+        h("div", null, h("div", { class: "lbl" }, rem ? "Horários" : "Horários (opcional)"),
+          v.horas.map(function (hr, i) {
+            return h("div", { class: "hrow" },
+              h("input", { type: "time", "aria-label": "Horário " + (i + 1), value: hr, oninput: function (x) { v.horas[i] = x.target.value; } }),
+              h("button", { class: "mini", type: "button", "aria-label": "Tirar o horário " + (i + 1), onclick: function () { v.horas.splice(i, 1); draw(); } }, "Tirar"));
+          }),
+          v.horas.length < 6 ? h("button", { class: "mini", type: "button", style: "margin-top:8px", onclick: function () { v.horas.push(""); draw(".hrow:last-of-type input"); } }, "➕ Adicionar horário") : null,
+          !rem && !v.horas.length ? h("div", { class: "hint" }, "Sem horário: aparece na lista do dia, sem aviso.") : null),
+        h("div", null, h("div", { class: "lbl" }, "Em quais dias?"),
+          h("div", { class: "dias", role: "group", "aria-label": "Dias da semana" }, DIAS.map(function (d, i) {
+            var on = v.dias.indexOf(i) >= 0;
+            return h("button", { class: "mini", type: "button", "aria-pressed": on ? "true" : "false", onclick: function () { v.dias = on ? v.dias.filter(function (x) { return x !== i; }) : v.dias.concat([i]); draw(); } }, d);
+          }))),
+        rem ? campo("r-fim", "Até quando? (opcional)", h("input", { id: "r-fim", type: "date", value: v.fim, oninput: function (x) { v.fim = x.target.value; } }), "Para tratamentos com data para terminar.") : null,
+        h("button", { class: "btn verde", type: "button", onclick: ok }, "💚 Salvar"),
+        h("button", { class: "btn sec", type: "button", onclick: close }, "Cancelar"))];
+  }, "#r-nome");
+}
+
+/* Aviso na hora certa (enquanto o app está aberto) */
+var avisados = {}, soneca = {};
+function alertaHora(p, s, iso, k) {
+  var t = s.it.tipo === "remedio";
+  var corpo = t ? "Hora do remédio: " + s.it.nome + (s.it.dose ? " (" + s.it.dose + ")" : "") + "." : "Hora de: " + s.it.nome + ".";
+  try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
+  try { if ("Notification" in window && Notification.permission === "granted" && document.hidden) new Notification("Sheyla Pet · " + p.nome, { body: corpo }); } catch (e) {}
+  var m = abrirModal("Hora do cuidado", function (close) {
+    return [h("h2", null, "⏰ Hora de cuidar do " + p.nome + "!"), h("p", null, corpo),
+      h("div", { class: "stack" },
+        h("button", { class: "btn verde", type: "button", onclick: function () { marcar(p, iso, s.key, true); close(); salvarPet(p, "Anotado! 💚"); } }, "✅ Já fiz"),
+        h("button", { class: "btn sec", type: "button", onclick: function () { soneca[k] = Date.now() + 10 * 60000; close(); } }, "Lembrar daqui a 10 minutos"),
+        h("button", { class: "btn sec", type: "button", onclick: close }, "Agora não"))];
+  });
+  m.classList.add("alerta");
+}
+function checarAvisos() {
+  if (st.screen === "splash" || !st.pets.length || document.querySelector(".modal.alerta")) return;
+  var iso = hojeISO(), am = minu(hhmm(new Date()));
+  for (var i = 0; i < st.pets.length; i++) {
+    var p = st.pets[i], sl = slotsDoDia(p, iso);
+    for (var j = 0; j < sl.length; j++) {
+      var s = sl[j]; if (!s.hr || feito(p, iso, s.key)) continue;
+      var k = p.id + "|" + iso + "|" + s.key, d = am - minu(s.hr);
+      var devido = soneca[k] ? Date.now() >= soneca[k] : (d >= 0 && d <= 2 && !avisados[k]);
+      if (!devido) continue;
+      avisados[k] = true; delete soneca[k]; alertaHora(p, s, iso, k); return;
+    }
+  }
+}
+setInterval(checarAvisos, 20000);
+
+/* ─── Ficha para o veterinário ─── */
+function textoFicha(p) {
+  var e = ESPECIES[p.especie] || ESPECIES.cachorro, ord = pesosOrd(p), L = [];
+  L.push("FICHA DE " + p.nome.toUpperCase() + " (anotada pelo tutor em " + fmtData(hojeISO()) + ")");
+  L.push("Espécie: " + (p.especie === "outro" ? (p.raca || "Outro") : e.m.toLowerCase()) + (p.raca && p.especie !== "outro" ? " · Raça: " + p.raca : ""));
+  L.push("Sexo: " + (p.sexo === "f" ? "fêmea" : p.sexo === "m" ? "macho" : "não informado"));
+  L.push("Nascimento: " + fmtData(p.nasc) + (p.aprox ? " (aproximado)" : "") + " · Idade: " + idade(p.nasc));
+  if (ord.length) {
+    L.push("Peso atual: " + fmtPeso(ord[ord.length - 1].kg) + " (" + fmtData(ord[ord.length - 1].d) + ")");
+    if (ord.length > 1) L.push("Pesos anteriores: " + ord.slice(-6, -1).reverse().map(function (k) { return fmtPeso(k.kg) + " em " + fmtData(k.d); }).join("; "));
+  }
+  if (p.convenio && (p.convenio.nome || p.convenio.numero)) L.push("Convênio: " + [p.convenio.nome, p.convenio.numero].filter(Boolean).join(" · "));
+  var vs = (p.saude || []).slice().sort(function (a, b) { return a.d < b.d ? 1 : -1; });
+  if (vs.length) {
+    L.push(""); L.push("VACINAS, VERMÍFUGOS E ANTIPULGAS");
+    vs.forEach(function (r) { L.push("- " + r.nome + " (" + (TIPOS[r.tipo] || TIPOS.vacina).t.toLowerCase() + "): feito em " + fmtData(r.d) + (r.prox ? "; próxima em " + fmtData(r.prox) : "") + (r.obs ? " — " + r.obs : "")); });
+  }
+  var rem = (p.rotina || []).filter(function (x) { return x.tipo === "remedio" && !x.pausado && itemAtivo(x, hojeISO()); });
+  if (rem.length) {
+    L.push(""); L.push("REMÉDIOS EM USO (conforme anotado pelo tutor)");
+    rem.forEach(function (x) { L.push("- " + x.nome + (x.dose ? " — " + x.dose : "") + (x.horas && x.horas.length ? " — " + x.horas.join(", ") : "") + (x.fim ? " — até " + fmtData(x.fim) : "")); });
+  }
+  L.push(""); L.push("Informações anotadas pelo tutor no Sheyla Pet. Não substituem a avaliação do veterinário.");
+  return L.join("\n");
+}
+function copiar(t) {
+  if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t);
+  return new Promise(function (res, rej) {
+    var ta = h("textarea", { style: "position:fixed;left:-999px" }); ta.value = t; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy") ? res() : rej(); } catch (e) { rej(e); } ta.remove();
+  });
+}
+function imprimirFicha(p, t) {
+  var f = h("div", { class: "folha" }, h("h1", null, "Ficha de " + p.nome), h("pre", null, t));
+  document.body.appendChild(f); document.body.classList.add("imprimindo");
+  function fim() { document.body.classList.remove("imprimindo"); f.remove(); window.removeEventListener("afterprint", fim); }
+  window.addEventListener("afterprint", fim);
+  try { window.print(); } catch (e) { fim(); }
+}
+function modalFicha(p) {
+  var t = textoFicha(p);
+  abrirModal("Ficha para o veterinário", function (close) {
+    return [h("h2", null, "Ficha de " + p.nome),
+      h("p", { class: "hint", style: "margin:0 0 10px" }, "Aqui está um resumo para levar à consulta. Nada sai da sua conta sem você enviar."),
+      h("pre", { class: "ficha" }, t),
+      h("div", { class: "stack", style: "margin-top:14px" },
+        navigator.share ? h("button", { class: "btn verde", type: "button", onclick: function () { navigator.share({ title: "Ficha de " + p.nome, text: t }).catch(function () {}); } }, "📤 Enviar") : null,
+        h("button", { class: navigator.share ? "btn sec" : "btn verde", type: "button", onclick: function () { copiar(t).then(function () { toast("Ficha copiada! 💚"); }, function () { toast("Não consegui copiar. Selecione o texto e copie."); }); } }, "📋 Copiar texto"),
+        h("button", { class: "btn sec", type: "button", onclick: function () { close(); imprimirFicha(p, t); } }, "🖨️ Imprimir ou salvar em PDF"),
+        h("button", { class: "btn sec", type: "button", onclick: close }, "Fechar"))];
+  }, ".btn");
+}
+
 /* ─── Janelas (modais) ─── */
 function abrirModal(titulo, build, foco) {
   var m = h("div", { class: "modal", role: "dialog", "aria-modal": "true", "aria-label": titulo });
@@ -654,6 +912,7 @@ function abrirModal(titulo, build, foco) {
   document.addEventListener("keydown", esc);
   m.addEventListener("click", function (e) { if (e.target === m) close(); });
   document.body.appendChild(m); draw();
+  return m;
 }
 function confirmar(titulo, texto, sim, fn) {
   abrirModal(titulo, function (close) {
@@ -821,7 +1080,7 @@ function salvar() {
   if (peso != null && peso !== ant) pesos = pesos.concat([{ d: hojeISO(), kg: peso }]);
   var pet = {
     id: d.id || uid(), nome: nome, especie: d.especie, sexo: d.sexo || "", raca: (d.raca || "").trim(),
-    nasc: d.nasc, aprox: !!d.aprox, peso: peso, pesos: pesos, saude: (existente && existente.saude) || [], foto: d.foto || "",
+    nasc: d.nasc, aprox: !!d.aprox, peso: peso, pesos: pesos, saude: (existente && existente.saude) || [], rotina: (existente && existente.rotina) || [], feitos: (existente && existente.feitos) || {}, foto: d.foto || "",
     convenio: { nome: (d.convenio.nome || "").trim(), numero: (d.convenio.numero || "").trim() },
     criado: (existente && existente.criado) || Date.now(), editado: Date.now()
   };
