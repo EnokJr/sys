@@ -136,8 +136,8 @@ input[aria-invalid=true]{border-color:var(--erro);background:#FFF1EF}
 .vazio{font-weight:700;color:var(--tinta2);margin:18px 2px}
 .box.rolavel{max-height:92vh;overflow-y:auto}
 .opts.cores{display:grid;grid-template-columns:repeat(3,1fr)}
-.opts.cores .opt{flex-direction:column;min-height:92px;gap:4px;padding:6px 2px;font-size:.88rem}
-.av.mini{display:block;width:52px;height:52px;border-width:3px}
+.opts.cores .opt{flex-direction:column;min-height:132px;gap:6px;padding:10px 4px;font-size:1rem}
+.opts.cores .av.mini{display:block;flex:none;width:88px;height:88px;border-width:4px;padding:0;background:var(--esm-100)}
 /* Cartão com personalidade */
 body[data-estacao=primavera]{--est-a:#12805C;--est-b:#35A77C}
 body[data-estacao=verao]{--est-a:#12805C;--est-b:#1FA08C}
@@ -478,6 +478,13 @@ function vSplash() {
     h("div", { class: "dots", "aria-hidden": "true" }, h("i"), h("i"), h("i")));
 }
 
+/* Se a imagem grande não carregar: tenta de novo sem cache; se falhar, mostra a miniatura em vez de um quadro quebrado */
+function falhaImagem(e) {
+  var img = e.target, k = skinAtual();
+  if (!img.dataset.tentou) { img.dataset.tentou = "1"; img.src = k.big.split("?")[0] + "?r=" + Date.now(); return; }
+  console.warn("[SPT] imagem da skin não carregou:", k.big);
+  if (img.src !== k.mini) { img.onerror = null; img.src = k.mini; }
+}
 function skinAtual() { return SKINS.filter(function (k) { return k.id === st.skin; })[0] || SKINS[0] || null; }
 
 function vPicker() {
@@ -502,7 +509,7 @@ function vPicker() {
         h("span", { class: "chip" }, est.emoji + " " + est.nome),
         st.local ? h("span", { class: "chip aviso" }, "modo local · sem login") : null),
       h("div", { class: "intro" },
-        h("img", { class: "bigimg", src: skinAtual().big, alt: skinAtual().alt }),
+        h("img", { class: "bigimg", src: skinAtual().big, alt: skinAtual().alt, onerror: falhaImagem }),
         h("div", { class: "dialog" },
           h("p", { class: "saud" }, "Oi", primeiro ? ", " : "", primeiro ? h("span", { class: "nome" }, primeiro) : null, "! Que bom te ver por aqui 🐾"),
           h("p", null, vazio ? "Ainda não conheço nenhum amiguinho seu. Vamos cadastrar o primeiro?" : "Estou pronta para ajudar no cuidado de quem você mais ama."),
@@ -523,7 +530,7 @@ function vIntro() {
     h("main", { class: "wrap largo" },
       h("div", { class: "chips" }, h("span", { class: "chip" }, "📅 " + dia), h("span", { class: "chip" }, est.emoji + " " + est.nome)),
       h("div", { class: "intro" },
-        h("img", { class: "bigimg", src: skinAtual().big, alt: sk.alt }),
+        h("img", { class: "bigimg", src: skinAtual().big, alt: sk.alt, onerror: falhaImagem }),
         h("div", { class: "dialog" },
           h("p", { class: "saud" }, "Olá! Tudo bem com você" + (nome ? ", " : "?"), nome ? h("span", { class: "nome" }, nome) : null, nome ? "?" : null),
           h("p", null, "Que alegria te receber! Eu sou a ", h("span", { class: "destaque" }, "Sheyla Pet!"), " Vou ser a sua auxiliar no cuidado do serzinho que amamos tanto, eu e você", nome ? ", " : ".", nome ? h("span", { class: "nome" }, nome) : null, nome ? "." : null),
