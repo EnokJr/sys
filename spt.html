@@ -136,11 +136,14 @@ try { S = window.Sheyla || (window.parent && window.parent.Sheyla) || null; } ca
 try { document.querySelector('link[rel=icon]').href = LOGO; } catch (e) {}
 
 var ESPECIES = {
-  gato: { emoji: "🐱", m: "Gato", f: "Gata", min: 0.08, max: 12 },
-  cachorro: { emoji: "🐶", m: "Cachorro", f: "Cachorra", min: 0.08, max: 80 }
+  gato: { emoji: "🐱", m: "Gato", f: "Gata", min: 0.08, max: 12, hard: 150 },
+  cachorro: { emoji: "🐶", m: "Cachorro", f: "Cachorra", min: 0.08, max: 80, hard: 150 },
+  outro: { emoji: "👽", m: "Bichinho", f: "Bichinha", min: 0, max: 1e9, hard: 1000 }
 };
 var SVG_GATO = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#CFF5E4"/><path d="M22 44 L26 12 L46 30Z M78 44 L74 12 L54 30Z" fill="#F59A3B" stroke="#0F3B2E" stroke-width="3" stroke-linejoin="round"/><ellipse cx="50" cy="56" rx="32" ry="28" fill="#F59A3B" stroke="#0F3B2E" stroke-width="3"/><path d="M40 34 Q50 40 60 34" fill="none" stroke="#D9701F" stroke-width="3" stroke-linecap="round"/><circle cx="39" cy="54" r="4.5" fill="#0F3B2E"/><circle cx="61" cy="54" r="4.5" fill="#0F3B2E"/><circle cx="40.5" cy="52.5" r="1.5" fill="#fff"/><circle cx="62.5" cy="52.5" r="1.5" fill="#fff"/><path d="M46 63 L54 63 L50 68Z" fill="#E8587A" stroke="#0F3B2E" stroke-width="2" stroke-linejoin="round"/><path d="M50 68 Q45 74 40 70 M50 68 Q55 74 60 70" fill="none" stroke="#0F3B2E" stroke-width="2.5" stroke-linecap="round"/><path d="M14 58 L30 60 M14 68 L30 65 M86 58 L70 60 M86 68 L70 65" stroke="#0F3B2E" stroke-width="2" stroke-linecap="round"/></svg>';
 var SVG_CAO = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#FFE7C2"/><ellipse cx="22" cy="50" rx="12" ry="24" fill="#8A5A2B" stroke="#0F3B2E" stroke-width="3" transform="rotate(12 22 50)"/><ellipse cx="78" cy="50" rx="12" ry="24" fill="#8A5A2B" stroke="#0F3B2E" stroke-width="3" transform="rotate(-12 78 50)"/><ellipse cx="50" cy="54" rx="29" ry="28" fill="#F2C48D" stroke="#0F3B2E" stroke-width="3"/><ellipse cx="50" cy="66" rx="14" ry="10" fill="#FFF3E0" stroke="#0F3B2E" stroke-width="2.5"/><circle cx="39" cy="50" r="4.5" fill="#0F3B2E"/><circle cx="61" cy="50" r="4.5" fill="#0F3B2E"/><circle cx="40.5" cy="48.5" r="1.5" fill="#fff"/><circle cx="62.5" cy="48.5" r="1.5" fill="#fff"/><ellipse cx="50" cy="62" rx="5.5" ry="4" fill="#0F3B2E"/><path d="M50 66 L50 71 M50 71 Q45 76 41 72 M50 71 Q55 76 59 72" fill="none" stroke="#0F3B2E" stroke-width="2.5" stroke-linecap="round"/></svg>';
+
+var SVG_ALIEN = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" fill="#FFE7C2"/><path d="M38 30 Q34 16 28 13 M62 30 Q66 16 72 13" fill="none" stroke="#0F3B2E" stroke-width="3" stroke-linecap="round"/><circle cx="28" cy="12" r="5.5" fill="#F59A3B" stroke="#0F3B2E" stroke-width="3"/><circle cx="72" cy="12" r="5.5" fill="#F59A3B" stroke="#0F3B2E" stroke-width="3"/><ellipse cx="36" cy="92" rx="9" ry="4.5" fill="#12805C" stroke="#0F3B2E" stroke-width="3"/><ellipse cx="64" cy="92" rx="9" ry="4.5" fill="#12805C" stroke="#0F3B2E" stroke-width="3"/><path d="M50 26 C78 26 88 52 84 72 C81 87 66 90 50 90 C34 90 19 87 16 72 C12 52 22 26 50 26Z" fill="#6EE7B7" stroke="#0F3B2E" stroke-width="3"/><ellipse cx="37" cy="54" rx="8.5" ry="10.5" fill="#fff" stroke="#0F3B2E" stroke-width="2.5"/><ellipse cx="63" cy="54" rx="8.5" ry="10.5" fill="#fff" stroke="#0F3B2E" stroke-width="2.5"/><circle cx="39" cy="56" r="5.5" fill="#0F3B2E"/><circle cx="65" cy="56" r="5.5" fill="#0F3B2E"/><circle cx="41" cy="53.5" r="1.8" fill="#fff"/><circle cx="67" cy="53.5" r="1.8" fill="#fff"/><path d="M43 73 Q50 80 57 73" fill="none" stroke="#0F3B2E" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="68" r="4.5" fill="#F59A3B" opacity=".55"/><circle cx="76" cy="68" r="4.5" fill="#F59A3B" opacity=".55"/><circle cx="50" cy="38" r="2" fill="#12805C"/><circle cx="44" cy="42" r="1.5" fill="#12805C"/><circle cx="57" cy="41" r="1.5" fill="#12805C"/></svg>';
 
 /* ─── Estado ─── */
 var st = { skin: "laranja", screen: "splash", user: null, uid: "local", local: false, pets: [], at: 0, petId: null, draft: null, msg: null, confirmPeso: false };
@@ -190,7 +193,7 @@ function estacao(d) {
   if (v <= 922) return { id: "inverno", nome: "inverno", emoji: "❄️" };
   return { id: "primavera", nome: "primavera", emoji: "🌸" };
 }
-function rotuloEsp(p) { var e = ESPECIES[p.especie] || ESPECIES.cachorro; return p.sexo === "f" ? e.f : e.m; }
+function rotuloEsp(p) { var e = ESPECIES[p.especie] || ESPECIES.cachorro; if (p.especie === "outro" && p.raca) return p.raca; return p.sexo === "f" ? e.f : e.m; }
 function fmtPeso(kg) { return kg ? String(kg).replace(".", ",") + " kg" : "—"; }
 
 /* ─── Armazenamento (local por usuário + nuvem pelo núcleo) ─── */
@@ -242,7 +245,7 @@ function pull() {
 function avatar(p, size) {
   var box = h("div", { class: "av", style: size ? "width:" + size + "px;height:" + size + "px" : null });
   if (p && p.foto) box.appendChild(h("img", { src: p.foto, alt: "Foto de " + p.nome }));
-  else box.innerHTML = (p && p.especie === "gato") ? SVG_GATO : SVG_CAO;   // SVG estático, sem dado do usuário
+  else box.innerHTML = (p && p.especie === "gato") ? SVG_GATO : (p && p.especie === "outro") ? SVG_ALIEN : SVG_CAO;   // SVG estático, sem dado do usuário
   return box;
 }
 function bubble(texto, tom) {
@@ -332,7 +335,7 @@ function vCard() {
           h("span", { class: "paw", style: "left:14px;top:10px", "aria-hidden": "true" }, "🐾"),
           h("span", { class: "paw", style: "right:16px;top:30px;transform:rotate(14deg)", "aria-hidden": "true" }, "🐾"),
           h("h1", null, p.nome),
-          h("div", { class: "esp" }, e.emoji + " " + rotuloEsp(p) + (p.raca ? " · " + p.raca : ""))),
+          h("div", { class: "esp" }, e.emoji + " " + rotuloEsp(p) + (p.raca && p.especie !== "outro" ? " · " + p.raca : ""))),
         h("div", { class: "photo" }, avatar(p)),
         h("div", { class: "body" },
           h("dl", { class: "dados" },
@@ -400,11 +403,13 @@ function vForm() {
   var form = h("form", { class: "stack", novalidate: "novalidate", onsubmit: function (e) { e.preventDefault(); salvar(); } },
     msg ? bubble(msg.texto, msg.tom) : bubble(novo ? "Vamos fazer o cadastro? Só preciso do básico, o resto você completa quando quiser." : "Vamos atualizar os dados com carinho?"),
     h("div", null, h("div", { class: "lbl", id: "lb-esp" }, "Quem é o amiguinho?"),
-      setOpts("esp", [{ v: "cachorro", t: "Cachorro", em: "🐶" }, { v: "gato", t: "Gato", em: "🐱" }], d.especie, function (v) { d.especie = v; st.confirmPeso = false; }, true, "Espécie")),
+      setOpts("esp", [{ v: "cachorro", t: "Cachorro", em: "🐶" }, { v: "gato", t: "Gato", em: "🐱" }, { v: "outro", t: "Outro", em: "👽" }], d.especie, function (v) { d.especie = v; st.confirmPeso = false; }, true, "Espécie")),
     campo("f-nome", "Nome", inNome),
     h("div", null, h("div", { class: "lbl" }, "Sexo"),
       setOpts("sexo", [{ v: "m", t: "Macho" }, { v: "f", t: "Fêmea" }, { v: "", t: "Não sei" }], d.sexo, function (v) { d.sexo = v; }, false, "Sexo")),
-    campo("f-raca", "Raça (opcional)", inRaca, "Sem raça definida? Pode escrever “SRD”."),
+    d.especie === "outro"
+      ? campo("f-raca", "Que bichinho é?", inRaca, "Coelho, calopsita, tartaruga, hamster… pode escrever o que quiser.")
+      : campo("f-raca", "Raça (opcional)", inRaca, "Sem raça definida? Pode escrever “SRD”."),
     campo("f-nasc", "Data de nascimento", inNasc),
     h("label", { class: "check" }, h("input", { type: "checkbox", checked: d.aprox ? "checked" : null, onchange: function (e) { d.aprox = e.target.checked; } }), "Não tenho certeza, a data é aproximada"),
     campo("f-peso", "Peso em kg (opcional)", inPeso, "Exemplo: 4,5"),
@@ -454,7 +459,7 @@ function salvar() {
   if (String(d.peso).trim() !== "") {
     peso = parseFloat(String(d.peso).replace(",", "."));
     var e = ESPECIES[d.especie];
-    if (!isFinite(peso) || peso <= 0 || peso > 150) return erro("peso", "Ops, esse peso não parece certo. Vamos conferir na balança, pelo nosso amiguinho?", "f-peso");
+    if (!isFinite(peso) || peso <= 0 || peso > e.hard) return erro("peso", "Ops, esse peso não parece certo. Vamos conferir na balança, pelo nosso amiguinho?", "f-peso");
     if ((peso < e.min || peso > e.max) && !st.confirmPeso) {
       st.confirmPeso = true;
       return erro("peso", "Hmm, esse peso me parece fora do comum para " + (d.especie === "gato" ? "um gato" : "um cachorro") + ". Vamos conferir? Se estiver certo, é só salvar de novo.", "f-peso");
