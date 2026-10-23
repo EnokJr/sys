@@ -1,5 +1,5 @@
 {
-  "v": 1,
+  "v": 3,
   "padrao": "laranja",
   "categorias": [
     {
@@ -43,6 +43,11 @@
       "categoria": "cachorros",
       "alt": "Sheyla Pet com um filhote de akita no ombro",
       "msg": "Pronto! A Sheyla está com o akita 🐶"
+    },
+    {
+      "id": "golden",
+      "nome": "Golden retriever",
+      "categoria": "cachorros"
     },
     {
       "id": "sozinha",
