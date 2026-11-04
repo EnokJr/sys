@@ -6,6 +6,7 @@
 <title>SDC — Sheyla do Contabil</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{max-width:100%;overflow-x:hidden}
@@ -2560,6 +2561,9 @@ function App() {
   });
   const [exportMsg, setExportMsg] = useState("");
   const [importMsg, setImportMsg] = useState("");
+  const [confirmReset, setConfirmReset] = useState(null); // { parsedTxs, nextId } quando aguardando confirmação
+  const [limiteModal, setLimiteModal] = useState(false);
+  const [limiteInput, setLimiteInput] = useState("");
   const [dashGraf, setDashGraf] = useState("barra");
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [expandidos, setExpandidos] = useState({
@@ -2586,6 +2590,7 @@ function App() {
   const [mesAbertoHist, setMesAbertoHist] = useState(null);
   const [buscaHist, setBuscaHist] = useState("");
   const importRef = useRef();
+  const importResetRef = useRef();
   const [fechados, setFechados] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("sdc_fechados")) || {};
@@ -2986,43 +2991,215 @@ function App() {
     setExportMsg("Exportado!");
     setTimeout(() => setExportMsg(""), 3000);
   };
+  // ── Download do template de importação (.xlsx com 2 abas) ──
+  const downloadTemplate = () => {
+    if (!window.XLSX) { alert("Aguarde, carregando biblioteca..."); return; }
+    const XLSX = window.XLSX;
+    const wb = XLSX.utils.book_new();
+
+    // ── Aba 1: Instruções ──
+    const instrRows = [
+      ["SDC — Template de Importação"],
+      [""],
+      ["COLUNA", "DESCRIÇÃO", "VALORES ACEITOS", "OBRIGATÓRIO?"],
+      ["data",          "Data da transação",                   "AAAA-MM-DD  ex: 2026-11-15",                        "Sim"],
+      ["desc",          "Descrição / nome do lançamento",      "Texto livre",                                       "Sim"],
+      ["valor",         "Valor em reais",                      "Use ponto ou vírgula decimal  ex: 1250,00",         "Sim"],
+      ["tipo",          "Tipo do lançamento",                  "despesa  ou  receita",                              "Sim"],
+      ["cat",           "Categoria",                           "moradia | alimentacao | saude | transporte | lazer | educacao | salario | outros", "Não (padrão: outros)"],
+      ["pago",          "Já foi pago/recebido?",               "sim  ou  nao",                                      "Não (padrão: nao)"],
+      ["cartao",        "ID do cartão (se for crédito)",       "nubank | itau  ou  deixe vazio para débito/dinheiro","Não"],
+      ["repetir_meses", "Repetir por quantos meses extras",    "Número inteiro  ex: 6  (gera mais 6 cópias mensais)","Não"],
+      [""],
+      ["DICAS"],
+      ["• Apague as linhas de exemplo antes de importar, ou deixe — linhas com valor 0 são ignoradas."],
+      ["• A coluna repetir_meses é útil para contas fixas: coloque 11 para gerar o ano inteiro."],
+      ["• O arquivo importado pode ter o nome que quiser, desde que mantenha a extensão .xlsx ou .csv."],
+      ["• Para cartões, use o ID exato: nubank ou itau (minúsculas, sem acento)."],
+    ];
+    const wsInstr = XLSX.utils.aoa_to_sheet(instrRows);
+    wsInstr["!cols"] = [{ wch: 18 }, { wch: 36 }, { wch: 62 }, { wch: 16 }];
+    // Título em negrito / destaque (via cell style — SheetJS free suporta básico)
+    wsInstr["A1"] = { v: "SDC — Template de Importação", t: "s" };
+    XLSX.utils.book_append_sheet(wb, wsInstr, "Instruções");
+
+    // ── Aba 2: Template (dados) ──
+    const dataRows = [
+      ["data", "desc", "valor", "tipo", "cat", "pago", "cartao", "repetir_meses"],
+      ["2026-11-01", "Mercado",  250.00, "despesa",  "alimentacao", "nao", "",       ""],
+      ["2026-11-05", "Netflix",   55.90, "despesa",  "lazer",        "nao", "nubank", 6],
+      ["2026-11-01", "Salário", 5000.00, "receita",  "salario",      "sim", "",       3],
+      ["2026-11-10", "Farmácia",  80.00, "despesa",  "saude",        "nao", "",       ""],
+      ["2026-11-15", "Aluguel", 1500.00, "despesa",  "moradia",      "nao", "",      11],
+    ];
+    const wsDados = XLSX.utils.aoa_to_sheet(dataRows);
+    wsDados["!cols"] = [{ wch: 13 }, { wch: 24 }, { wch: 10 }, { wch: 10 }, { wch: 14 }, { wch: 7 }, { wch: 10 }, { wch: 15 }];
+    XLSX.utils.book_append_sheet(wb, wsDados, "Importação");
+
+    XLSX.writeFile(wb, "SDC_template.xlsx");
+    setExportMsg("Template baixado!");
+    setTimeout(() => setExportMsg(""), 3000);
+  };
+
   const handleImport = e => {
     const f = e.target.files[0];
     if (!f) return;
+    const isXlsx = /\.(xlsx|xls)$/i.test(f.name);
     const rd = new FileReader();
     rd.onload = ev => {
-      const lines = ev.target.result.trim().split(/\r?\n/);
-      if (lines.length < 2) {
-        setImportMsg("Sem dados.");
-        return;
+      let lines;
+      if (isXlsx) {
+        if (!window.XLSX) { setImportMsg("Erro: biblioteca XLSX não carregou."); return; }
+        const wb = window.XLSX.read(ev.target.result, { type: "array" });
+        // Usa a aba "Importação" se existir, senão a primeira
+        const sheetName = wb.SheetNames.includes("Importação") ? "Importação" : wb.SheetNames[0];
+        const ws = wb.Sheets[sheetName];
+        const rows = window.XLSX.utils.sheet_to_csv(ws, { FS: ";", RS: "\n" }).trim().split("\n");
+        lines = rows.filter(l => l.trim() && !l.trim().startsWith("#"));
+      } else {
+        lines = ev.target.result.replace(/^﻿/, "").trim().split(/\r?\n/)
+          .filter(l => l.trim() && !l.trim().startsWith("#"));
       }
+      if (lines.length < 2) { setImportMsg("Sem dados."); return; }
+
+      const headerLine = lines[0].toLowerCase().replace(/"/g, "");
+      const cols = headerLine.split(/[;,]/).map(c => c.trim());
+      const idx = k => cols.indexOf(k);
+
+      // Detecta se é o template SDC (tem coluna "desc") ou CSV exportado (formato antigo)
+      const isTemplate = idx("desc") >= 0;
+
       let id = nextId;
-      const novos = lines.slice(1).map(l => {
+      const novos = [];
+
+      lines.slice(1).forEach(l => {
         const c = l.split(/[;,]/).map(x => x.trim().replace(/^"|"$/g, ""));
-        const val = parseFloat((c[4] || "0").replace(/[R$\s.]/g, "").replace(",", ".")) || 0;
-        if (!val) return null;
-        return {
-          id: id++,
-          desc: c[1] || "Importado",
-          valor: Math.abs(val),
-          tipo: (c[2] || "").toLowerCase().includes("rec") ? "receita" : "despesa",
-          cat: "outros",
-          data: TODAY,
-          pago: true,
-          recorrencia: null,
-          parcelaAtual: null,
-          totalParcelas: null,
-          grupoId: null,
-          cartao: null
-        };
-      }).filter(Boolean);
+        if (isTemplate) {
+          const data   = c[idx("data")]  || TODAY;
+          const desc   = c[idx("desc")]  || "Importado";
+          const valStr = (c[idx("valor")] || "0").replace(/[R$\s.]/g, "").replace(",", ".");
+          const val    = Math.abs(parseFloat(valStr) || 0);
+          if (!val) return;
+          const tipo   = (c[idx("tipo")] || "despesa").toLowerCase().includes("rec") ? "receita" : "despesa";
+          const cat    = c[idx("cat")]   || "outros";
+          const pago   = (c[idx("pago")] || "nao").toLowerCase() === "sim";
+          const cartao = c[idx("cartao")] || null;
+          const rep    = parseInt(c[idx("repetir_meses")] || "0") || 0;
+
+          const grpId  = rep > 0 ? ("imp_" + id) : null;
+          const pushTx = (dataStr) => novos.push({
+            id: id++, desc, valor: val, tipo, cat, data: dataStr,
+            pago, recorrencia: rep > 0 ? "mensal" : "unico",
+            parcelaAtual: null, totalParcelas: null,
+            grupoId: grpId, cartao: cartao || null, icone: null
+          });
+
+          pushTx(data);
+          // Gera repetições mensais extras se solicitado
+          if (rep > 0) {
+            const [ano, mes, dia] = data.split("-").map(Number);
+            for (let m = 1; m <= rep; m++) {
+              let nm = mes - 1 + m, na = ano;
+              if (nm > 11) { nm -= 12; na++; }
+              const maxD = new Date(na, nm + 1, 0).getDate();
+              const d = String(Math.min(dia, maxD)).padStart(2, "0");
+              pushTx(na + "-" + String(nm + 1).padStart(2, "0") + "-" + d);
+            }
+          }
+        } else {
+          // Compatibilidade com CSV exportado pelo SDC (formato antigo)
+          const val = parseFloat((c[4] || "0").replace(/[R$\s.]/g, "").replace(",", ".")) || 0;
+          if (!val) return;
+          novos.push({
+            id: id++, desc: c[1] || "Importado", valor: Math.abs(val),
+            tipo: (c[2] || "").toLowerCase().includes("rec") ? "receita" : "despesa",
+            cat: "outros", data: TODAY, pago: true,
+            recorrencia: null, parcelaAtual: null, totalParcelas: null,
+            grupoId: null, cartao: null
+          });
+        }
+      });
+
       setTxs(prev => [...novos, ...prev]);
       setNextId(id);
-      setImportMsg(`${novos.length} importados!`);
+      setImportMsg(novos.length + " lançamento(s) importado(s)!");
       setTimeout(() => setImportMsg(""), 4000);
     };
-    rd.readAsText(f, "UTF-8");
+    if (isXlsx) rd.readAsArrayBuffer(f);
+    else rd.readAsText(f, "UTF-8");
     e.target.value = "";
+  };
+
+  // ── Import destrutivo (substitui tudo) ──
+  const handleImportReset = e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    e.target.value = "";
+
+    const isXlsx = /\.(xlsx|xls)$/i.test(f.name);
+    const rd = new FileReader();
+    rd.onload = ev => {
+      let lines;
+      if (isXlsx) {
+        if (!window.XLSX) { setImportMsg("Erro: biblioteca XLSX não carregou."); return; }
+        const wb = window.XLSX.read(ev.target.result, { type: "array" });
+        const sheetName = wb.SheetNames.includes("Importação") ? "Importação" : wb.SheetNames[0];
+        const ws = wb.Sheets[sheetName];
+        lines = window.XLSX.utils.sheet_to_csv(ws, { FS: ";", RS: "\n" }).trim().split("\n")
+          .filter(l => l.trim() && !l.trim().startsWith("#"));
+      } else {
+        lines = ev.target.result.replace(/^﻿/, "").trim().split(/\r?\n/)
+          .filter(l => l.trim() && !l.trim().startsWith("#"));
+      }
+      if (lines.length < 2) { setImportMsg("Sem dados no arquivo."); return; }
+
+      const cols = lines[0].toLowerCase().replace(/"/g, "").split(/[;,]/).map(c => c.trim());
+      const idx  = k => cols.indexOf(k);
+      if (idx("desc") < 0) { setImportMsg("Formato inválido — use o template SDC."); return; }
+
+      let id = 1;
+      const novasTxs = [];
+      lines.slice(1).forEach(l => {
+        const c = l.split(/[;,]/).map(x => x.trim().replace(/^"|"$/g, ""));
+        const data   = c[idx("data")]  || TODAY;
+        const desc   = c[idx("desc")]  || "Importado";
+        const valStr = (c[idx("valor")] || "0").replace(/[R$\s.]/g, "").replace(",", ".");
+        const val    = Math.abs(parseFloat(valStr) || 0);
+        if (!val) return;
+        const tipo   = (c[idx("tipo")] || "despesa").toLowerCase().includes("rec") ? "receita" : "despesa";
+        const cat    = c[idx("cat")]   || "outros";
+        const pago   = (c[idx("pago")] || "nao").toLowerCase() === "sim";
+        const cartao = c[idx("cartao")] || null;
+        const rep    = parseInt(c[idx("repetir_meses")] || "0") || 0;
+        const grpId  = rep > 0 ? ("rst_" + id) : null;
+
+        const pushTx = (dataStr) => novasTxs.push({
+          id: id++, desc, valor: val, tipo, cat, data: dataStr,
+          pago, recorrencia: rep > 0 ? "mensal" : "unico",
+          parcelaAtual: null, totalParcelas: null,
+          grupoId: grpId, cartao: cartao || null, icone: null
+        });
+
+        pushTx(data);
+        if (rep > 0) {
+          const [ano, mes, dia] = data.split("-").map(Number);
+          for (let m = 1; m <= rep; m++) {
+            let nm = mes - 1 + m, na = ano;
+            if (nm > 11) { nm -= 12; na++; }
+            const maxD = new Date(na, nm + 1, 0).getDate();
+            const d = String(Math.min(dia, maxD)).padStart(2, "0");
+            pushTx(na + "-" + String(nm + 1).padStart(2, "0") + "-" + d);
+          }
+        }
+      });
+
+      if (novasTxs.length === 0) { setImportMsg("Nenhum dado válido encontrado."); return; }
+
+      // Guarda os dados parseados e abre modal de confirmação
+      setConfirmReset({ txs: novasTxs, nextId: id });
+    };
+    if (isXlsx) rd.readAsArrayBuffer(f);
+    else rd.readAsText(f, "UTF-8");
   };
 
   // ── Fechamento mensal ──
@@ -3763,7 +3940,126 @@ function App() {
       fontSize: 14,
       fontWeight: 500
     }
-  }, "Sim")))), /*#__PURE__*/React.createElement("div", {
+  }, "Sim")))), confirmReset !== null && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      background: "rgba(0,0,0,0.75)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 9999
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "var(--bg2)",
+      border: "2px solid #E24B4A",
+      borderRadius: 16,
+      padding: "28px 32px",
+      width: 340,
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 32,
+      marginBottom: 10
+    }
+  }, "⚠️"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 17,
+      fontWeight: 700,
+      color: "#E24B4A",
+      marginBottom: 12
+    }
+  }, "TEM CERTEZA?"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "var(--txt2)",
+      marginBottom: 8,
+      lineHeight: 1.5
+    }
+  }, "SE FIZER ISSO TUDO QUE TEM AQUI SER\xC1 APAGADO e substitu\xEDdo pelo arquivo selecionado."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: "var(--txt4)",
+      marginBottom: 24
+    }
+  }, "Essa a\xE7\xE3o n\xE3o pode ser desfeita."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 12
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setConfirmReset(null),
+    style: {
+      flex: 1,
+      background: "var(--bg3)",
+      color: "var(--txt)",
+      border: "1px solid var(--brd)",
+      borderRadius: 8,
+      padding: "10px 0",
+      cursor: "pointer",
+      fontSize: 14
+    }
+  }, "Cancelar"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setTxs(confirmReset.txs);
+      setNextId(confirmReset.nextId);
+      setConfirmReset(null);
+      setImportMsg("✅ " + confirmReset.txs.length + " lan\xE7amento(s) carregados. Dados anteriores apagados.");
+      setTimeout(() => setImportMsg(""), 4000);
+    },
+    style: {
+      flex: 1,
+      background: "#E24B4A",
+      color: "#fff",
+      border: "none",
+      borderRadius: 8,
+      padding: "10px 0",
+      cursor: "pointer",
+      fontSize: 14,
+      fontWeight: 700
+    }
+  }, "Sim, substituir tudo")))), limiteModal && /*#__PURE__*/React.createElement("div", {
+    style: { position:"fixed", top:0, left:0, width:"100%", height:"100%", background:"rgba(0,0,0,0.65)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9999 }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: { background:"var(--bg2)", border:"1px solid var(--brd)", borderRadius:16, padding:"28px 32px", width:300, textAlign:"center" }
+  }, /*#__PURE__*/React.createElement("div", { style:{ fontSize:20, marginBottom:8 } }, "⚠️ Limite de alerta"),
+    /*#__PURE__*/React.createElement("div", { style:{ fontSize:12, color:"var(--txt2)", marginBottom:16 } }, "Alerta quando o saldo livre ficar abaixo de:"),
+    /*#__PURE__*/React.createElement("input", {
+      type: "number",
+      value: limiteInput,
+      onChange: e => setLimiteInput(e.target.value),
+      placeholder: "Ex: 2000",
+      style: { width:"100%", boxSizing:"border-box", padding:"10px 12px", borderRadius:8, border:"1px solid var(--brd)", background:"var(--bg3)", color:"var(--txt)", fontSize:16, textAlign:"center", marginBottom:16 },
+      autoFocus: true,
+      onKeyDown: e => {
+        if (e.key === "Enter") {
+          const novo = parseFloat(limiteInput.replace(",","."));
+          if (!isNaN(novo) && novo >= 0) { try { localStorage.setItem("sdc_limAlerta", novo); } catch(e2) {} }
+          setLimiteModal(false);
+        }
+        if (e.key === "Escape") setLimiteModal(false);
+      }
+    }),
+    /*#__PURE__*/React.createElement("div", { style:{ display:"flex", gap:12 } },
+      /*#__PURE__*/React.createElement("button", {
+        onClick: () => setLimiteModal(false),
+        style:{ flex:1, background:"var(--bg3)", color:"var(--txt)", border:"1px solid var(--brd)", borderRadius:8, padding:"10px 0", cursor:"pointer", fontSize:14 }
+      }, "Cancelar"),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: () => {
+          const novo = parseFloat(String(limiteInput).replace(",","."));
+          if (!isNaN(novo) && novo >= 0) { try { localStorage.setItem("sdc_limAlerta", novo); } catch(e2) {} }
+          setLimiteModal(false);
+        },
+        style:{ flex:1, background:"#6ea8fe", color:"#fff", border:"none", borderRadius:8, padding:"10px 0", cursor:"pointer", fontSize:14, fontWeight:600 }
+      }, "Salvar")
+    )
+  )), /*#__PURE__*/React.createElement("div", {
     style: {
       position: "fixed",
       bottom: 24,
@@ -3989,8 +4285,12 @@ function App() {
     }
   }, importMsg),
     /*#__PURE__*/React.createElement("input", {
-      ref: importRef, type: "file", accept: ".csv,.txt",
+      ref: importRef, type: "file", accept: ".csv,.txt,.xlsx,.xls",
       style: {display:"none"}, onChange: handleImport
+    }),
+    /*#__PURE__*/React.createElement("input", {
+      ref: importResetRef, type: "file", accept: ".csv,.txt,.xlsx,.xls",
+      style: {display:"none"}, onChange: handleImportReset
     }),
     /*#__PURE__*/React.createElement("input", {
       ref: restoreRef, type: "file", accept: ".json",
@@ -4032,7 +4332,9 @@ function App() {
             window.location.reload();
           }, color:"#60a5fa"},
           {label:"📤 Exportar CSV", action: exportXL, color:"#1D9E75"},
-          {label:"📥 Importar CSV", action: () => importRef.current?.click(), color:"var(--txt)"},
+          {label:"📋 Baixar Template", action: downloadTemplate, color:"#6ea8fe"},
+          {label:"📥 Importar CSV / Template", action: () => importRef.current?.click(), color:"var(--txt)"},
+          {label:"🔄 Substituir tudo por arquivo", action: () => importResetRef.current?.click(), color:"#E24B4A"},
           {label:"💾 Backup JSON", action: backupJSON, color:"#378ADD"},
           {label:"♻️ Restaurar", action: () => restoreRef.current?.click(), color:"#EF9F27"},
           {label:"🚪 Sair da conta", action: () => {
@@ -4404,10 +4706,7 @@ function App() {
         )
       ),
       React.createElement("button", {
-        onClick: () => {
-          const novo = parseFloat(prompt("Novo limite de alerta (R$):", limiteAlerta));
-          if (!isNaN(novo) && novo >= 0) { try { localStorage.setItem(_limKey, novo); } catch(e) {} }
-        },
+        onClick: () => { setLimiteInput(String(limiteAlerta)); setLimiteModal(true); },
         style:{ marginLeft:"auto", fontSize:11, padding:"5px 12px", borderRadius:20, background:`${c}22`, color:c, border:`1px solid ${c}44`, cursor:"pointer", fontWeight:600, whiteSpace:"nowrap" }
       }, "⚙ Limite")
     );
