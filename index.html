@@ -105,7 +105,7 @@ body{background:var(--bg);color:var(--txt);min-height:100vh;transition:backgroun
 /* ── Painel de vida ── */
 .life-panel{
   display:grid;grid-template-columns:1fr 1fr;gap:10px;
-  padding:16px 24px;max-width:960px;margin:0 auto 0;
+  padding:12px 0 4px;
 }
 .life-card{
   background:var(--panel-bg);border:1px solid var(--panel-border);
@@ -169,13 +169,59 @@ body{background:var(--bg);color:var(--txt);min-height:100vh;transition:backgroun
   .header-right-info{display:none}
   .profile-drawer{width:100vw}
   .context-banner{padding:14px 16px 0}
-  .life-panel,.activity-section{padding-left:16px;padding-right:16px}
+  .activity-section{padding-left:16px;padding-right:16px}
   .alert-wrap{padding-left:16px;padding-right:16px}
   .app-card{padding:22px 18px}
   .hub-grid-wrapper{padding:0 16px !important}
 }
 @media(max-width:400px){
   .theme-toggle{width:32px;height:32px;font-size:14px}
+}
+
+/* ── Abas de navegação ── */
+.hub-tabs{
+  display:flex;gap:4px;padding:0 24px;max-width:960px;margin:16px auto 0;
+}
+.hub-tab{
+  font-size:12px;font-weight:600;padding:8px 18px;border-radius:20px;
+  cursor:pointer;border:1px solid var(--border);background:transparent;
+  color:var(--txt3);transition:all .2s;letter-spacing:.5px;
+}
+.hub-tab:hover{color:var(--txt2);border-color:var(--border2)}
+.hub-tab.active{background:#6ea8fe18;color:#6ea8fe;border-color:#6ea8fe44}
+
+/* ── Tarefas do Dia ── */
+.tarefas-wrap{padding:16px 24px;max-width:960px;margin:0 auto}
+.tarefas-app-section{margin-bottom:24px}
+.tarefas-app-header{
+  display:flex;align-items:center;gap:10px;margin-bottom:12px;
+  font-size:10px;font-weight:700;letter-spacing:2px;
+}
+.tarefa-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:14px;
+  padding:12px 16px;display:flex;align-items:center;gap:12px;
+  transition:border-color .2s;margin-bottom:8px;cursor:default;
+}
+.tarefa-card:last-child{margin-bottom:0}
+.tarefa-card.feito{opacity:.5}
+.tarefa-check{
+  width:28px;height:28px;border-radius:50%;border:2px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  cursor:pointer;transition:all .2s;font-size:14px;background:transparent;
+}
+.tarefa-check:hover{border-color:#6ea8fe88;background:#6ea8fe11}
+.tarefa-check.feito{border-color:#1D9E75;background:#1D9E7520;color:#1D9E75}
+.tarefa-info{flex:1;min-width:0}
+.tarefa-titulo{font-size:13px;font-weight:600;color:var(--txt);line-height:1.3}
+.tarefa-titulo.feito{text-decoration:line-through;color:var(--txt3)}
+.tarefa-detalhe{font-size:11px;color:var(--txt4);margin-top:2px}
+.tarefa-loading{padding:32px;text-align:center;color:var(--txt4);font-size:13px}
+.tarefa-empty{padding:20px;text-align:center;color:var(--txt4);font-size:13px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:14px}
+.tarefa-forj-link{
+  font-size:11px;padding:4px 12px;border-radius:20px;margin-left:auto;
+  background:#EF9F2718;color:#EF9F27;border:1px solid #EF9F2740;
+  cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0;
 }
 </style>
 </head>
@@ -439,16 +485,6 @@ function LifePanel({ user }) {
     } catch(e) { return null; }
   }, []);
 
-  // Missão prioritária da Forjadora
-  const activeMission = React.useMemo(() => {
-    try {
-      const raw = localStorage.getItem("sheyla_forjadora_v3");
-      if (!raw) return null;
-      const app = JSON.parse(raw);
-      const missions = app.missions || [];
-      return missions.find(m => m.active && !m.done && m.priority) || missions.find(m => m.active && !m.done) || null;
-    } catch(e) { return null; }
-  }, []);
 
   // helpers de cor por elemento
   const ELEM = {
@@ -515,17 +551,40 @@ function LifePanel({ user }) {
     timeAgo(sdcData.updatedAt) && ce("div", { style:{ fontSize:9, color:"var(--txt4)", marginTop:6, letterSpacing:.5 } }, "sincronizado " + timeAgo(sdcData.updatedAt))
   );
 
-  const resumoForj = () => ce(React.Fragment, null,
-    ce(ElemPills, { d: forjData }),
-    ce("div", { style:{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:6 } },
-      ce(MbtiPills, { type: forjData.mbtiType }),
-      forjData.missionsOpen > 0 && ce("span", { style:{ fontSize:10, color:"#EF9F27", fontFamily:"Rajdhani,sans-serif", fontWeight:600, letterSpacing:.5 } },
-        "⚡ " + forjData.missionsOpen + " missões abertas"
-      )
-    ),
-    forjData.streak > 0 && ce("div", { style:{ fontSize:10, color:"#EF9F27", marginTop:5, opacity:.8 } }, "🔥 " + forjData.streak + " dias em sequência"),
-    timeAgo(forjData.updatedAt) && ce("div", { style:{ fontSize:9, color:"var(--txt4)", marginTop:6, letterSpacing:.5 } }, "sincronizado " + timeAgo(forjData.updatedAt))
-  );
+  const resumoForj = () => {
+    // Missão do dia da Forjadora
+    let missaoDia = null;
+    try {
+      const raw = localStorage.getItem("sheyla_forjadora_v3");
+      if (raw) {
+        const app = JSON.parse(raw);
+        const isoHj = isoHoje();
+        if (app.missionOfDay && app.missionOfDayDate === isoHj) missaoDia = app.missionOfDay;
+      }
+    } catch(e) {}
+
+    return ce(React.Fragment, null,
+      ce(ElemPills, { d: forjData }),
+      ce("div", { style:{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:6 } },
+        ce(MbtiPills, { type: forjData.mbtiType }),
+        forjData.streak > 0 && ce("span", { style:{ fontSize:10, color:"#EF9F27", opacity:.8 } }, "🔥 " + forjData.streak + " dias")
+      ),
+      // Missão do dia integrada no card
+      missaoDia && ce("div", { style:{ marginTop:8, padding:"6px 10px", borderRadius:8, background:"#a855f711", border:"1px solid #a855f733" } },
+        ce("div", { style:{ fontSize:9, letterSpacing:1.5, color:"#a855f7", fontWeight:700, marginBottom:3 } }, "MISSÃO DO DIA"),
+        ce("div", { style:{ fontSize:12, fontWeight:600, color:"var(--txt)", lineHeight:1.4 } },
+          missaoDia.title || missaoDia.nome || "Missão"
+        ),
+        missaoDia.prog != null && ce("div", { style:{ marginTop:5 } },
+          ce("div", { style:{ height:3, background:"var(--border)", borderRadius:3, overflow:"hidden" } },
+            ce("div", { style:{ height:"100%", width:(missaoDia.prog||0)+"%", background:"#a855f7", borderRadius:3 } })
+          ),
+          ce("span", { style:{ fontSize:9, color:"var(--txt4)", marginTop:2, display:"block" } }, (missaoDia.prog||0)+"% completo")
+        )
+      ),
+      timeAgo(forjData.updatedAt) && ce("div", { style:{ fontSize:9, color:"var(--txt4)", marginTop:6, letterSpacing:.5 } }, "sincronizado " + timeAgo(forjData.updatedAt))
+    );
+  };
 
   const painelDe = (a) => {
     let dados = null;
@@ -549,40 +608,48 @@ function LifePanel({ user }) {
     );
   };
 
-  return ce("div", { className:"life-panel" },
-    ...ativos.map(painelDe),
+  const [expandido, setExpandido] = React.useState(false);
+  const nAtivas = ativos.length;
 
-    // Missão ativa da Forjadora
-    activeMission && ce("div", {
-      className:"life-card",
-      onClick:()=>{ window.location.href="forjadora.html"; },
-      style:{ borderLeft:"3px solid #a855f7", gridColumn:"1 / -1" }
+  return ce("div", { style:{ padding:"0 24px", maxWidth:960, margin:"0 auto 8px" } },
+
+    // ── Header colapsável ──
+    ce("div", {
+      onClick: () => setExpandido(e => !e),
+      style:{
+        display:"flex", alignItems:"center", gap:10, cursor:"pointer",
+        padding:"10px 16px", borderRadius:14,
+        background: expandido ? "var(--bg2)" : "var(--bg2)",
+        border:"1px solid var(--border)",
+        transition:"all .2s", userSelect:"none",
+        marginBottom: expandido ? 12 : 0
+      }
     },
-      ce("div", { style:{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 } },
-        ce("span", { style:{ fontSize:10, letterSpacing:2, color:"#a855f7", fontWeight:700 } }, "MISSÃO EM ANDAMENTO"),
-        ce("span", { style:{
-          fontSize:10, background:"#a855f722", color:"#a855f7",
-          border:"1px solid #a855f744", borderRadius:20, padding:"2px 8px", fontWeight:600
-        }}, "⚡ Ativa")
+      // Bolinhas das Sheylas ativas
+      ce("div", { style:{ display:"flex", gap:4, alignItems:"center" } },
+        ativos.map(a => ce("div", { key:a.id, title:a.nome, style:{
+          width:8, height:8, borderRadius:"50%",
+          background: a.cor, boxShadow:"0 0 6px "+a.cor+"88",
+          flexShrink:0
+        }}))
       ),
-      ce("div", { style:{ fontSize:14, fontWeight:700, color:"var(--txt)", marginBottom:4 } }, activeMission.title),
-      activeMission.desc && ce("div", { style:{ fontSize:11, color:"var(--txt3)", lineHeight:1.5, marginBottom:6 } }, activeMission.desc.slice(0,90) + (activeMission.desc.length > 90 ? "…" : "")),
-      ce("div", { style:{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" } },
-        activeMission.prog != null && ce("div", { style:{ flex:1, minWidth:80 } },
-          ce("div", { style:{ height:4, background:"var(--border)", borderRadius:4, overflow:"hidden" } },
-            ce("div", { style:{ height:"100%", width: (activeMission.prog||0)+"%", background:"#a855f7", borderRadius:4, transition:"width .3s" } })
-          )
+      // Texto
+      ce("div", { style:{ flex:1 } },
+        ce("span", { style:{ fontSize:11, fontWeight:700, color:"var(--txt2)", letterSpacing:.5 } },
+          nAtivas + " Sheyla" + (nAtivas !== 1 ? "s" : "") + " trabalhando"
         ),
-        ce("span", { style:{ fontSize:10, color:"var(--txt4)" } }, (activeMission.prog||0) + "% completo"),
-        activeMission.elem && ce("span", { style:{
-          fontSize:10, padding:"2px 8px", borderRadius:12,
-          background: ({m:"#22c55e",g:"#38bdf8",t:"#a855f7",f:"#f97316"}[activeMission.elem]||"#6ea8fe")+"22",
-          color: ({m:"#22c55e",g:"#38bdf8",t:"#a855f7",f:"#f97316"}[activeMission.elem]||"#6ea8fe"),
-          fontWeight:600
-        }}, ({m:"Madeira",g:"Gelo",t:"Trovão",f:"Fogo"}[activeMission.elem] || activeMission.elem)),
-        ce("span", { style:{ marginLeft:"auto", fontSize:10, color:"#a855f7", fontWeight:600 } }, "Chamar a Forjadora →")
-      )
+        !expandido && ce("span", { style:{ fontSize:10, color:"var(--txt4)", marginLeft:8 } },
+          ativos.map(a => a.sigla).join(" · ")
+        )
+      ),
+      // Seta
+      ce("span", { style:{ fontSize:12, color:"var(--txt4)", transition:"transform .2s", display:"inline-block", transform: expandido ? "rotate(180deg)" : "rotate(0deg)" } }, "▾")
     ),
+
+    // ── Conteúdo expandido ──
+    expandido && ce("div", { className:"life-panel" },
+      ...ativos.map(painelDe)
+    )
   );
 }
 
@@ -921,11 +988,383 @@ function ProfileDrawer({ user, onClose, streak, dark, toggleTheme }) {
   );
 }
 
+// ── Helpers SPT (espelham a lógica do spt.html) ──
+function isoHoje() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+
+function slotsDoDiaSpt(p, iso) {
+  const dow = new Date(iso + "T12:00:00").getDay(); // 0=dom
+  const slots = [];
+  (p.rotina || []).forEach(function(it) {
+    if (it.pausado) return;
+    if (!it.repete) { slots.push({ key: it.id, it: it }); return; }
+    const dias = it.repete; // ex: [1,2,3,4,5] ou "daily"
+    if (dias === "daily" || dias === true || (Array.isArray(dias) && dias.indexOf(dow) >= 0)) {
+      slots.push({ key: it.id, it: it, hr: it.hr });
+    }
+  });
+  return slots;
+}
+
+function feitoSpt(p, iso, key) {
+  return !!(p.feitos && p.feitos[iso] && p.feitos[iso].indexOf(key) >= 0);
+}
+
+const ICONE_SPT = { remedio:"💊", refeicao:"🍽️", tarefa:"🥣", compra:"🛒" };
+
+// ── Acesso direto ao Firestore (reutiliza instância do sheyla-core) ──
+function getFirestoreDB() {
+  try {
+    if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
+      return window.firebase.firestore();
+    }
+  } catch(e) {}
+  return null;
+}
+
+// ── Componente: Tarefas do Dia ──
+function TarefasTab({ user }) {
+  const ce = (tag, props, ...ch) => React.createElement(tag, props, ...ch);
+  const uid = user?.uid;
+  const iso = isoHoje();
+
+  // status: "loading" | "no-firebase" | "error" | "ok"
+  const [sdcStatus, setSdcStatus] = React.useState("loading");
+  const [sptStatus, setSptStatus] = React.useState("loading");
+  // sdcTarefas: { atrasadas:[], hoje:[], feitas:[] }
+  const [sdcGrupos, setSdcGrupos] = React.useState(null);
+  // sptTarefas: { atrasadas:[], pendentes:[], feitas:[] }
+  const [sptGrupos, setSptGrupos] = React.useState(null);
+  const [forjTarefa, setForjTarefa] = React.useState(undefined);
+  const [sdcRaw, setSdcRaw] = React.useState(null);
+  const [sptRaw, setSptRaw] = React.useState(null);
+  const [saving, setSaving] = React.useState({});
+
+  // ── Carrega com retry para aguardar sheyla-core ──
+  React.useEffect(() => {
+    if (!uid) return;
+    let cancelled = false;
+
+    async function carrega() {
+      let db = null;
+      for (let i = 0; i < 4; i++) {
+        db = getFirestoreDB();
+        if (db) break;
+        await new Promise(r => setTimeout(r, 400));
+        if (cancelled) return;
+      }
+      if (!db) {
+        setSdcStatus("no-firebase"); setSptStatus("no-firebase"); return;
+      }
+
+      // ── SDC ──
+      db.collection("users").doc(uid).collection("sdc").doc("data").get()
+        .then(snap => {
+          if (cancelled) return;
+          if (!snap.exists) { setSdcGrupos({ atrasadas:[], hoje:[], feitas:[] }); setSdcStatus("ok"); return; }
+          const d = snap.data(); setSdcRaw(d);
+          const txs = d.txs || [];
+          const atrasadas = [], hoje = [], feitas = [];
+          txs.forEach(t => {
+            if (!t.data) return;
+            if (t.pago === true && t.data <= iso) feitas.push({ id:t.id, desc:t.desc||"Conta", valor:t.valor, data:t.data });
+            else if (t.pago === false && t.data < iso)  atrasadas.push({ id:t.id, desc:t.desc||"Conta", valor:t.valor, data:t.data });
+            else if (t.pago === false && t.data === iso) hoje.push({ id:t.id, desc:t.desc||"Conta", valor:t.valor, data:t.data });
+          });
+          setSdcGrupos({ atrasadas, hoje, feitas }); setSdcStatus("ok");
+        })
+        .catch(() => { if (!cancelled) setSdcStatus("error"); });
+
+      // ── SPT ──
+      db.collection("users").doc(uid).collection("spt").doc("data").get()
+        .then(snap => {
+          if (cancelled) return;
+          if (!snap.exists) { setSptGrupos({ atrasadas:[], pendentes:[], feitas:[] }); setSptStatus("ok"); return; }
+          const d = snap.data(); setSptRaw(d);
+          let pets = [];
+          try { pets = JSON.parse(d.pets || "[]"); } catch(e) {}
+          // Para SPT "atrasado" = slot de dias anteriores não feito (últimos 7 dias)
+          const atrasadas = [], pendentes = [], feitas = [];
+          pets.forEach(p => {
+            // slots de hoje
+            slotsDoDiaSpt(p, iso).forEach(s => {
+              const feito = feitoSpt(p, iso, s.key);
+              const item = { key:p.id+"::"+s.key, petId:p.id, petNome:p.nome, petEmoji:p.emoji||"🐾",
+                slotKey:s.key, nome:s.it.nome, tipo:s.it.tipo, hr:s.hr, feito, diaLabel:"hoje" };
+              if (feito) feitas.push(item); else pendentes.push(item);
+            });
+            // slots de até 7 dias atrás não feitos (atrasados)
+            for (let d2 = 1; d2 <= 7; d2++) {
+              const dt = new Date(iso + "T12:00:00");
+              dt.setDate(dt.getDate() - d2);
+              const isoD = dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");
+              slotsDoDiaSpt(p, isoD).forEach(s => {
+                if (!feitoSpt(p, isoD, s.key)) {
+                  atrasadas.push({ key:p.id+"::"+isoD+"::"+s.key, petId:p.id, petNome:p.nome, petEmoji:p.emoji||"🐾",
+                    slotKey:s.key, nome:s.it.nome, tipo:s.it.tipo, hr:s.hr, feito:false, diaLabel:isoD });
+                }
+              });
+            }
+          });
+          setSptGrupos({ atrasadas, pendentes, feitas }); setSptStatus("ok");
+        })
+        .catch(() => { if (!cancelled) setSptStatus("error"); });
+
+      // ── Forjadora: localStorage ──
+      try {
+        const raw = localStorage.getItem("sheyla_forjadora_v3");
+        if (raw) {
+          const app = JSON.parse(raw);
+          const md = app.missionOfDay;
+          if (md && app.missionOfDayDate === iso) setForjTarefa({ title:md.title||md.nome||"Missão do Dia", done:md.done||false });
+          else setForjTarefa(null);
+        } else { setForjTarefa(null); }
+      } catch(e) { setForjTarefa(null); }
+    }
+
+    carrega();
+    return () => { cancelled = true; };
+  }, [uid, iso]);
+
+  // ── Marcar SDC como pago ──
+  const marcarSdc = async (txId) => {
+    const k = "sdc::" + txId;
+    setSaving(s => ({ ...s, [k]: true }));
+    try {
+      const db = getFirestoreDB();
+      if (db && sdcRaw) {
+        const novasTxs = (sdcRaw.txs || []).map(t => t.id === txId ? { ...t, pago: true } : t);
+        await db.collection("users").doc(uid).collection("sdc").doc("data")
+          .set({ txs: novasTxs, _updatedAt: window.firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        setSdcRaw(r => ({ ...r, txs: novasTxs }));
+        // move o item para feitas
+        setSdcGrupos(g => {
+          if (!g) return g;
+          const tx = [...g.atrasadas, ...g.hoje].find(t => t.id === txId);
+          if (!tx) return g;
+          return {
+            atrasadas: g.atrasadas.filter(t => t.id !== txId),
+            hoje: g.hoje.filter(t => t.id !== txId),
+            feitas: [...g.feitas, tx]
+          };
+        });
+      }
+    } catch(e) { console.warn("[SYS] marcar SDC", e); }
+    setSaving(s => { const n = { ...s }; delete n[k]; return n; });
+  };
+
+  // ── Marcar SPT slot ──
+  const marcarSpt = async (petId, slotKey, diaLabel, novoVal) => {
+    const isoAlvo = diaLabel === "hoje" ? iso : diaLabel;
+    const k = "spt::" + petId + "::" + slotKey + "::" + isoAlvo;
+    setSaving(s => ({ ...s, [k]: true }));
+    try {
+      const db = getFirestoreDB();
+      if (db && sptRaw) {
+        let pets = [];
+        try { pets = JSON.parse(sptRaw.pets || "[]"); } catch(e) {}
+        pets = pets.map(p => {
+          if (p.id !== petId) return p;
+          const feitos = p.feitos || {};
+          const lista = (feitos[isoAlvo] || []).filter(x => x !== slotKey);
+          if (novoVal) lista.push(slotKey);
+          const novaFeitos = lista.length
+            ? { ...feitos, [isoAlvo]: lista }
+            : Object.fromEntries(Object.entries(feitos).filter(([k2]) => k2 !== isoAlvo));
+          return { ...p, feitos: novaFeitos };
+        });
+        const petsStr = JSON.stringify(pets);
+        await db.collection("users").doc(uid).collection("spt").doc("data")
+          .set({ pets: petsStr, _savedAt: Date.now(), _updatedAt: window.firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        setSptRaw(r => ({ ...r, pets: petsStr }));
+        setSptGrupos(g => {
+          if (!g) return g;
+          if (diaLabel === "hoje") {
+            // toggle feito/pendente dentro de hoje
+            const item = [...g.pendentes, ...g.feitas].find(t => t.petId === petId && t.slotKey === slotKey);
+            if (!item) return g;
+            return {
+              atrasadas: g.atrasadas,
+              pendentes: novoVal ? g.pendentes.filter(t => !(t.petId===petId && t.slotKey===slotKey)) : [...g.pendentes, {...item, feito:false}],
+              feitas: novoVal ? [...g.feitas, {...item, feito:true}] : g.feitas.filter(t => !(t.petId===petId && t.slotKey===slotKey))
+            };
+          } else {
+            // atrasado marcado → remove da lista
+            return { ...g, atrasadas: g.atrasadas.filter(t => !(t.petId===petId && t.slotKey===slotKey && t.diaLabel===diaLabel)) };
+          }
+        });
+      }
+    } catch(e) { console.warn("[SYS] marcar SPT", e); }
+    setSaving(s => { const n = { ...s }; delete n[k]; return n; });
+  };
+
+  // ── Helpers de render ──
+  const renderCheck = (feito, isSaving, onClick, disabled) =>
+    ce("button", {
+      className: "tarefa-check" + (feito ? " feito" : ""),
+      onClick, disabled: isSaving || disabled,
+      title: disabled ? "Marque na Forjadora" : feito ? "Desmarcar" : "Marcar como feito",
+      style: disabled ? { cursor:"default", opacity:.5 } : {}
+    }, isSaving ? "⟳" : feito ? "✓" : "");
+
+  const renderGrupoHeader = (label, cor, count) =>
+    count === 0 ? null :
+    ce("div", { style:{ fontSize:9, fontWeight:700, letterSpacing:1.5, color:cor, margin:"12px 0 6px", paddingLeft:4 } }, label + " · " + count);
+
+  const renderSdcCard = (t) => {
+    const k = "sdc::" + t.id;
+    const atrasada = t.data < iso;
+    return ce("div", { key: t.id, className:"tarefa-card" },
+      renderCheck(false, !!saving[k], () => marcarSdc(t.id)),
+      ce("div", { className:"tarefa-info" },
+        ce("div", { className:"tarefa-titulo" },
+          atrasada && ce("span", { style:{ color:"#E24B4A", fontSize:10, fontWeight:700, marginRight:6 } }, "ATRASADA"),
+          t.desc
+        ),
+        ce("div", { className:"tarefa-detalhe" },
+          t.valor != null ? "R$ " + Number(t.valor).toFixed(2) + " · " : "",
+          atrasada ? "venceu " + t.data : "vence hoje"
+        )
+      )
+    );
+  };
+
+  const renderSdcPaga = (t) =>
+    ce("div", { key: t.id, className:"tarefa-card feito" },
+      ce("div", { className:"tarefa-check feito" }, "✓"),
+      ce("div", { className:"tarefa-info" },
+        ce("div", { className:"tarefa-titulo feito" }, t.desc),
+        ce("div", { className:"tarefa-detalhe" }, t.valor != null ? "R$ " + Number(t.valor).toFixed(2) + " · " : "", "paga hoje")
+      )
+    );
+
+  const renderSptCard = (t, podeMarcar) => {
+    const k = "spt::" + t.petId + "::" + t.slotKey + "::" + (t.diaLabel === "hoje" ? iso : t.diaLabel);
+    return ce("div", { key: t.key, className:"tarefa-card" + (t.feito ? " feito" : "") },
+      renderCheck(t.feito, !!saving[k], () => marcarSpt(t.petId, t.slotKey, t.diaLabel, !t.feito), !podeMarcar),
+      ce("div", { className:"tarefa-info" },
+        ce("div", { className:"tarefa-titulo" + (t.feito ? " feito" : "") },
+          t.diaLabel !== "hoje" && ce("span", { style:{ color:"#E24B4A", fontSize:10, fontWeight:700, marginRight:6 } }, "ATRASADA"),
+          (ICONE_SPT[t.tipo] || "🔔") + " " + t.nome
+        ),
+        ce("div", { className:"tarefa-detalhe" },
+          t.petEmoji + " " + t.petNome,
+          t.hr ? " · " + t.hr : "",
+          t.diaLabel !== "hoje" ? " · " + t.diaLabel : ""
+        )
+      )
+    );
+  };
+
+  // ── Totais para o cabeçalho ──
+  const aindaCarregando = sdcStatus === "loading" || sptStatus === "loading" || forjTarefa === undefined;
+  const totalAtrasadas =
+    (sdcGrupos ? sdcGrupos.atrasadas.length : 0) +
+    (sptGrupos ? sptGrupos.atrasadas.length : 0);
+  const totalHoje =
+    (sdcGrupos ? sdcGrupos.hoje.length : 0) +
+    (sptGrupos ? sptGrupos.pendentes.length : 0) +
+    (forjTarefa && !forjTarefa.done ? 1 : 0);
+
+  const renderStatus = (status, app) => {
+    if (status === "loading") return ce("div", { className:"tarefa-loading" }, "Conectando ao " + app + "…");
+    if (status === "no-firebase") return ce("div", { className:"tarefa-empty", style:{ color:"var(--txt4)", borderStyle:"dashed" } },
+      "🔌 Sem conexão com Firebase — abra o " + app + " diretamente para sincronizar");
+    if (status === "error") return ce("div", { className:"tarefa-empty", style:{ color:"#E24B4A44", borderColor:"#E24B4A33" } },
+      "⚠️ Erro ao carregar dados do " + app);
+    return null;
+  };
+
+  return ce("div", { className:"tarefas-wrap fade-in" },
+
+    // Cabeçalho resumo
+    ce("div", { style:{ marginBottom:20 } },
+      ce("div", { style:{ fontSize:10, letterSpacing:2, color:"var(--txt4)", fontWeight:700, marginBottom:4 } }, "HOJE · " + iso),
+      ce("div", { style:{ fontSize:20, fontWeight:700, color:"var(--txt)", lineHeight:1.3 } },
+        totalAtrasadas > 0
+          ? ce("span", { style:{ color:"#E24B4A" } }, totalAtrasadas + " atrasada" + (totalAtrasadas > 1 ? "s" : "") + " · ")
+          : null,
+        totalHoje > 0
+          ? totalHoje + " pendente" + (totalHoje > 1 ? "s" : "") + " hoje"
+          : totalAtrasadas === 0
+            ? (aindaCarregando ? "Carregando…" : "Tudo em dia! ✓")
+            : ""
+      )
+    ),
+
+    // ── SDC ──
+    ce("div", { className:"tarefas-app-section" },
+      ce("div", { className:"tarefas-app-header", style:{ color:"#1D9E75" } },
+        ce("span", { style:{ fontSize:16 } }, "💰"),
+        ce("span", null, "SHEYLA DO CONTÁBIL")
+      ),
+      sdcStatus !== "ok"
+        ? renderStatus(sdcStatus, "SDC")
+        : sdcGrupos && (sdcGrupos.atrasadas.length + sdcGrupos.hoje.length + sdcGrupos.feitas.length === 0)
+          ? ce("div", { className:"tarefa-empty" }, "✓ Nenhuma conta para hoje")
+          : ce("div", null,
+              renderGrupoHeader("ATRASADAS", "#E24B4A", sdcGrupos.atrasadas.length),
+              sdcGrupos.atrasadas.map(t => renderSdcCard(t)),
+              renderGrupoHeader("HOJE", "#1D9E75", sdcGrupos.hoje.length),
+              sdcGrupos.hoje.map(t => renderSdcCard(t)),
+              renderGrupoHeader("PAGAS HOJE", "var(--txt4)", sdcGrupos.feitas.length),
+              sdcGrupos.feitas.map(t => renderSdcPaga(t))
+            )
+    ),
+
+    // ── SPT ──
+    ce("div", { className:"tarefas-app-section" },
+      ce("div", { className:"tarefas-app-header", style:{ color:"#E8833A" } },
+        ce("span", { style:{ fontSize:16 } }, "🐾"),
+        ce("span", null, "SHEYLA PET")
+      ),
+      sptStatus !== "ok"
+        ? renderStatus(sptStatus, "SPT")
+        : sptGrupos && (sptGrupos.atrasadas.length + sptGrupos.pendentes.length + sptGrupos.feitas.length === 0)
+          ? ce("div", { className:"tarefa-empty" }, "✓ Nenhuma tarefa de pet para hoje")
+          : ce("div", null,
+              renderGrupoHeader("ATRASADAS", "#E24B4A", sptGrupos.atrasadas.length),
+              sptGrupos.atrasadas.map(t => renderSptCard(t, true)),
+              renderGrupoHeader("HOJE", "#E8833A", sptGrupos.pendentes.length),
+              sptGrupos.pendentes.map(t => renderSptCard(t, true)),
+              renderGrupoHeader("FEITAS HOJE", "var(--txt4)", sptGrupos.feitas.length),
+              sptGrupos.feitas.map(t => renderSptCard(t, false))
+            )
+    ),
+
+    // ── Forjadora ──
+    ce("div", { className:"tarefas-app-section" },
+      ce("div", { className:"tarefas-app-header", style:{ color:"#EF9F27" } },
+        ce("span", { style:{ fontSize:16 } }, "⚡"),
+        ce("span", null, "SHEYLA FORJADORA")
+      ),
+      forjTarefa === undefined
+        ? ce("div", { className:"tarefa-loading" }, "Verificando…")
+        : forjTarefa === null
+          ? ce("div", { className:"tarefa-empty", style:{ borderStyle:"dashed" } },
+              "Nenhuma missão do dia — ",
+              ce("a", { href:"forjadora.html", style:{ color:"#EF9F27" } }, "abrir Forjadora")
+            )
+          : ce("div", { className:"tarefa-card" + (forjTarefa.done ? " feito" : "") },
+              renderCheck(forjTarefa.done, false, null, true),
+              ce("div", { className:"tarefa-info" },
+                ce("div", { className:"tarefa-titulo" + (forjTarefa.done ? " feito" : "") }, "🏆 " + forjTarefa.title),
+                ce("div", { className:"tarefa-detalhe" }, forjTarefa.done ? "Concluída hoje" : "Marque na Forjadora")
+              ),
+              ce("a", { href:"forjadora.html", className:"tarefa-forj-link" }, "Abrir →")
+            )
+    )
+  );
+}
+
 // ── Hub principal ──
 function Hub({ user, onLogout }) {
   const [launching, setLaunching] = useState(null);
   const [dark, toggleTheme] = useTheme();
   const [showProfile, setShowProfile] = useState(false);
+  const [tab, setTab] = useState("home");
   const streak = useStreak();
 
   // Salva hora do login atual
@@ -1028,65 +1467,83 @@ function Hub({ user, onLogout }) {
     // ── Conteúdo (relativo ao fixed bg) ──
     React.createElement("div", { style:{ position:"relative", zIndex:1 } },
 
-      // Banner de contexto
-      React.createElement("div", { className:"context-banner" },
-        React.createElement("span", { style:{ fontSize:12, color:"var(--txt3)", textTransform:"capitalize" } },
-          getDayName() + ", " + getDateStr()
-        ),
-        streak >= 2 && React.createElement("span", { className:"streak-badge" },
-          "🔥 ", streak, " dias seguidos"
-        )
+      // ── Barra de abas ──
+      React.createElement("div", { className:"hub-tabs" },
+        React.createElement("button", {
+          className:"hub-tab" + (tab === "home" ? " active" : ""),
+          onClick: () => setTab("home")
+        }, "🏠 HUB"),
+        React.createElement("button", {
+          className:"hub-tab" + (tab === "tarefas" ? " active" : ""),
+          onClick: () => setTab("tarefas")
+        }, "✅ TAREFAS DO DIA")
       ),
 
-      // Hero
-      React.createElement("div", { className:"fade-in", style:{ padding:"32px 24px 20px", maxWidth:640, margin:"0 auto" } },
-        React.createElement("div", { style:{ fontSize:13, color:"var(--txt3)", marginBottom:8, letterSpacing:1 } }, greeting + ","),
-        React.createElement("div", { style:{ fontSize:32, fontWeight:700, color:"var(--txt)", letterSpacing:-1, lineHeight:1.2, marginBottom:10 } },
-          firstName + "."
-        ),
-        React.createElement("div", { style:{ fontSize:14, color:"var(--txt3)", lineHeight:1.6 } },
-          "Sou a Sheyla Primordial, a primeira das Sheylas. Meu propósito é reunir minhas irmãs, cada uma com seu jeito e sua missão, para te ajudar no dia a dia, facilitar sua vida e apoiar sua evolução. Evoluímos junto com você. Escolha uma irmã; sua sessão é compartilhada, sem novo login."
-        )
-      ),
+      // ── Conteúdo por aba ──
+      tab === "tarefas"
+        ? React.createElement(TarefasTab, { user })
+        : React.createElement("div", null,
 
-      // Alerta global de contas vencidas (SDC)
-      React.createElement(VencidosAlert, null),
-
-      // Painel de vida
-      React.createElement(LifePanel, { user }),
-
-      // Feed de atividade
-      React.createElement(ActivityFeed, { user }),
-
-      // Grid de apps
-      React.createElement("div", {
-        className:"hub-grid-wrapper",
-        style:{ padding:"20px 24px", maxWidth:960, margin:"0 auto" }
-      },
-        React.createElement("div", {
-          className:"hub-grid",
-          style:{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(290px,1fr))", gap:16 }
-        },
-          ...APPS.map((app, i) => React.createElement("div", {
-            key:app.id,
-            style:{ animationDelay:`${i * .07}s`, position:"relative" }
-          },
-            launching === app.id && React.createElement("div", { style:{
-              position:"absolute", inset:0, zIndex:10, borderRadius:20,
-              background:"rgba(8,12,20,.75)", backdropFilter:"blur(4px)",
-              display:"flex", alignItems:"center", justifyContent:"center"
-            }},
-              React.createElement("div", { style:{ fontSize:13, color: app.cor, animation:"pulse .8s infinite" } }, "Abrindo…")
+          // Banner de contexto
+          React.createElement("div", { className:"context-banner" },
+            React.createElement("span", { style:{ fontSize:12, color:"var(--txt3)", textTransform:"capitalize" } },
+              getDayName() + ", " + getDateStr()
             ),
-            React.createElement(AppCard, { app, user, onOpen: openApp })
-          ))
-        )
-      ),
+            streak >= 2 && React.createElement("span", { className:"streak-badge" },
+              "🔥 ", streak, " dias seguidos"
+            )
+          ),
 
-      // Footer
-      React.createElement("div", { style:{ textAlign:"center", marginTop:40, fontSize:11, color:"var(--txt5)", letterSpacing:1 } },
-        "UNIVERSO SHEYLA · ", new Date().getFullYear()
-      )
+          // Hero
+          React.createElement("div", { className:"fade-in", style:{ padding:"32px 24px 20px", maxWidth:640, margin:"0 auto" } },
+            React.createElement("div", { style:{ fontSize:13, color:"var(--txt3)", marginBottom:8, letterSpacing:1 } }, greeting + ","),
+            React.createElement("div", { style:{ fontSize:32, fontWeight:700, color:"var(--txt)", letterSpacing:-1, lineHeight:1.2, marginBottom:10 } },
+              firstName + "."
+            ),
+            React.createElement("div", { style:{ fontSize:14, color:"var(--txt3)", lineHeight:1.6 } },
+              "Sou a Sheyla Primordial, a primeira das Sheylas. Meu propósito é reunir minhas irmãs, cada uma com seu jeito e sua missão, para te ajudar no dia a dia, facilitar sua vida e apoiar sua evolução. Evoluímos junto com você. Escolha uma irmã; sua sessão é compartilhada, sem novo login."
+            )
+          ),
+
+          // Alerta global de contas vencidas (SDC)
+          React.createElement(VencidosAlert, null),
+
+          // Painel de vida
+          React.createElement(LifePanel, { user }),
+
+          // Feed de atividade
+          React.createElement(ActivityFeed, { user }),
+
+          // Grid de apps
+          React.createElement("div", {
+            className:"hub-grid-wrapper",
+            style:{ padding:"20px 24px", maxWidth:960, margin:"0 auto" }
+          },
+            React.createElement("div", {
+              className:"hub-grid",
+              style:{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(290px,1fr))", gap:16 }
+            },
+              ...APPS.map((app, i) => React.createElement("div", {
+                key:app.id,
+                style:{ animationDelay:`${i * .07}s`, position:"relative" }
+              },
+                launching === app.id && React.createElement("div", { style:{
+                  position:"absolute", inset:0, zIndex:10, borderRadius:20,
+                  background:"rgba(8,12,20,.75)", backdropFilter:"blur(4px)",
+                  display:"flex", alignItems:"center", justifyContent:"center"
+                }},
+                  React.createElement("div", { style:{ fontSize:13, color: app.cor, animation:"pulse .8s infinite" } }, "Abrindo…")
+                ),
+                React.createElement(AppCard, { app, user, onOpen: openApp })
+              ))
+            )
+          ),
+
+          // Footer
+          React.createElement("div", { style:{ textAlign:"center", marginTop:40, fontSize:11, color:"var(--txt5)", letterSpacing:1 } },
+            "UNIVERSO SHEYLA · ", new Date().getFullYear()
+          )
+        )
     )
   );
 }
